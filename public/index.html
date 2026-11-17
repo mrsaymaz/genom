@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1b2128">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Genom</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="view"></canvas>
+  <div id="hud"></div>
+
+  <section id="menu" class="screen">
+    <div class="sheet">
+      <h1>Genom</h1>
+      <p class="sub">Dark Age · Tutorial skirmish · <span id="map-name"></span></p>
+      <h2>Your team</h2>
+      <div id="teams" class="teams"></div>
+      <p class="note">Your team will come from the English League roster once it is connected.</p>
+      <h2>Pace</h2>
+      <div class="paces">
+        <button class="pace" data-pace="relaxed"><b>Relaxed</b><small>The rival builds slowly and attacks with small groups.</small></button>
+        <button class="pace" data-pace="challenge"><b>Challenge</b><small>A faster rival with bigger attacks.</small></button>
+      </div>
+      <button id="start" class="big">Start</button>
+    </div>
+  </section>
+
+  <section id="loading" class="screen hidden"><div class="loader">Building your village…</div></section>
+
+  <section id="pause" class="screen hidden">
+    <div class="sheet small">
+      <h1>Paused</h1>
+      <button id="resume" class="big">Resume</button>
+      <button id="restart">Restart</button>
+      <button id="quit">Quit to menu</button>
+      <p class="note">Tap to select. Tap the ground or a target to give orders. Drag to select a group. Use two fingers to move the map and pinch to zoom.</p>
+    </div>
+  </section>
+
+  <section id="end" class="screen hidden">
+    <div class="sheet small">
+      <h1 id="end-title"></h1>
+      <p class="sub" id="end-sub"></p>
+      <div id="end-stats" class="stats"></div>
+      <button id="again" class="big">Play again</button>
+      <button id="menu-btn">Menu</button>
+    </div>
+  </section>
+
+  <div id="rotate" class="screen"><div class="sheet small"><svg viewBox="0 0 48 48" class="turn" aria-hidden="true"><rect x="16" y="6" width="16" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 38c6 6 26 6 32 0M36 34l4 4-5 3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg><p>Turn your device sideways to play.</p></div></div>
+
+  <script src="art-buildings.js"></script>
+  <script src="art-towncenters.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

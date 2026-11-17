@@ -1,0 +1,19 @@
+{
+  "name": "genom",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Genom (working title) by Mr. Saymaz: a touch-first English RTS for Grades 5–8.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "serve": "node build.mjs --serve",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "three": "0.128.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.10"
+  },
+  "engines": { "node": ">=20" }
+}

@@ -1,0 +1,183 @@
+// The 3D view: renderer, isometric camera, lights, landscape, buildings, units and effects.
+import * as THREE from 'three';
+import { CONFIG } from '../config.js';
+import { TILE, makeBuilding } from './art.js';
+import { buildTerrain, Resources } from './terrain.js';
+import { UnitMeshes } from './units.js';
+
+const DIR = new THREE.Vector3(1, 0.816, 1).normalize();
+const lin = c => new THREE.Color(c).convertSRGBToLinear();
+
+export class View {
+  constructor(canvas, world) {
+    this.world = world; this.size = world.size;
+    const mobile = matchMedia('(pointer: coarse)').matches;
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: !mobile || devicePixelRatio < 2, powerPreference: 'high-performance' });
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, mobile ? 1.5 : 2));
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.2;
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.scene = new THREE.Scene();
+    this.scene.background = lin('#9cc8e8');
+    this.scene.fog = new THREE.Fog(this.scene.background, 60, 140);
+    this.cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 200);
+    this.zoom = matchMedia("(max-height: 460px)").matches ? 18 : 22; this.target = new THREE.Vector3();
+    this.scene.add(new THREE.HemisphereLight(lin('#dfeeff'), lin('#5a4630'), 0.7));
+    this.sun = new THREE.DirectionalLight(lin('#fff0d6'), 1.5);
+    this.sun.castShadow = true; this.sun.shadow.mapSize.set(mobile ? 1024 : 2048, mobile ? 1024 : 2048);
+    this.sun.shadow.bias = -0.0006; this.sun.shadow.normalBias = 0.03;
+    this.scene.add(this.sun, this.sun.target);
+    const rim = new THREE.DirectionalLight(lin('#9fc4ff'), 0.35); rim.position.set(30, 25, -30); this.scene.add(rim);
+
+    const t = buildTerrain(world);
+    this.scene.add(t.group); this.waterTex = t.water; this.ground = t.ground;
+    this.res = new Resources(world, this.scene);
+    this.units = new UnitMeshes(this.scene, world.teams);
+    this.blds = new Map();
+    this.fx = [];
+    this.ghost = null;
+    for (const b of world.buildings()) this.addBuilding(b);
+    this.ray = new THREE.Raycaster(); this.plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    this.arrowMat = new THREE.MeshBasicMaterial({ color: lin('#3a2a1a') });
+    this.arrowGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.7, 4).rotateZ(Math.PI / 2);
+    this.dustMat = new THREE.MeshBasicMaterial({ color: lin('#d8ccb0'), transparent: true, opacity: 0.6, depthWrite: false });
+  }
+
+  toWorld(tx, ty) { return [(tx - this.size / 2) * TILE, (ty - this.size / 2) * TILE]; }
+  toTile(wx, wz) { return [wx / TILE + this.size / 2, wz / TILE + this.size / 2]; }
+
+  resize(w, h) {
+    this.w = w; this.h = h;
+    this.renderer.setSize(w, h, false);
+    this.updateCamera();
+  }
+  updateCamera() {
+    const a = this.w / this.h, v = this.zoom;
+    Object.assign(this.cam, { left: -v * a / 2, right: v * a / 2, top: v / 2, bottom: -v / 2 });
+    this.cam.updateProjectionMatrix();
+    const half = this.size * TILE / 2;
+    this.target.x = Math.max(-half, Math.min(half, this.target.x));
+    this.target.z = Math.max(-half, Math.min(half, this.target.z));
+    this.cam.position.copy(this.target).addScaledVector(DIR, 60);
+    this.cam.lookAt(this.target);
+    const s = this.sun.shadow.camera, e = v * 0.9 + 6;
+    Object.assign(s, { left: -e, right: e, top: e, bottom: -e, near: 1, far: 120 });
+    s.updateProjectionMatrix();
+    this.sun.position.copy(this.target).add(new THREE.Vector3(-14, 36, 26));
+    this.sun.target.position.copy(this.target);
+  }
+  centerOn(tx, ty) { const [x, z] = this.toWorld(tx, ty); this.target.set(x, 0, z); this.updateCamera(); }
+  pan(dxPx, dyPx) {
+    const k = this.zoom / this.h;
+    const right = new THREE.Vector3(1, 0, -1).normalize(), fwd = new THREE.Vector3(-1, 0, -1).normalize();
+    this.target.addScaledVector(right, -dxPx * k).addScaledVector(fwd, dyPx * k / 0.6);
+    this.updateCamera();
+  }
+  zoomBy(f) { this.zoom = Math.max(10, Math.min(40, this.zoom * f)); this.updateCamera(); }
+
+  // Screen point -> fractional tile coordinates on the ground.
+  pick(sx, sy) {
+    const ndc = new THREE.Vector2(sx / this.w * 2 - 1, -(sy / this.h) * 2 + 1);
+    this.ray.setFromCamera(ndc, this.cam);
+    const p = new THREE.Vector3();
+    if (!this.ray.ray.intersectPlane(this.plane, p)) return null;
+    return this.toTile(p.x, p.z);
+  }
+  // Tile point -> screen pixels.
+  screen(tx, ty, h = 0.6) {
+    const [x, z] = this.toWorld(tx, ty), v = new THREE.Vector3(x, h, z).project(this.cam);
+    return [(v.x + 1) / 2 * this.w, (1 - v.y) / 2 * this.h, v.z];
+  }
+
+  addBuilding(b) {
+    if (this.blds.has(b.id)) return;
+    const art = makeBuilding(this.world.teams[b.team].key, b.type);
+    const [wx, wz] = this.toWorld(b.x + b.w / 2, b.y + b.h / 2);
+    art.group.position.set(wx, 0, wz);
+    const scaffold = this.makeScaffold(b.w * TILE, Math.max(1.4, art.height * 0.8));
+    scaffold.visible = !b.built;
+    art.group.add(scaffold);
+    this.scene.add(art.group);
+    this.blds.set(b.id, { art, scaffold, built: b.built });
+    this.syncBuilding(b);
+  }
+  makeScaffold(w, h) {
+    const g = new THREE.Group(), wood = new THREE.MeshStandardMaterial({ color: lin('#9a6a3a'), roughness: 0.9 });
+    const half = w / 2 - 0.1;
+    for (const [x, z] of [[-half, -half], [half, -half], [-half, half], [half, half]]) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.1, h, 0.1), wood); p.position.set(x, h / 2, z); g.add(p); }
+    for (let k = 1; k <= 3; k++) for (const [x, z, rw, rd] of [[0, -half, w - 0.2, 0.07], [0, half, w - 0.2, 0.07], [-half, 0, 0.07, w - 0.2], [half, 0, 0.07, w - 0.2]]) { const r = new THREE.Mesh(new THREE.BoxGeometry(rw, 0.07, rd), wood); r.position.set(x, h * k / 3.2, z); g.add(r); }
+    const pad = new THREE.Mesh(new THREE.BoxGeometry(w, 0.08, w), new THREE.MeshStandardMaterial({ color: lin('#b89a6a'), roughness: 1 }));
+    pad.position.y = 0.04; pad.receiveShadow = true; g.add(pad);
+    g.traverse(o => { if (o.isMesh) o.castShadow = true; });
+    return g;
+  }
+  syncBuilding(b) {
+    const v = this.blds.get(b.id);
+    if (!v) return;
+    const p = b.built ? 1 : b.progress;
+    v.art.holder.scale.y = v.art.holder.scale.x * Math.max(0.06, Math.pow(p, 0.8));
+    v.scaffold.visible = !b.built;
+  }
+  removeEntity(ev) {
+    if (ev.cat === 'res') { this.res.remove(ev.id); return; }
+    if (ev.cat === 'bld') {
+      const v = this.blds.get(ev.id);
+      if (v) { this.scene.remove(v.art.group); this.blds.delete(ev.id); this.dust(v.art.group.position, 14, 2.5); }
+    }
+  }
+
+  arrow(from, to) {
+    const m = new THREE.Mesh(this.arrowGeo, this.arrowMat);
+    this.scene.add(m);
+    this.fx.push({ m, t: 0, dur: 0.35, from, to, kind: 'arrow' });
+  }
+  dust(pos, n = 6, spread = 0.6) {
+    for (let i = 0; i < n; i++) {
+      const m = new THREE.Mesh(new THREE.SphereGeometry(0.25 + Math.random() * 0.25, 6, 4), this.dustMat.clone());
+      m.position.set(pos.x + (Math.random() - 0.5) * spread, 0.3, pos.z + (Math.random() - 0.5) * spread);
+      this.scene.add(m);
+      this.fx.push({ m, t: 0, dur: 1 + Math.random() * 0.6, kind: 'dust', vy: 0.6 + Math.random() * 0.8 });
+    }
+  }
+
+  setGhost(type, x, y, ok, team) {
+    if (!type) { if (this.ghost) { this.scene.remove(this.ghost.g); this.ghost = null; } return; }
+    const size = CONFIG.buildings[type].size;
+    if (!this.ghost || this.ghost.type !== type) {
+      this.setGhost(null);
+      const g = new THREE.Group();
+      const art = makeBuilding(this.world.teams[team].key, type);
+      art.group.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = 0.55; o.castShadow = false; } });
+      g.add(art.group);
+      const tiles = new THREE.Mesh(new THREE.PlaneGeometry(size * TILE, size * TILE).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x40ff80, transparent: true, opacity: 0.35, depthWrite: false }));
+      tiles.position.y = 0.06; g.add(tiles);
+      this.scene.add(g);
+      this.ghost = { g, type, tiles, art };
+    }
+    const [wx, wz] = this.toWorld(x + size / 2, y + size / 2);
+    this.ghost.g.position.set(wx, 0, wz);
+    this.ghost.tiles.material.color.set(ok ? 0x40ff80 : 0xff4040);
+  }
+
+  render(alpha, time, dt, rings) {
+    this.waterTex.offset.set(time * 0.02, time * 0.01);
+    for (const v of this.blds.values()) for (const f of v.art.fx) f(time, dt);
+    if (this.ghost) for (const f of this.ghost.art.fx) f(time, dt);
+    this.units.update(this.world, alpha, time, (x, y) => this.toWorld(x, y));
+    this.units.rings(rings);
+    this.fx = this.fx.filter(e => {
+      e.t += dt;
+      const k = e.t / e.dur;
+      if (k >= 1) { this.scene.remove(e.m); return false; }
+      if (e.kind === 'arrow') {
+        const x = e.from[0] + (e.to[0] - e.from[0]) * k, z = e.from[1] + (e.to[1] - e.from[1]) * k;
+        e.m.position.set(x, 0.9 + Math.sin(k * Math.PI) * 0.8, z);
+        e.m.rotation.set(0, -Math.atan2(e.to[1] - e.from[1], e.to[0] - e.from[0]), (0.5 - k) * 1.2);
+      } else { e.m.position.y += e.vy * dt; e.m.scale.setScalar(1 + k * 1.5); e.m.material.opacity = 0.6 * (1 - k); }
+      return true;
+    });
+    this.renderer.render(this.scene, this.cam);
+  }
+}

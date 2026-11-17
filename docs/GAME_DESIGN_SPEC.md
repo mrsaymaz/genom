@@ -18,8 +18,8 @@ A browser-playable, touch-first real-time strategy game for Mr. Saymaz's Grades 
 - **Look**: 2.5D isometric (three.js), inspired by Red Alert 2 for readability and by Warcraft 3, Age of Empires 2/3, Rise of Nations and Rise of Legends for aesthetics. Bright and readable at phone size.
 - **Platform**: web browser, installable as a PWA. Landscape. No accounts and no install needed to play.
 - **Match**: 1v1 against an AI rival, three arenas, each about 15–20 minutes.
-- **Core loop**: gather Food, Lumber and Gold; build and upgrade; complete English tasks to upgrade buildings and reach the next age; build an army; destroy the rival's Town Center.
-- **English is the key, never a wall**: every upgrade and age-up needs English, but wrong answers only cost time, never units, and nobody gets stuck (same rule as SnowPax).
+- **Core loop**: gather Food, Lumber and Gold; build, upgrade and train; reach the next age; build an army; destroy the rival's Town Center.
+- **Wait or do it now**: every timer (construction, upgrades, training, research, age-up) can be waited out or finished instantly with an English task. English is how a student out-paces the rival, never a wall: wrong answers only cost time, and nobody gets stuck (same rule as SnowPax).
 
 ## 2. Players, teams and nations
 
@@ -65,7 +65,7 @@ Four ages: **Dark, Mythic, Arcane, Celestial** (confirmed). Ages are reached **d
 - **Quick start**: Arenas 2 and 3 open with the Town Center and a few core buildings already standing in the starting age, so the early game is not replayed.
 - **Age-up timing**: around minute 6–9 of the arena, leaving time to use the new age before the finale.
 - **The rival ages up too**, on a timer set by its difficulty, so the race to the next age is part of the fight.
-- **Age-up requirements**: resources, one key building (Sanctum for Arcane, Workshop for Celestial) and the **Trial of the Age** language station at the Town Center (`LANGUAGE_TASKS.md`).
+- **Age-up requirements**: resources and one key building (Sanctum for Arcane, Workshop for Celestial). Then wait the age-up timer, or finish it instantly with the **Age Ceremony** at the Town Center (`LANGUAGE_TASKS.md`).
 - **The age-up moment**: every building transforms into its next-age form, one by one, with the nation's elemental choreography (as solMaxima's evolutions: air ribbons, rising embers, growing vines, water arches). Under 8 seconds, skippable. The signature creature takes its next form at the same time.
 
 ## 5. Visual design languages
@@ -80,6 +80,7 @@ Each nation owns its shapes and materials, and **each age changes the structural
 | Slytherin | Earth and sod mounds | Living wood: trees, woven branches | Megaliths and emerald: dolmens, obelisks, crystal hearts | Star blossoms: giant glowing buds, lilies, seed pods |
 
 Rules:
+- **Icons: no emoji anywhere in the game** (HUD, buttons, menus, main screen, notifications, unit and building cards) **except inside language tasks**, where the bank's licensed Fluent Emoji pictures are the picture prompts. Every other icon is drawn in the game's own style (resources, the Do it now lightning bolt, abilities, team emblems).
 - **Motif ownership**: hives and sails are Hufflepuff's; conches, glass and water Ravenclaw's; basalt, magma and lions Gryffindor's; trees and trilithons Slytherin's. **No trees outside Slytherin.**
 - Every building must read by **silhouette alone** (each concept page has a Silhouette view).
 - The concept pages in `docs/concepts/` are the reference. The ladders of names and descriptions are in `BUILDING_ROSTER.md` and `TOWN_CENTERS.md`.
@@ -90,19 +91,19 @@ Rules:
 
 Eight roles, the same for every nation (full table in `BUILDING_ROSTER.md`):
 
-| Role | Footprint | Unlocked | Upgrade language task (`LANGUAGE_TASKS.md`) |
+| Role | Footprint | Unlocked | Do it now task (`LANGUAGE_TASKS.md`) |
 |---|---|---|---|
-| Town Center | 4×4 | start | Trial of the Age (mixed) |
-| House | 2×2 | Dark | Matching |
-| Farm | 3×3 | Dark | Sorting |
-| Storehouse | 2×2 | Dark | Spelling |
-| Barracks | 3×3 | Dark | Sentence building |
-| Watchtower | 2×2 | Dark | Listening |
-| Beast Pen | 3×3 | Mythic | Clue → word |
-| Sanctum | 3×3 | Mythic | Reading |
-| Workshop | 3×3 | Arcane | Grammar repair |
+| Town Center | 4×4 | start | Age Ceremony (mixed) |
+| House | 2×2 | Dark | Move-in day: matching |
+| Farm | 3×3 | Dark | Harvest: sorting |
+| Storehouse | 2×2 | Dark | Stock the store: spelling |
+| Barracks | 3×3 | Dark | Drill: sentence building |
+| Watchtower | 2×2 | Dark | Signal fires: listening |
+| Beast Pen | 3×3 | Mythic | Feed the creature: clue → word |
+| Sanctum | 3×3 | Mythic | Research: reading |
+| Workshop | 3×3 | Arcane | Blueprint: grammar repair |
 
-- A building is upgraded to the current age by completing its station. Footprints never change with the age.
+- A building is constructed or upgraded to the current age by waiting its timer, or instantly by completing its task. Footprints never change with the age.
 - HP rises 20% with each rebuild.
 - Nation twists: Hufflepuff production and dropsite buildings can pack up and relocate; Ravenclaw buildings slowly heal nearby units and its Farms and Storehouses gather faster next to water; Gryffindor buildings go up 20% faster with 15% less HP; Slytherin buildings have 25% more HP and regenerate but take 20% longer to build.
 
@@ -123,7 +124,8 @@ All content is data, not code: one JSON entry per building or unit, in the natio
   "cost": { "food": 0, "lumber": 150, "gold": 0 },
   "build_time_s": 45,
   "hp": 1440,
-  "upgrade_task": "build",
+  "rush_task": "build",
+  "upgrade_time_s": 90,
   "production_queue": ["gryffindor_mythic_spear"],
   "art_ref": "gFireBarracks",
   "description": "One line, player-facing."
@@ -153,7 +155,7 @@ Three arenas, climbing in difficulty, each self-contained. **[OPEN]** Settings f
 - Difficulty comes from AI behaviour and skill, never resource cheats.
 - AI skill compensates for matchup edges.
 - The setup screen shows only a general description ("tougher rival"), never odds.
-- **Unlocking**: the next arena opens at 80% first-try accuracy on the language tasks (the SnowPax rule).
+- **Unlocking**: the next arena opens with a win and **60% first-try accuracy** on the English tasks, counted only if the student completed at least 8 tasks in the arena (`LANGUAGE_TASKS.md`).
 - **Pace**: Relaxed (no task timers, slower rival) or Challenge (task timers, full-speed rival), as in SnowPax.
 
 ## 8. Main screen
@@ -168,7 +170,7 @@ One panel that fits a phone without scrolling (as solMaxima's opening screen):
 ## 9. English League
 
 - Wins are claimed as Ulti points through the League client (game ID to be assigned; see SnowPax `docs/ENGLISH-LEAGUE.md`). The League decides the points.
-- Win rule (proposed, from SnowPax): 60% of tasks right first time on Relaxed, or 2+ stars on Challenge.
+- Win rule (proposed): a win plus 60% of tasks right first time (at least 8 tasks) on Relaxed, or 2+ stars on Challenge. Stars: 1 for the win, 2 for 60%+ first-try, 3 for 80%+.
 - `public/config.js` holds the League address; an empty value gives a practice-only copy with no requests.
 - No ads, no accounts, no tracking beyond the League claim. Progress is saved per device.
 
@@ -176,7 +178,8 @@ One panel that fits a phone without scrolling (as solMaxima's opening screen):
 
 - Headless simulation of every nation against every other; target 45–55% for each pairing. Re-run after every content change.
 - Match length: 15–20 minutes median per arena; track the median and 90th percentile.
-- Language time budget: about 35–40% of an arena spent at stations; check per arena.
+- Language time budget: about 35–40% of an arena spent at stations for a student who rushes most jobs; check per arena.
+- Tempo: waits about twice a task's length, and the rival tuned around a student who does about half the tasks; check that waiting for everything is still winnable on Relaxed Arena 1.
 
 ## 11. Telemetry (local, per match)
 
@@ -190,16 +193,20 @@ One panel that fits a phone without scrolling (as solMaxima's opening screen):
 - Two-finger drag to pan; pinch to zoom.
 - Command card and production panel: large icons, at least 44 px.
 - Placement: a lift-and-place ghost above the finger.
-- Stations: the fight slows to a quarter speed while a station is open (as SnowPax).
+- Stations: the match pauses on Relaxed and runs at a quarter speed on Challenge while a station is open **[proposed]**. Pending jobs wait on a work-order rail; nothing pops up.
 
 ## 13. Open decisions
 
 1. ~~Nation names~~: kept for the prototype; **rename before any public release**.
 2. ~~Age names~~: Dark / Mythic / Arcane / Celestial.
 3. ~~Team choice~~: always the student's League team.
-4. ~~Carry-over~~: none except the starting age.
-5. Arena settings and map themes.
-6. League game ID and the exact win rule.
-7. Rival draw weights (section 7) or uniform draws with AI skill only.
-8. Units roster per nation and age (next content task).
-9. Scope for v1: suggested all four nations, the tutorial and Arena 1 first.
+4. ~~Icons~~: no emoji outside language tasks; all other icons are drawn.
+5. ~~Carry-over~~: none except the starting age.
+6. ~~Unlock threshold~~: 60% first-try accuracy, minimum 8 tasks.
+7. ~~Language tasks~~: optional per job (wait or do it now), as in `LANGUAGE_TASKS.md`.
+8. Protected time: full pause on Relaxed and a quarter speed on Challenge (proposed).
+9. Arena settings and map themes.
+10. League game ID and the exact win rule.
+11. Rival draw weights (section 7) or uniform draws with AI skill only.
+12. Units roster per nation and age (next content task).
+13. Scope for v1: suggested all four nations, the tutorial and Arena 1 first.

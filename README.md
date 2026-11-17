@@ -2,7 +2,7 @@
 
 A touch-first, browser-based real-time strategy game for Grades 5–8 English students (CEFR A1–A2+), part of Mr. Saymaz's English League alongside SnowPax, solMaxima, Languini and Wordramp.
 
-Students lead their own League team (Hufflepuff, Ravenclaw, Gryffindor or Slytherin) through four ages (**Dark, Mythic, Arcane and Celestial**) across three arenas. Every building upgrade and every age-up is earned with English, at 3D task stations built on the SnowPax language bank.
+Students lead their own League team (Hufflepuff, Ravenclaw, Gryffindor or Slytherin) through four ages (**Dark, Mythic, Arcane and Celestial**) across three arenas. Every timer in the game (construction, upgrades, training, research and the age-up) can be waited out or finished instantly with English, at 3D task stations built on the SnowPax language bank.
 
 **Status:** design and concept art. No game code yet.
 
@@ -11,7 +11,7 @@ Students lead their own League team (Hufflepuff, Ravenclaw, Gryffindor or Slythe
 | Path | Contents |
 |---|---|
 | `docs/GAME_DESIGN_SPEC.md` | The design spec: nations, ages and arenas, design languages, content rules, main screen, League, balance |
-| `docs/LANGUAGE_TASKS.md` | How English drives progress: the Trial of the Age, building stations, battlefield stations, difficulty and item selection |
+| `docs/LANGUAGE_TASKS.md` | How English drives progress: wait or do it now, the jobs and their task gestures, scoring (60% rule), difficulty and item selection |
 | `docs/BUILDING_ROSTER.md` | Every building per nation and age, with base stats (generated from the concept pages) |
 | `docs/TOWN_CENTERS.md` | Every Town Center per nation and age, with abilities |
 | `docs/concepts/` | The approved 3D concept pages. Open any of them in a browser; each has New/Previous and Colour/Silhouette views |

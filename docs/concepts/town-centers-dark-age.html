@@ -1,0 +1,1553 @@
+<title>Dark Age Town Centers</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: RA2-style command panel. A header strip, then a 2x2 grid of bevelled building cards, each a live 2.5D diorama over its stats. Single dark look by design. */
+:root {
+  color-scheme: dark;
+  --bg: #12161b;
+  --panel: #1b2128;
+  --panel-2: #222a33;
+  --line: #303a45;
+  --fg: #e7eaee;
+  --muted: #9aa5b1;
+  --brass: #d6a54e;
+  --air: #e8bf45;
+  --water: #5a9be0;
+  --fire: #e2583d;
+  --earth: #4fb176;
+  --display: "Saira Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-block: 32px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 28px;
+}
+.top {
+  display: grid;
+  gap: 14px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 22px;
+}
+.top-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.kicker {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(34px, 6vw, 54px);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.lead { margin: 0; max-width: 62ch; color: var(--muted); }
+.roles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.roles .label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-right: 4px;
+}
+.chip {
+  font-size: 13px;
+  padding: 4px 10px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+button {
+  font: 500 13px/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  padding: 10px 14px;
+  min-height: 40px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+button:hover { border-color: var(--brass); }
+button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+@media (min-width: 780px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.tc {
+  --cut: 16px;
+  background: var(--panel);
+  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+  display: grid;
+  gap: 16px;
+  padding: 18px 18px 22px;
+  min-width: 0;
+}
+.tc-head { display: flex; align-items: center; gap: 12px; }
+.sigil {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  background: var(--c);
+  transform: rotate(45deg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 25%, transparent);
+}
+.tc-head .names { flex: 1; min-width: 0; }
+.eyebrow {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c);
+}
+h2 {
+  margin: 2px 0 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.age {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  padding: 3px 8px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.art {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  max-width: 100%;
+  background:
+    radial-gradient(ellipse 75% 65% at 50% 58%, color-mix(in srgb, var(--c) 18%, #2b3542), transparent 75%),
+    linear-gradient(180deg, #18202a, #10151b);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.art canvas { display: block; width: 100%; height: 100%; }
+.art .fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+.desc { margin: 0; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
+.clbl { font: 400 11px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-right: 8px; }
+.seg { display: inline-flex; }
+.seg button { border-radius: 0; min-height: 36px; padding: 8px 12px; font-size: 12px; }
+.seg button + button { margin-left: -1px; }
+.seg button:first-child { border-radius: 3px 0 0 3px; }
+.seg button:last-child { border-radius: 0 3px 3px 0; }
+.seg button[aria-pressed="true"] { background: color-mix(in srgb, var(--brass) 22%, var(--panel-2)); border-color: var(--brass); position: relative; }
+.art.sil { background: #d9dee4; }
+.lang-tag { font: 400 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+.stats div { background: var(--panel-2); padding: 8px 10px; min-width: 0; }
+.stats dt {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.stats dd {
+  margin: 2px 0 0;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.stats dd.up { color: var(--earth); }
+.stats dd.down { color: var(--fire); }
+.twist {
+  background: color-mix(in srgb, var(--c) 9%, var(--panel-2));
+  border: 1px solid color-mix(in srgb, var(--c) 35%, var(--line));
+  padding: 10px 12px;
+  border-radius: 3px;
+}
+.twist h3 {
+  margin: 0 0 2px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c);
+}
+.twist p { margin: 0; }
+.next { margin: 0; color: var(--muted); font-size: 14px; }
+.next strong { color: var(--fg); font-weight: 600; }
+.notes {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  list-style: none;
+}
+@media (max-width: 420px) {
+  .stats dd { font-size: 14px; }
+  h2 { font-size: 26px; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <p class="kicker">Concept renders · Age 1 of 4</p>
+    <div class="top-row">
+      <h1>Dark Age Town Centers</h1>
+      <button id="motion" type="button" aria-pressed="false">Pause animation</button>
+    </div>
+    <p class="lead">Every nation starts the match with a Town Center. All four share the same 4×4 footprint and the same job. Each is now built in its nation's design language, so they read apart by shape alone.</p>
+    <div class="controls">
+      <div><span class="clbl">Version</span><span class="seg" role="group" aria-label="Version"><button type="button" data-ver="new" aria-pressed="true">New</button><button type="button" data-ver="old" aria-pressed="false">Previous</button></span></div>
+      <div><span class="clbl">View</span><span class="seg" role="group" aria-label="View"><button type="button" data-view="color" aria-pressed="true">Colour</button><button type="button" data-view="sil" aria-pressed="false">Silhouette</button></span></div>
+    </div>
+    <ul class="roles">
+      <li class="label">Shared role</li>
+      <li class="chip">Trains Workers</li>
+      <li class="chip">Accepts Food, Lumber, Gold</li>
+      <li class="chip">Ages up here</li>
+      <li class="chip">Trading</li>
+      <li class="chip">Destroy it to win</li>
+    </ul>
+  </header>
+
+  <main class="grid">
+    <article class="tc" style="--c: var(--air)">
+      <header class="tc-head">
+        <span class="sigil" aria-hidden="true"></span>
+        <div class="names"><p class="eyebrow">Hufflepuff · Air · <span class="lang-tag">Hive and Sail</span></p><h2>Sky Hall</h2></div>
+        <span class="age">Dark Age</span>
+      </header>
+      <div class="art" data-scene="air" role="img" aria-label="Sky Hall: a woven straw hive on a stilted hexagonal deck with amber hex windows, smaller hives, a wind rose and a striped sail on a mast"><p class="fallback">Loading 3D preview…</p></div>
+      <p class="desc">A woven straw hive raised on a stilted hexagonal deck, with hex windows lit amber, a wind rose turning on top, smaller hives around it and a striped sail on a mast. Light enough to pack up and carry.</p>
+      <dl class="stats">
+        <div><dt>HP</dt><dd>2,400</dd></div>
+        <div><dt>Worker</dt><dd>25 s</dd></div>
+        <div><dt>Footprint</dt><dd>4×4</dd></div>
+      </dl>
+      <div class="twist"><h3>Nation twist</h3><p>Packs up and relocates to follow resources. While moving it can't train or accept resources, and it's exposed.</p></div>
+      <p class="next"><strong>Mythic Age:</strong> the hive grows into a cluster with sails and kites, and a honey-crystal floats above it.</p>
+    </article>
+
+    <article class="tc" style="--c: var(--water)">
+      <header class="tc-head">
+        <span class="sigil" aria-hidden="true"></span>
+        <div class="names"><p class="eyebrow">Ravenclaw · Water · <span class="lang-tag">Shell and Glass</span></p><h2>Tide Hall</h2></div>
+        <span class="age">Dark Age</span>
+      </header>
+      <div class="art" data-scene="water" role="img" aria-label="Tide Hall: a driftwood hut under a conch-shell roof with a shell-mouth door and glass portholes, a small spiral spire, nets, a pier and a boat by the canal"><p class="fallback">Loading 3D preview…</p></div>
+      <p class="desc">A round driftwood hut under a great conch-shell roof, with a glowing shell-mouth door and bronze-ringed glass portholes. A small spiral spire, drying nets, a pier and a boat line the water.</p>
+      <dl class="stats">
+        <div><dt>HP</dt><dd>2,400</dd></div>
+        <div><dt>Worker</dt><dd>25 s</dd></div>
+        <div><dt>Footprint</dt><dd>4×4</dd></div>
+      </dl>
+      <div class="twist"><h3>Nation twist</h3><p>Slowly heals friendly units nearby. Gathers faster when placed next to water.</p></div>
+      <p class="next"><strong>Mythic Age:</strong> the hut becomes a great conch hall with glass bubble windows and curling wave walls.</p>
+    </article>
+
+    <article class="tc" style="--c: var(--fire)">
+      <header class="tc-head">
+        <span class="sigil" aria-hidden="true"></span>
+        <div class="names"><p class="eyebrow">Gryffindor · Fire · <span class="lang-tag">Forged and Volcanic</span></p><h2>Ember Keep</h2></div>
+        <span class="age">Dark Age</span>
+      </header>
+      <div class="art" data-scene="fire" role="img" aria-label="Ember Keep: a stepped basalt forge-hut ringed with iron spikes and crowned with fire, a gold lion head over a glowing gate, a burning angular chimney, a fire pit and a stake palisade"><p class="fallback">Loading 3D preview…</p></div>
+      <p class="desc">A stepped basalt forge-hut ringed with iron spikes and crowned with fire, with a gold lion head over a glowing gate, an angular chimney that always burns, a fire pit that never goes out and a stake palisade.</p>
+      <dl class="stats">
+        <div><dt>HP</dt><dd class="down">2,000</dd></div>
+        <div><dt>Worker</dt><dd class="up">20 s</dd></div>
+        <div><dt>Footprint</dt><dd>4×4</dd></div>
+      </dl>
+      <div class="twist"><h3>Nation twist</h3><p>Trains workers faster than any other nation, but has the lowest HP of the four.</p></div>
+      <p class="next"><strong>Mythic Age:</strong> the huts become a stepped basalt forge keep with a lion gate and a crown of flame.</p>
+    </article>
+
+    <article class="tc" style="--c: var(--earth)">
+      <header class="tc-head">
+        <span class="sigil" aria-hidden="true"></span>
+        <div class="names"><p class="eyebrow">Slytherin · Earth · <span class="lang-tag">Grown and Rooted</span></p><h2>Root Hall</h2></div>
+        <span class="age">Dark Age</span>
+      </header>
+      <div class="art" data-scene="earth" role="img" aria-label="Root Hall: a moss-covered earth mound grown into the roots of a great tree, with a stone doorway glowing green, round windows and two standing stones"><p class="fallback">Loading 3D preview…</p></div>
+      <p class="desc">An earthen hall grown into the roots of an old tree. A stone doorway glows green from within, guarded by two rune-cut standing stones.</p>
+      <dl class="stats">
+        <div><dt>HP</dt><dd class="up">3,000</dd></div>
+        <div><dt>Worker</dt><dd class="down">28 s</dd></div>
+        <div><dt>Footprint</dt><dd>4×4</dd></div>
+      </dl>
+      <div class="twist"><h3>Nation twist</h3><p>Highest HP and regenerates when not under attack. Trains workers a little slower.</p></div>
+      <p class="next"><strong>Mythic Age:</strong> the canopy grows over the whole hall, and the stones become a ring.</p>
+    </article>
+  </main>
+
+  <ul class="notes">
+    <li>Stats are example values for tuning, not final balance. Green is better than the 2,400 HP / 25 s baseline, red is worse.</li>
+    <li>Built in the nation design languages: Hive and Sail, Shell and Glass, Forged and Volcanic, and Grown and Rooted. Slytherin's Root Hall already fit its language, so it is unchanged. Switch to Previous to see the old designs.</li>
+    <li>All four use the same camera and scale, so the footprints compare directly.</li>
+  </ul>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  var arts = document.querySelectorAll(".art[data-scene]");
+  function fail(msg) { arts.forEach(function (a) { var p = a.querySelector(".fallback"); if (p) p.textContent = msg; }); }
+  if (!window.THREE) { fail("The 3D preview couldn't load. Check your connection and reload."); return; }
+  var T3 = THREE, PI = Math.PI;
+
+  /* ---------- deterministic randomness ---------- */
+  function rng(seed) {
+    return function () {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function hashStr(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function n3(x, y, z) {
+    var s = Math.sin(Math.round(x * 97) * 12.9898 + Math.round(y * 97) * 78.233 + Math.round(z * 97) * 37.719) * 43758.5453;
+    return s - Math.floor(s);
+  }
+  function rgb(hex) { var n = parseInt(hex.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+  function jit(hex, r, amt) {
+    var c = rgb(hex), k = 1 + (r() - 0.5) * amt;
+    return "rgb(" + c.map(function (v) { return Math.max(0, Math.min(255, Math.round(v * k))); }).join(",") + ")";
+  }
+  function rgba(hex, a) { var c = rgb(hex); return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + a + ")"; }
+
+  /* ---------- painted textures ---------- */
+  function speckle(g, w, h, r, n, cols, a, s) {
+    for (var i = 0; i < n; i++) {
+      g.fillStyle = rgba(cols[(r() * cols.length) | 0], a * (0.4 + r() * 0.6));
+      var z = s * (0.5 + r());
+      g.fillRect(r() * w, r() * h, z, z);
+    }
+  }
+  function blotch(g, w, h, r, n, cols, a, rmin, rmax) {
+    for (var i = 0; i < n; i++) {
+      var x = r() * w, y = r() * h, rad = rmin + r() * (rmax - rmin), col = cols[(r() * cols.length) | 0];
+      for (var ox = -1; ox <= 1; ox++) for (var oy = -1; oy <= 1; oy++) {
+        var gr = g.createRadialGradient(x + ox * w, y + oy * h, 0, x + ox * w, y + oy * h, rad);
+        gr.addColorStop(0, rgba(col, a)); gr.addColorStop(1, rgba(col, 0));
+        g.fillStyle = gr; g.fillRect(x + ox * w - rad, y + oy * h - rad, rad * 2, rad * 2);
+      }
+    }
+  }
+  function grass(base, dark, light) {
+    return function (g, w, h, r) {
+      g.fillStyle = base; g.fillRect(0, 0, w, h);
+      blotch(g, w, h, r, 26, [dark, light], 0.32, 30, 90);
+      g.lineWidth = 1.3;
+      for (var i = 0; i < 9000; i++) {
+        var x = r() * w, y = r() * h, l = 2 + r() * 5, a = -PI / 2 + (r() - 0.5) * 1.1;
+        g.strokeStyle = rgba([dark, light, base, light][(r() * 4) | 0], 0.55);
+        g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke();
+      }
+      speckle(g, w, h, r, 120, ["#f3e6a0", "#ffffff"], 0.5, 2);
+    };
+  }
+  function moss(base, dark, light) {
+    return function (g, w, h, r) {
+      g.fillStyle = base; g.fillRect(0, 0, w, h);
+      blotch(g, w, h, r, 40, [dark, light, dark], 0.38, 18, 60);
+      for (var i = 0; i < 2600; i++) {
+        g.fillStyle = rgba([dark, light, base][(r() * 3) | 0], 0.5);
+        g.beginPath(); g.arc(r() * w, r() * h, 1 + r() * 2.5, 0, 2 * PI); g.fill();
+      }
+      speckle(g, w, h, r, 60, ["#d9f2c4", "#b9e8ff"], 0.6, 2);
+    };
+  }
+  function dirt(base) {
+    return function (g, w, h, r) {
+      g.fillStyle = base; g.fillRect(0, 0, w, h);
+      blotch(g, w, h, r, 20, ["#6e5638", "#c9ad7c"], 0.3, 20, 70);
+      speckle(g, w, h, r, 4000, ["#5a452c", "#d8c095", "#8a6e48"], 0.5, 2);
+      for (var i = 0; i < 70; i++) {
+        var x = r() * w, y = r() * h, s = 2 + r() * 4;
+        g.fillStyle = jit("#8f8578", r, 0.4); g.beginPath(); g.ellipse(x, y, s, s * 0.7, r() * PI, 0, 2 * PI); g.fill();
+        g.fillStyle = "rgba(255,255,255,.18)"; g.fillRect(x - s * 0.4, y - s * 0.5, s * 0.6, 1);
+      }
+    };
+  }
+  function softEdge(draw) {
+    return function (g, w, h, r) {
+      draw(g, w, h, r);
+      g.globalCompositeOperation = "destination-in";
+      var gr = g.createRadialGradient(w / 2, h / 2, w * 0.18, w / 2, h / 2, w * 0.5);
+      gr.addColorStop(0, "rgba(0,0,0,1)"); gr.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      g.globalCompositeOperation = "source-over";
+    };
+  }
+  function strata(lip) {
+    return function (g, w, h, r) {
+      var y = 0, cols = ["#7a5636", "#6a4a2e", "#83603d", "#5c4129", "#73533a"];
+      g.fillStyle = "#5e432a"; g.fillRect(0, 0, w, h);
+      y = 16;
+      while (y < h) {
+        var bh = 18 + r() * 30, col = cols[(r() * cols.length) | 0];
+        g.fillStyle = col; g.beginPath(); g.moveTo(0, y);
+        for (var x = 0; x <= w; x += 32) g.lineTo(x, y + Math.sin(x * 0.03 + y) * 3 + (r() - 0.5) * 4);
+        g.lineTo(w, h); g.lineTo(0, h); g.closePath(); g.fill();
+        y += bh;
+      }
+      speckle(g, w, h, r, 2500, ["#3e2b1a", "#a3825a"], 0.45, 2);
+      for (var i = 0; i < 45; i++) {
+        var rx = r() * w, ry = 30 + r() * (h - 40), s = 4 + r() * 9;
+        g.fillStyle = jit("#8c857a", r, 0.35); g.beginPath(); g.ellipse(rx, ry, s * 1.3, s * 0.8, (r() - 0.5) * 0.6, 0, 2 * PI); g.fill();
+        g.fillStyle = "rgba(255,255,255,.2)"; g.fillRect(rx - s * 0.6, ry - s * 0.6, s, 2);
+        g.fillStyle = "rgba(0,0,0,.25)"; g.fillRect(rx - s * 0.6, ry + s * 0.5, s * 1.2, 2);
+      }
+      var gr = g.createLinearGradient(0, 0, 0, h);
+      gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,.45)");
+      g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      g.fillStyle = lip; g.fillRect(0, 0, w, 14);
+      for (var k = 0; k < 260; k++) {
+        var gx = r() * w; g.strokeStyle = rgba(lip, 0.9); g.lineWidth = 2;
+        g.beginPath(); g.moveTo(gx, 10); g.lineTo(gx + (r() - 0.5) * 4, 14 + r() * 10); g.stroke();
+      }
+    };
+  }
+  function stone(base, mortar, rows, cols) {
+    return function (g, w, h, r) {
+      g.fillStyle = mortar; g.fillRect(0, 0, w, h);
+      var bh = h / rows;
+      for (var row = 0; row < rows; row++) {
+        var y = row * bh, x = -(r() * w / cols);
+        while (x < w) {
+          var bw = (w / cols) * (0.65 + r() * 0.7);
+          for (var o = 0; o <= 1; o++) {
+            var xx = x + (o ? w : 0); if (o && x + bw < w) continue;
+            if (o) xx = x - w;
+            g.fillStyle = jit(base, r, 0.28);
+            g.fillRect(xx + 2, y + 2, bw - 4, bh - 4);
+            g.fillStyle = "rgba(255,255,255,.16)"; g.fillRect(xx + 2, y + 2, bw - 4, 3);
+            g.fillStyle = "rgba(255,255,255,.08)"; g.fillRect(xx + 2, y + 2, 3, bh - 4);
+            g.fillStyle = "rgba(0,0,0,.24)"; g.fillRect(xx + 2, y + bh - 6, bw - 4, 4);
+          }
+          x += bw;
+        }
+      }
+      speckle(g, w, h, r, 3000, ["#000000", "#ffffff"], 0.12, 2);
+      blotch(g, w, h, r, 12, ["#3a4a2a", "#000000"], 0.12, 20, 50);
+    };
+  }
+  function planks(base, n) {
+    return function (g, w, h, r) {
+      var bw = w / n;
+      for (var i = 0; i < n; i++) {
+        var x = i * bw; g.fillStyle = jit(base, r, 0.22); g.fillRect(x, 0, bw, h);
+        g.lineWidth = 1;
+        for (var k = 0; k < 6; k++) {
+          var gx = x + 3 + r() * (bw - 6), ph = r() * 6;
+          g.strokeStyle = "rgba(40,22,10," + (0.12 + r() * 0.18) + ")";
+          g.beginPath(); g.moveTo(gx, 0);
+          for (var y = 0; y <= h; y += 16) g.lineTo(gx + Math.sin(y * 0.05 + ph) * 1.6, y);
+          g.stroke();
+        }
+        if (r() < 0.5) { g.fillStyle = "rgba(40,22,10,.35)"; g.beginPath(); g.ellipse(x + bw * (0.3 + r() * 0.4), r() * h, 2.5, 4, 0, 0, 2 * PI); g.fill(); }
+        var seam = r() * h;
+        g.fillStyle = "rgba(0,0,0,.45)"; g.fillRect(x, seam, bw, 2);
+        g.fillStyle = "rgba(30,20,10,.8)"; g.fillRect(x + 3, seam - 6, 2, 2); g.fillRect(x + bw - 5, seam - 6, 2, 2);
+        g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x, 0, 2, h);
+        g.fillStyle = "rgba(255,255,255,.1)"; g.fillRect(x + 2, 0, 1, h);
+      }
+    };
+  }
+  function shingles(base, rows, cols) {
+    return function (g, w, h, r) {
+      g.fillStyle = jit(base, r, 0) ; g.fillRect(0, 0, w, h);
+      g.fillStyle = "rgba(0,0,0,.5)"; g.fillRect(0, 0, w, h);
+      var th = h / rows, tw = w / cols;
+      for (var row = 0; row < rows; row++) {
+        var off = row % 2 ? tw / 2 : 0;
+        for (var c = -1; c <= cols; c++) {
+          var x = c * tw + off + 1, y = row * th, ww = tw - 2, hh = th * 1.05, rad = ww * 0.32;
+          var col = jit(base, r, 0.26), gr = g.createLinearGradient(0, y, 0, y + hh);
+          gr.addColorStop(0, col); gr.addColorStop(1, "rgba(0,0,0,.35)");
+          g.beginPath(); g.moveTo(x, y); g.lineTo(x + ww, y); g.lineTo(x + ww, y + hh - rad);
+          g.quadraticCurveTo(x + ww, y + hh, x + ww - rad, y + hh); g.lineTo(x + rad, y + hh);
+          g.quadraticCurveTo(x, y + hh, x, y + hh - rad); g.closePath();
+          g.fillStyle = col; g.fill(); g.fillStyle = gr; g.fill();
+          g.fillStyle = "rgba(255,255,255,.14)"; g.fillRect(x + 2, y + 1, ww - 4, 2);
+        }
+      }
+      speckle(g, w, h, r, 1500, ["#000000", "#ffffff"], 0.1, 2);
+      blotch(g, w, h, r, 10, ["#4a5a3a", "#d8d0b0"], 0.12, 20, 50);
+    };
+  }
+  function cloth(base, stripe, edge) {
+    return function (g, w, h, r) {
+      g.fillStyle = base; g.fillRect(0, 0, w, h);
+      for (var y = 0; y < h; y += 2) { g.fillStyle = "rgba(0,0,0," + (0.02 + r() * 0.04) + ")"; g.fillRect(0, y, w, 1); }
+      for (var x = 0; x < w; x += 2) { g.fillStyle = "rgba(255,255,255," + (r() * 0.04) + ")"; g.fillRect(x, 0, 1, h); }
+      [[0.18, 0.12], [0.62, 0.12]].forEach(function (b) {
+        g.fillStyle = stripe; g.fillRect(0, b[0] * h, w, b[1] * h);
+        g.fillStyle = edge; g.fillRect(0, b[0] * h - 3, w, 3); g.fillRect(0, (b[0] + b[1]) * h, w, 3);
+      });
+      blotch(g, w, h, r, 14, ["#7a6a48", "#ffffff"], 0.1, 20, 60);
+    };
+  }
+  function halfTimber(plaster, beam) {
+    return function (g, w, h, r) {
+      g.fillStyle = plaster; g.fillRect(0, 0, w, h);
+      blotch(g, w, h, r, 18, ["#b8a888", "#ffffff"], 0.22, 14, 50);
+      speckle(g, w, h, r, 1500, ["#8a7a5a"], 0.2, 2);
+      var bw = 15;
+      function bar(x1, y1, x2, y2) {
+        g.strokeStyle = beam; g.lineWidth = bw; g.lineCap = "butt";
+        g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+        g.strokeStyle = "rgba(255,255,255,.08)"; g.lineWidth = 2;
+        g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+      }
+      bar(bw / 2, 0, bw / 2, h); bar(0, bw / 2, w, bw / 2); bar(0, h - bw / 2, w, h - bw / 2); bar(0, h * 0.5, w, h * 0.5);
+      bar(bw, h * 0.5, w * 0.45, bw); bar(w, h * 0.5, w * 0.55, bw); bar(w * 0.5, h * 0.5, w * 0.5, h);
+      g.fillStyle = "rgba(0,0,0,.18)";
+      for (var i = 0; i < 6; i++) g.fillRect(0, h * 0.5 + 8 + i * 3, w, 1);
+    };
+  }
+  function bark(base) {
+    return function (g, w, h, r) {
+      g.fillStyle = base; g.fillRect(0, 0, w, h);
+      for (var i = 0; i < 70; i++) {
+        var x = r() * w, ph = r() * 9, lw = 1 + r() * 3.5;
+        g.strokeStyle = r() < 0.7 ? "rgba(25,15,8,.55)" : "rgba(255,230,190,.14)"; g.lineWidth = lw;
+        g.beginPath(); g.moveTo(x, 0);
+        for (var y = 0; y <= h; y += 12) g.lineTo(x + Math.sin(y * 0.04 + ph) * 4, y);
+        g.stroke();
+      }
+      blotch(g, w, h, r, 10, ["#4a6a3a"], 0.25, 15, 40);
+    };
+  }
+  function logEnd() {
+    return function (g, w, h, r) {
+      g.fillStyle = "#c79a62"; g.fillRect(0, 0, w, h);
+      for (var k = 1; k < 9; k++) { g.strokeStyle = "rgba(90,55,25,.45)"; g.lineWidth = 1.5; g.beginPath(); g.arc(w / 2, h / 2, k * w / 18, 0, 2 * PI); g.stroke(); }
+      g.strokeStyle = "#5a3c22"; g.lineWidth = 8; g.beginPath(); g.arc(w / 2, h / 2, w / 2 - 4, 0, 2 * PI); g.stroke();
+    };
+  }
+  function ripple() {
+    return function (g, w, h, r) {
+      g.fillStyle = "#2a78b6"; g.fillRect(0, 0, w, h);
+      blotch(g, w, h, r, 14, ["#1d5f96", "#3d93cf"], 0.5, 30, 80);
+      for (var i = 0; i < 80; i++) {
+        var x = r() * w, y = r() * h, l = 20 + r() * 40;
+        g.strokeStyle = r() < 0.6 ? "rgba(170,225,255,.5)" : "rgba(10,40,80,.3)"; g.lineWidth = 1.5 + r() * 1.5;
+        g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + l / 2, y - 4, x + l, y); g.stroke();
+      }
+      speckle(g, w, h, r, 120, ["#ffffff"], 0.7, 2);
+    };
+  }
+  function straw() {
+    return function (g, w, h, r) {
+      g.fillStyle = "#c9a24e"; g.fillRect(0, 0, w, h);
+      for (var i = 0; i < 2200; i++) {
+        var x = r() * w, y = r() * h, l = 6 + r() * 14;
+        g.strokeStyle = rgba(["#e8c870", "#a17a32", "#f2dc94"][(r() * 3) | 0], 0.7); g.lineWidth = 1.2;
+        g.beginPath(); g.moveTo(x, y); g.lineTo(x + (r() - 0.5) * 3, y + l); g.stroke();
+      }
+    };
+  }
+  function iron() { return function (g, w, h, r) { g.fillStyle = "#3b3633"; g.fillRect(0, 0, w, h); speckle(g, w, h, r, 2500, ["#1a1816", "#6a5a4e", "#7a4a2a"], 0.4, 2); }; }
+  function banner(color, trim, emblem) {
+    return function (g, w, h) {
+      g.clearRect(0, 0, w, h);
+      g.beginPath(); g.moveTo(6, 0); g.lineTo(w - 6, 0); g.lineTo(w - 6, h - 20); g.lineTo(w / 2, h - 64); g.lineTo(6, h - 20); g.closePath();
+      g.fillStyle = color; g.fill();
+      g.strokeStyle = trim; g.lineWidth = 7; g.stroke();
+      g.fillStyle = trim; g.fillRect(6, 0, w - 12, 20);
+      for (var i = 0; i < 5; i++) { g.fillStyle = "rgba(0,0,0," + (i % 2 ? 0.12 : 0.04) + ")"; g.fillRect(8 + i * (w - 16) / 5, 20, (w - 16) / 5, h - 40); }
+      g.save(); g.translate(w / 2, h * 0.42); g.strokeStyle = trim; g.fillStyle = trim; g.lineWidth = 8; g.lineCap = "round";
+      if (emblem === "air") {
+        [-22, 0, 22].forEach(function (y, i) { g.beginPath(); g.moveTo(-34 + i * 6, y); g.bezierCurveTo(-10, y - 16, 10, y + 16, 30 - i * 4, y - 6); g.stroke(); });
+      } else if (emblem === "water") {
+        [-14, 16].forEach(function (y) { g.beginPath(); g.moveTo(-36, y); for (var x = -36; x <= 36; x += 4) g.lineTo(x, y + Math.sin(x / 7) * 7); g.stroke(); });
+      } else if (emblem === "fire") {
+        g.beginPath(); g.moveTo(0, -42); g.bezierCurveTo(22, -14, 30, 4, 22, 22); g.bezierCurveTo(16, 36, -16, 36, -22, 22);
+        g.bezierCurveTo(-28, 6, -14, -6, -6, -14); g.bezierCurveTo(-4, -2, 4, 2, 6, -6); g.bezierCurveTo(10, -20, 4, -30, 0, -42); g.fill();
+      } else {
+        g.beginPath(); g.ellipse(0, 0, 18, 38, 0.5, 0, 2 * PI); g.fill();
+        g.strokeStyle = color; g.lineWidth = 4; g.beginPath(); g.moveTo(-14, 26); g.lineTo(14, -26); g.stroke();
+      }
+      g.restore();
+    };
+  }
+  function dot(core, edge) {
+    return function (g, w, h) {
+      var gr = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+      gr.addColorStop(0, core); gr.addColorStop(1, edge);
+      g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    };
+  }
+
+  var TEX = {
+    grassAir: [512, 512, grass("#86b852", "#5a8a36", "#bcd97a")],
+    grassWater: [512, 512, grass("#6fae66", "#467f4a", "#a2d38a")],
+    grassFire: [512, 512, grass("#98a24c", "#6c7330", "#cbc276")],
+    grassEarth: [512, 512, moss("#4a8541", "#2b5a2b", "#7cb25a")],
+    sideAir: [512, 180, strata("#5f8f36")],
+    sideWater: [512, 180, strata("#4f8a44")],
+    sideFire: [512, 180, strata("#6f7a30")],
+    sideEarth: [512, 180, strata("#2f6a2e")],
+    path: [256, 256, softEdge(dirt("#ae9064"))],
+    dirt: [256, 256, dirt("#8e7350")],
+    stoneGrey: [256, 256, stone("#a29b8e", "#4f4a43", 7, 4)],
+    stoneBlue: [256, 256, stone("#97a3ab", "#4d5760", 7, 4)],
+    stoneWarm: [256, 256, stone("#a8927c", "#56463a", 7, 4)],
+    plankWarm: [256, 256, planks("#b9844f", 7)],
+    plankDark: [256, 256, planks("#6c4729", 6)],
+    bark: [256, 256, bark("#6a4a30")],
+    barkTree: [256, 256, bark("#5a4230")],
+    logEnd: [128, 128, logEnd()],
+    canvas: [256, 256, cloth("#f1e5c4", "#e7b93a", "#2b2520")],
+    shinglesBlue: [256, 256, shingles("#3f6caf", 8, 7)],
+    shinglesRed: [256, 256, shingles("#b13b25", 8, 7)],
+    shinglesTeal: [256, 256, shingles("#4f8f86", 8, 7)],
+    halfTimber: [256, 256, halfTimber("#e9dcc0", "#4a2e1c")],
+    water: [256, 256, ripple()],
+    straw: [128, 128, straw()],
+    iron: [128, 128, iron()],
+    bannerAir: [128, 256, banner("#e8bf45", "#2a2622", "air")],
+    bannerWater: [128, 256, banner("#2f5fa8", "#d2a35c", "water")],
+    bannerFire: [128, 256, banner("#b3261e", "#eab43c", "fire")],
+    bannerEarth: [128, 256, banner("#1f6b45", "#d4dadd", "earth")],
+    ember: [64, 64, dot("rgba(255,230,160,1)", "rgba(255,120,30,0)")],
+    smoke: [128, 128, dot("rgba(200,195,190,.85)", "rgba(200,195,190,0)")],
+    glow: [128, 128, dot("rgba(140,255,170,.9)", "rgba(60,200,110,0)")]
+  };
+  var canvasCache = {};
+  function canvasFor(key) {
+    if (canvasCache[key]) return canvasCache[key];
+    var d = TEX[key], c = document.createElement("canvas");
+    c.width = d[0]; c.height = d[1];
+    d[2](c.getContext("2d"), d[0], d[1], rng(hashStr(key)));
+    return (canvasCache[key] = c);
+  }
+  function tex(key, rx, ry) {
+    var t = new T3.CanvasTexture(canvasFor(key));
+    t.wrapS = t.wrapT = T3.RepeatWrapping;
+    t.repeat.set(rx || 1, ry || 1);
+    t.encoding = T3.sRGBEncoding;
+    t.anisotropy = 8;
+    return t;
+  }
+  function M(key, rx, ry, extra) {
+    return new T3.MeshStandardMaterial(Object.assign({ map: tex(key, rx, ry), roughness: 0.88, metalness: 0 }, extra || {}));
+  }
+  function lin(c) { return new T3.Color(c).convertSRGBToLinear(); }
+  function C(color, extra) { return new T3.MeshStandardMaterial(Object.assign({ color: lin(color), roughness: 0.85, metalness: 0 }, extra || {})); }
+  function E(color, emissive, k) { return new T3.MeshStandardMaterial({ color: lin(color), emissive: lin(emissive), emissiveIntensity: k == null ? 1 : k, roughness: 0.5 }); }
+
+  /* ---------- builder ---------- */
+  function B(scene) { this.g = new T3.Group(); scene.add(this.g); this.fx = []; this.rand = rng(hashStr(scene.uuid)); }
+  B.prototype.add = function (geo, mat, x, y, z, o) {
+    o = o || {};
+    var m = new T3.Mesh(geo, mat);
+    m.position.set(x, y, z);
+    if (o.rx) m.rotation.x = o.rx; if (o.ry) m.rotation.y = o.ry; if (o.rz) m.rotation.z = o.rz;
+    if (o.s) m.scale.set(o.s[0], o.s[1], o.s[2]);
+    m.castShadow = !o.noCast; m.receiveShadow = !o.noReceive;
+    (o.parent || this.g).add(m);
+    return m;
+  };
+  B.prototype.box = function (w, h, d, mat, x, y0, z, o) { return this.add(new T3.BoxGeometry(w, h, d), mat, x, y0 + h / 2, z, o); };
+  B.prototype.cyl = function (rt, rb, h, seg, mat, x, y0, z, o) { return this.add(new T3.CylinderGeometry(rt, rb, h, seg), mat, x, y0 + h / 2, z, o); };
+  B.prototype.beam = function (a, b, r, mat, parent, seg) {
+    var A = new T3.Vector3(a[0], a[1], a[2]), Bv = new T3.Vector3(b[0], b[1], b[2]);
+    var d = Bv.clone().sub(A), len = d.length();
+    var m = new T3.Mesh(new T3.CylinderGeometry(r, r, len, seg || 6), mat);
+    m.position.copy(A).add(Bv).multiplyScalar(0.5);
+    m.quaternion.setFromUnitVectors(new T3.Vector3(0, 1, 0), d.normalize());
+    m.castShadow = true; m.receiveShadow = true;
+    (parent || this.g).add(m);
+    return m;
+  };
+  B.prototype.gable = function (o) {
+    var grp = new T3.Group(); grp.position.set(o.x, o.y, o.z); grp.rotation.y = o.ry || 0; this.g.add(grp);
+    var hw = o.wid / 2, half = hw + o.over, a = Math.atan2(o.rise, hw), S = half / Math.cos(a), t = o.thick || 0.08;
+    var L = o.len + 2 * (o.overEnd == null ? o.over * 0.6 : o.overEnd);
+    var cy = o.rise - (half / 2) * Math.tan(a) + t / 2;
+    this.add(new T3.BoxGeometry(L, t, S), o.mat, 0, cy, half / 2, { rx: a, parent: grp });
+    this.add(new T3.BoxGeometry(L, t, S), o.mat2 || o.mat, 0, cy, -half / 2, { rx: -a, parent: grp });
+    var sh = new T3.Shape(); sh.moveTo(-hw, 0); sh.lineTo(hw, 0); sh.lineTo(0, o.rise); sh.closePath();
+    var eg = new T3.ExtrudeGeometry(sh, { depth: 0.06, bevelEnabled: false });
+    [-1, 1].forEach(function (s) { this.add(eg, o.gmat, s * (o.len / 2) - (s > 0 ? 0.06 : 0) + (s < 0 ? 0 : 0), 0, 0, { ry: PI / 2, parent: grp }); }, this);
+    this.add(new T3.BoxGeometry(L + 0.06, 0.11, 0.11), o.ridge || C("#3a2416"), 0, o.rise + t + 0.02, 0, { parent: grp });
+    return grp;
+  };
+  B.prototype.base = function (top, side) {
+    var bottom = C("#21180f");
+    this.add(new T3.BoxGeometry(6, 0.7, 6), [side, side, top, bottom, side, side], 0, -0.35, 0);
+  };
+  B.prototype.decal = function (key, x, z, w, d, ry) {
+    var m = new T3.MeshStandardMaterial({ map: tex(key, 1, 1), transparent: true, depthWrite: false, roughness: 1 });
+    return this.add(new T3.PlaneGeometry(w, d), m, x, 0.012, z, { rx: -PI / 2, rz: ry || 0, noCast: true });
+  };
+  B.prototype.rock = function (x, z, s, col) {
+    var m = this.add(new T3.DodecahedronGeometry(s, 0), C(col || "#8d877c", { flatShading: true }), x, s * 0.35, z,
+      { s: [1, 0.65 + this.rand() * 0.3, 0.9], ry: this.rand() * PI, rx: (this.rand() - 0.5) * 0.4 });
+    return m;
+  };
+  B.prototype.bush = function (x, z, s, col) {
+    var mat = C(col || "#3f7a36", { flatShading: true });
+    this.add(new T3.IcosahedronGeometry(s, 0), mat, x, s * 0.7, z, { s: [1, 0.8, 1] });
+    this.add(new T3.IcosahedronGeometry(s * 0.7, 0), mat, x + s * 0.6, s * 0.5, z + s * 0.3);
+    this.add(new T3.IcosahedronGeometry(s * 0.6, 0), C("#5c9a45", { flatShading: true }), x - s * 0.3, s * 1.05, z + s * 0.2);
+  };
+  B.prototype.tuft = function (x, z, col) {
+    var mat = C(col || "#4e8a34", { flatShading: true });
+    for (var i = 0; i < 4; i++) {
+      var a = i * 1.7;
+      this.add(new T3.ConeGeometry(0.03, 0.22 + this.rand() * 0.12, 3), mat, x + Math.cos(a) * 0.05, 0.12, z + Math.sin(a) * 0.05,
+        { rz: Math.cos(a) * 0.35, rx: Math.sin(a) * 0.35, noCast: true });
+    }
+  };
+  B.prototype.pine = function (x, z, s) {
+    this.cyl(0.06 * s, 0.09 * s, 0.4 * s, 6, C("#5a3d24"), x, 0, z);
+    var cols = ["#2a5a32", "#326a3a", "#3b7a42"];
+    for (var i = 0; i < 3; i++) {
+      this.add(new T3.ConeGeometry((0.55 - i * 0.13) * s, (0.75 - i * 0.1) * s, 7), C(cols[i], { flatShading: true }), x, (0.6 + i * 0.38) * s, z, { ry: i });
+    }
+  };
+  B.prototype.oak = function (x, z, s) {
+    this.cyl(0.08 * s, 0.13 * s, 0.75 * s, 7, M("barkTree", 1, 1), x, 0, z);
+    var cols = ["#3f7a38", "#4a8a3e", "#346b30"];
+    [[0, 1.05, 0, 0.5], [0.28, 0.9, 0.12, 0.36], [-0.25, 0.92, -0.1, 0.38], [0.05, 1.32, 0.05, 0.34]].forEach(function (b, i) {
+      this.add(new T3.IcosahedronGeometry(b[3] * s, 0), C(cols[i % 3], { flatShading: true }), x + b[0] * s, b[1] * s, z + b[2] * s, { ry: i });
+    }, this);
+  };
+  B.prototype.barrel = function (x, z) {
+    this.cyl(0.15, 0.15, 0.36, 12, M("plankWarm", 1, 0.4), x, 0, z);
+    var im = C("#3a3530", { metalness: 0.5, roughness: 0.6 });
+    [0.07, 0.29].forEach(function (y) { this.add(new T3.TorusGeometry(0.152, 0.012, 6, 20), im, x, y, z, { rx: PI / 2 }); }, this);
+  };
+  B.prototype.crate = function (x, z, s, ry) {
+    var m = M("plankWarm", 0.6, 0.6);
+    this.box(s, s, s, m, x, 0, z, { ry: ry || 0 });
+  };
+  B.prototype.hay = function (x, z, ry) {
+    var st = M("straw", 2, 1), end = M("straw", 1, 1);
+    this.add(new T3.CylinderGeometry(0.2, 0.2, 0.42, 14), [st, end, end], x, 0.2, z, { rz: PI / 2, ry: ry || 0 });
+  };
+  B.prototype.logs = function (x, z, ry) {
+    var grp = new T3.Group(); grp.position.set(x, 0, z); grp.rotation.y = ry || 0; this.g.add(grp);
+    var mats = [M("bark", 1, 1), M("logEnd"), M("logEnd")];
+    [[-0.13, 0.08], [0, 0.08], [0.13, 0.08], [-0.065, 0.2], [0.065, 0.2], [0, 0.32]].forEach(function (p) {
+      this.add(new T3.CylinderGeometry(0.07, 0.07, 0.7, 9), mats, p[0], p[1], 0, { rx: PI / 2, parent: grp });
+    }, this);
+  };
+  B.prototype.banner = function (x, z, y0, key, h) {
+    h = h || 1.8;
+    var pole = C("#3a2818");
+    this.cyl(0.03, 0.035, h, 8, pole, x, y0, z);
+    this.add(new T3.SphereGeometry(0.05, 10, 8), C("#c9a24e", { metalness: 0.6, roughness: 0.35 }), x, y0 + h + 0.03, z);
+    this.box(0.5, 0.035, 0.035, pole, x, y0 + h - 0.12, z);
+    var pivot = new T3.Group(); pivot.position.set(x, y0 + h - 0.14, z + 0.03); this.g.add(pivot);
+    var mat = new T3.MeshStandardMaterial({ map: tex(key), transparent: true, alphaTest: 0.5, side: T3.DoubleSide, roughness: 0.9 });
+    this.add(new T3.PlaneGeometry(0.44, 0.88), mat, 0, -0.44, 0, { parent: pivot });
+    var ph = this.rand() * 6;
+    this.fx.push(function (t) { pivot.rotation.y = Math.sin(t * 1.3 + ph) * 0.18; pivot.rotation.x = Math.sin(t * 0.9 + ph) * 0.04; });
+  };
+  B.prototype.window = function (x, y, z, ry, w, h, glass, glow, shutters) {
+    var grp = new T3.Group(); grp.position.set(x, y, z); grp.rotation.y = ry || 0; this.g.add(grp);
+    var frame = C("#3a2416");
+    this.add(new T3.BoxGeometry(w + 0.1, h + 0.1, 0.06), frame, 0, 0, 0, { parent: grp });
+    var pane = E(glass, glow, 0.9);
+    this.add(new T3.BoxGeometry(w, h, 0.03), pane, 0, 0, 0.03, { parent: grp, noCast: true });
+    this.add(new T3.BoxGeometry(0.035, h, 0.04), frame, 0, 0, 0.04, { parent: grp });
+    this.add(new T3.BoxGeometry(w, 0.035, 0.04), frame, 0, 0, 0.04, { parent: grp });
+    this.add(new T3.BoxGeometry(w + 0.18, 0.05, 0.12), frame, 0, -h / 2 - 0.06, 0.04, { parent: grp });
+    if (shutters) {
+      var sm = C(shutters, { roughness: 0.8 });
+      this.add(new T3.BoxGeometry(w / 2, h + 0.08, 0.03), sm, -w * 0.78, 0, 0.1, { ry: 0.5, parent: grp });
+      this.add(new T3.BoxGeometry(w / 2, h + 0.08, 0.03), sm, w * 0.78, 0, 0.1, { ry: -0.5, parent: grp });
+    }
+    return pane;
+  };
+
+  /* ---------- Hufflepuff: Sky Hall ---------- */
+  function sceneAir(b) {
+    b.base(M("grassAir", 3, 3), M("sideAir", 3, 1));
+    b.decal("path", -0.2, 2.15, 1.3, 2.2);
+    b.decal("path", -1.6, 1.8, 1.2, 1.2);
+    var HX = -0.2, HZ = -0.2;
+    var st = M("stoneGrey", 3, 0.5), stT = M("stoneGrey", 2.5, 2.5);
+    b.add(new T3.BoxGeometry(3.5, 0.36, 3.2), [st, st, stT, st, st, st], HX, 0.18, HZ);
+    for (var i = 0; i < 12; i++) {
+      var a = i / 12 * 2 * PI, rx = Math.cos(a) * 1.85, rz = Math.sin(a) * 1.7;
+      b.rock(HX + rx, HZ + rz, 0.12 + b.rand() * 0.1, "#958f83");
+    }
+    var post = M("plankDark", 0.3, 1), dark = C("#3e2817");
+    var wood = M("plankWarm", 3, 1), floor = M("plankWarm", 3, 3);
+    [[-1.2, -1.0], [-1.2, 0.95], [1.15, -1.0], [1.15, 0.95]].forEach(function (p) {
+      b.cyl(0.085, 0.1, 1.0, 8, post, HX + p[0], 0.33, HZ + p[1]);
+    });
+    b.beam([HX - 1.2, 0.4, HZ + 0.97], [HX + 1.15, 1.25, HZ + 0.97], 0.04, dark);
+    b.beam([HX - 1.2, 1.25, HZ + 0.97], [HX + 1.15, 0.4, HZ + 0.97], 0.04, dark);
+    b.beam([HX + 1.17, 0.4, HZ - 1.0], [HX + 1.17, 1.25, HZ + 0.95], 0.04, dark);
+    b.beam([HX + 1.17, 1.25, HZ - 1.0], [HX + 1.17, 0.4, HZ + 0.95], 0.04, dark);
+    b.box(2.95, 0.14, 2.55, floor, HX, 1.25, HZ);
+    b.box(2.5, 1.0, 2.1, wood, HX, 1.39, HZ);
+    [[-1.25, -1.05], [-1.25, 1.05], [1.25, -1.05], [1.25, 1.05]].forEach(function (p) { b.box(0.13, 1.02, 0.13, dark, HX + p[0], 1.38, HZ + p[1]); });
+    b.box(2.62, 0.1, 2.22, dark, HX, 2.33, HZ);
+    b.box(2.6, 0.08, 2.2, dark, HX, 1.38, HZ);
+    var fz = HZ + 1.05;
+    b.window(HX - 0.8, 1.9, fz + 0.03, 0, 0.32, 0.32, "#ffe39a", "#ffb23e", "#e3b437");
+    b.window(HX + 0.8, 1.9, fz + 0.03, 0, 0.32, 0.32, "#ffe39a", "#ffb23e", "#e3b437");
+    b.window(HX + 1.28, 1.9, HZ - 0.45, PI / 2, 0.32, 0.32, "#ffe39a", "#ffb23e", "#e3b437");
+    b.window(HX + 1.28, 1.9, HZ + 0.5, PI / 2, 0.32, 0.32, "#ffe39a", "#ffb23e", "#e3b437");
+    b.box(0.62, 0.8, 0.06, dark, HX, 1.39, fz + 0.02);
+    b.box(0.5, 0.72, 0.05, M("plankDark", 0.5, 1), HX, 1.39, fz + 0.05);
+    b.add(new T3.SphereGeometry(0.03, 8, 6), C("#d8b35a", { metalness: 0.7, roughness: 0.3 }), HX + 0.16, 1.72, fz + 0.09);
+    b.gable({ len: 2.5, wid: 2.1, rise: 1.0, over: 0.32, mat: M("canvas", 2, 1, { side: T3.DoubleSide }), gmat: wood, x: HX, y: 2.43, z: HZ });
+    for (var s = 0; s < 4; s++) {
+      var hgt = 1.39 - (s + 1) * 0.278;
+      b.box(0.66, hgt, 0.26, M("plankWarm", 0.6, 0.6), HX, 0, fz + 0.33 + s * 0.26);
+    }
+    b.beam([HX - 0.36, 1.45, fz + 0.2], [HX - 0.36, 0.3, fz + 1.25], 0.025, dark);
+    b.beam([HX + 0.36, 1.45, fz + 0.2], [HX + 0.36, 0.3, fz + 1.25], 0.025, dark);
+
+    var MX = 2.05, MZ = -1.7, MH = 3.9;
+    b.box(0.5, 0.28, 0.5, M("stoneGrey", 0.5, 0.3), MX, 0, MZ);
+    b.cyl(0.06, 0.1, MH - 0.2, 8, post, MX, 0.28, MZ);
+    var rope = C("#d8cba6");
+    b.beam([MX, MH - 0.1, MZ], [1.0, 0, -2.75], 0.012, rope);
+    b.beam([MX, MH - 0.1, MZ], [2.85, 0, -0.75], 0.012, rope);
+    b.beam([MX, MH - 0.1, MZ], [2.8, 0, -2.75], 0.012, rope);
+    var hub = new T3.Group(); hub.position.set(MX + 0.1, MH, MZ + 0.1); hub.rotation.y = PI / 4; b.g.add(hub);
+    b.add(new T3.BoxGeometry(0.16, 0.16, 0.4), dark, 0, 0, -0.12, { parent: hub });
+    var spin = new T3.Group(); spin.position.z = 0.1; hub.add(spin);
+    var sail = M("canvas", 1, 1, { side: T3.DoubleSide });
+    for (var k = 0; k < 4; k++) {
+      var arm = new T3.Group(); arm.rotation.z = k * PI / 2; spin.add(arm);
+      b.add(new T3.BoxGeometry(0.05, 1.35, 0.05), dark, 0, 0.68, 0, { parent: arm });
+      b.add(new T3.PlaneGeometry(0.36, 1.0), sail, 0.21, 0.78, 0.02, { parent: arm });
+      [0.32, 0.78, 1.24].forEach(function (y) { b.add(new T3.BoxGeometry(0.42, 0.03, 0.03), dark, 0.2, y, 0.03, { parent: arm }); });
+    }
+    b.add(new T3.SphereGeometry(0.09, 12, 10), C("#e8bf45", { metalness: 0.3, roughness: 0.4 }), 0, 0, 0.08, { parent: spin });
+    b.fx.push(function (t, dt) { spin.rotation.z -= dt * 1.1; });
+
+    var ridgeY = 2.43 + 1.0 + 0.1;
+    [[HX - 1.25 - 0.2, 0.55, "#e8bf45"], [HX + 1.25 + 0.2, 0.45, "#2a2622"]].forEach(function (p, i) {
+      b.cyl(0.02, 0.02, p[1], 6, dark, p[0], ridgeY, HZ);
+      var pv = new T3.Group(); pv.position.set(p[0], ridgeY + p[1] - 0.02, HZ); b.g.add(pv);
+      var sh = new T3.Shape(); sh.moveTo(0, 0); sh.lineTo(0.5, -0.09); sh.lineTo(0, -0.2); sh.closePath();
+      b.add(new T3.ShapeGeometry(sh), C(p[2], { side: T3.DoubleSide }), 0, 0, 0, { parent: pv, ry: -PI / 4 });
+      b.fx.push(function (t) { pv.rotation.y = Math.sin(t * 2.2 + i) * 0.35; });
+    });
+
+    b.banner(HX + 0.75, fz + 0.9, 0, "bannerAir");
+    b.hay(-2.35, 1.4, 0.4); b.hay(-1.95, 2.05, -0.3); b.hay(-2.25, 1.75, 1.2);
+    b.logs(-2.4, -0.6, 0.2);
+    b.barrel(0.75, 1.95); b.barrel(1.05, 2.2); b.crate(1.4, 1.8, 0.3, 0.3); b.crate(1.35, 2.25, 0.24, -0.2);
+    b.pine(-2.45, -2.4, 1.1); b.pine(-1.5, -2.6, 0.85); b.pine(-2.6, -1.4, 0.75);
+    b.oak(2.5, 0.9, 0.9);
+    b.bush(2.4, 2.4, 0.18); b.bush(-2.6, 2.6, 0.16); b.bush(0.4, -2.6, 0.2);
+    for (var j = 0; j < 16; j++) b.tuft(-2.8 + b.rand() * 5.6, 1.2 + b.rand() * 1.6, "#5a9238");
+    b.rock(2.6, 2.0, 0.14); b.rock(-0.9, 2.65, 0.1); b.rock(1.9, -2.6, 0.15);
+  }
+
+  /* ---------- Ravenclaw: Tide Hall ---------- */
+  function sceneWater(b) {
+    var grass = M("grassWater", 2.5, 2.5), side = M("sideWater", 2.5, 1), bottom = C("#21180f");
+    b.add(new T3.BoxGeometry(4.9, 0.7, 4.9), [side, side, grass, bottom, side, side], -0.55, -0.35, -0.55);
+    var bed = M("dirt", 2, 1);
+    b.add(new T3.BoxGeometry(6, 0.35, 1.1), bed, 0, -0.525, 2.45);
+    b.add(new T3.BoxGeometry(1.1, 0.35, 4.9), bed, 2.45, -0.525, -0.55);
+    var wtex = tex("water", 2, 1), wtex2 = tex("water", 1, 2);
+    var wm = new T3.MeshStandardMaterial({ map: wtex, transparent: true, opacity: 0.86, roughness: 0.12, metalness: 0.25 });
+    var wm2 = new T3.MeshStandardMaterial({ map: wtex2, transparent: true, opacity: 0.86, roughness: 0.12, metalness: 0.25 });
+    b.add(new T3.BoxGeometry(6, 0.27, 1.1), wm, 0, -0.215, 2.45, { noCast: true });
+    b.add(new T3.BoxGeometry(1.1, 0.27, 4.9), wm2, 2.45, -0.215, -0.55, { noCast: true });
+    b.fx.push(function (t) { wtex.offset.set(t * 0.03, Math.sin(t * 0.4) * 0.02); wtex2.offset.set(Math.sin(t * 0.4) * 0.02, -t * 0.03); });
+    var cap = M("stoneBlue", 4, 0.25);
+    b.box(5.05, 0.14, 0.22, cap, -0.48, -0.06, 1.86);
+    b.box(0.22, 0.14, 4.9, M("stoneBlue", 0.25, 4), 1.86, -0.06, -0.55);
+
+    var PX = -0.65, PZ = -0.65;
+    var st = M("stoneBlue", 3.2, 0.5), stT = M("stoneBlue", 3, 3);
+    b.add(new T3.BoxGeometry(3.3, 0.45, 3.3), [st, st, stT, st, st, st], PX, 0.225, PZ);
+    b.box(0.95, 0.3, 0.26, M("stoneBlue", 0.8, 0.3), PX, 0, PZ + 1.78);
+    b.box(0.95, 0.15, 0.26, M("stoneBlue", 0.8, 0.2), PX, 0, PZ + 2.04);
+
+    var half = 1.22, y0 = 0.45, r = 0.095;
+    b.box(2.36, 1.12, 2.36, C("#5a3c24"), PX, y0, PZ);
+    var lm = [M("bark", 2, 3), M("logEnd"), M("logEnd")];
+    for (var i = 0; i < 6; i++) {
+      var y = y0 + r + i * r * 1.9;
+      [PZ + half, PZ - half].forEach(function (z) { b.add(new T3.CylinderGeometry(r, r, 2.82, 10), lm, PX, y, z, { rz: PI / 2 }); });
+      [PX + half, PX - half].forEach(function (x) { b.add(new T3.CylinderGeometry(r, r, 2.82, 10), lm, x, y + r * 0.95, PZ, { rx: PI / 2 }); });
+    }
+    var topY = y0 + 6 * r * 1.9 + 0.05;
+    b.box(2.85, 0.08, 2.85, C("#3a2616"), PX, topY - 0.02, PZ);
+    var fz = PZ + half + r + 0.01;
+    b.box(0.62, 0.78, 0.06, C("#2a1a10"), PX, y0, fz);
+    b.box(0.5, 0.7, 0.04, M("plankDark", 0.5, 1), PX, y0, fz + 0.03);
+    b.box(0.95, 0.05, 0.42, M("canvas", 1, 1), PX, y0 + 0.9, fz + 0.18, { rx: 0.35 });
+    var gl = "#c6ecff", gw = "#6ac8ff";
+    b.window(PX - 0.78, 1.05, fz + 0.02, 0, 0.3, 0.32, gl, gw, "#2f5fa8");
+    b.window(PX + 0.72, 1.05, fz + 0.02, 0, 0.3, 0.32, gl, gw, "#2f5fa8");
+    b.window(PX + half + r + 0.02, 1.05, PZ - 0.45, PI / 2, 0.3, 0.32, gl, gw, "#2f5fa8");
+    b.window(PX + half + r + 0.02, 1.05, PZ + 0.5, PI / 2, 0.3, 0.32, gl, gw, "#2f5fa8");
+
+    var rs = 3.25, rh = 1.3;
+    b.add(new T3.ConeGeometry(rs / Math.SQRT2, rh, 4, 1), M("shinglesBlue", 4, 2, { flatShading: true }), PX, topY + rh / 2, PZ, { ry: PI / 4 });
+    var cy = topY + rh * 0.52;
+    b.box(0.46, 0.42, 0.46, M("plankWarm", 0.5, 0.5), PX, cy, PZ);
+    b.window(PX, cy + 0.22, PZ + 0.24, 0, 0.16, 0.18, gl, gw);
+    b.window(PX + 0.24, cy + 0.22, PZ, PI / 2, 0.16, 0.18, gl, gw);
+    b.add(new T3.ConeGeometry(0.42, 0.42, 4, 1), C("#6f9a7c", { flatShading: true, metalness: 0.5, roughness: 0.45 }), PX, cy + 0.63, PZ, { ry: PI / 4 });
+    b.cyl(0.015, 0.015, 0.3, 6, C("#b98a45", { metalness: 0.7, roughness: 0.3 }), PX, cy + 0.82, PZ);
+    b.add(new T3.SphereGeometry(0.07, 14, 10), C("#d6a457", { metalness: 0.8, roughness: 0.25 }), PX, cy + 1.14, PZ);
+
+    var WX = 2.45, WY = 0.33, WZ = -0.75;
+    b.beam([PX + half, WY, WZ], [WX + 0.25, WY, WZ], 0.05, C("#4a3020"));
+    [-0.22, 0.22].forEach(function (dx) { b.box(0.08, 0.75, 0.1, C("#4a3020"), WX + dx, -0.35, WZ); });
+    var wheel = new T3.Group(); wheel.position.set(WX, WY, WZ); b.g.add(wheel);
+    var wood = C("#7a5232"), bronze = C("#b98a45", { metalness: 0.6, roughness: 0.4 });
+    [-0.13, 0.13].forEach(function (dx) {
+      b.add(new T3.TorusGeometry(0.6, 0.032, 6, 32), bronze, dx, 0, 0, { ry: PI / 2, parent: wheel });
+      for (var k = 0; k < 4; k++) b.add(new T3.BoxGeometry(0.035, 1.2, 0.035), wood, dx, 0, 0, { rx: k * PI / 4, parent: wheel });
+    });
+    b.add(new T3.CylinderGeometry(0.08, 0.08, 0.36, 10), bronze, 0, 0, 0, { rz: PI / 2, parent: wheel });
+    for (var p = 0; p < 12; p++) {
+      var an = p * PI / 6;
+      b.add(new T3.BoxGeometry(0.3, 0.2, 0.03), wood, 0, Math.cos(an) * 0.66, Math.sin(an) * 0.66, { rx: -an, parent: wheel });
+    }
+    b.fx.push(function (t, dt) { wheel.rotation.x -= dt * 0.9; });
+    var foamM = new T3.MeshBasicMaterial({ color: lin("#e8f6ff"), transparent: true, opacity: 0.5, depthWrite: false });
+    var foam = b.add(new T3.RingGeometry(0.15, 0.42, 24), foamM, WX, -0.075, WZ, { rx: -PI / 2, noCast: true, s: [0.7, 1.6, 1] });
+    b.fx.push(function (t) { foamM.opacity = 0.35 + Math.sin(t * 3) * 0.15; });
+
+    var deck = M("plankWarm", 1, 2);
+    b.box(0.95, 0.07, 1.25, deck, PX, -0.02, 2.42, { rx: 0 });
+    [[-0.42, 1.85], [0.42, 1.85], [-0.42, 2.98], [0.42, 2.98]].forEach(function (q) {
+      b.cyl(0.04, 0.045, 0.85, 7, C("#4a3020"), PX + q[0], -0.4, q[1]);
+    });
+    b.beam([PX - 0.42, 0.42, 1.85], [PX - 0.42, 0.42, 2.98], 0.013, C("#d8cba6"));
+    b.beam([PX + 0.42, 0.42, 1.85], [PX + 0.42, 0.42, 2.98], 0.013, C("#d8cba6"));
+
+    var lily = C("#4f9a4e");
+    [[-2.3, 2.2], [-1.9, 2.6], [2.3, 0.6], [2.6, -2.2], [1.1, 2.7]].forEach(function (q) {
+      b.add(new T3.CylinderGeometry(0.11, 0.11, 0.012, 10, 1, false, 0.3, 5.6), lily, q[0], -0.075, q[1], { noCast: true });
+    });
+    b.add(new T3.SphereGeometry(0.04, 8, 6), C("#f6d4e8"), -2.3, -0.05, 2.2);
+    var reed = C("#6a8a3a", { flatShading: true });
+    [[-2.75, 2.1], [-2.65, 2.85], [2.8, 1.4], [2.15, -2.8], [2.85, -1.8]].forEach(function (q) {
+      for (var k = 0; k < 5; k++) b.add(new T3.ConeGeometry(0.02, 0.5 + b.rand() * 0.3, 3), reed, q[0] + (b.rand() - 0.5) * 0.18, 0.1, q[1] + (b.rand() - 0.5) * 0.18, { rz: (b.rand() - 0.5) * 0.4 });
+    });
+
+    b.banner(PX + 1.48, PZ + 1.48, 0.45, "bannerWater", 1.6);
+    b.barrel(0.65, 1.45); b.barrel(0.9, 1.6); b.crate(1.35, 1.45, 0.28, 0.4);
+    b.logs(-2.45, 0.8, 0.1);
+    b.oak(-2.4, -2.4, 1.1); b.oak(-1.0, -2.55, 0.85); b.pine(-2.6, -1.0, 0.9);
+    b.bush(1.3, -2.5, 0.2); b.bush(-2.5, 1.5, 0.16);
+    for (var j = 0; j < 12; j++) b.tuft(-2.8 + b.rand() * 4.4, 1.2 + b.rand() * 0.55, "#4f9246");
+    b.rock(1.5, 1.6, 0.12); b.rock(-2.7, 0.0, 0.13);
+  }
+
+  /* ---------- Gryffindor: Ember Keep ---------- */
+  function sceneFire(b) {
+    b.base(M("grassFire", 3, 3), M("sideFire", 3, 1));
+    b.decal("path", 0.6, 2.0, 2.8, 1.9);
+    b.decal("path", -1.2, -0.1, 1.6, 1.6);
+    var HX = 0.4, HZ = 0.25, L = 3.3, W = 1.85;
+    var st = M("stoneWarm", 3.4, 0.4);
+    b.box(L + 0.15, 0.32, W + 0.15, st, HX, 0, HZ);
+    var htF = M("halfTimber", 3, 1), htS = M("halfTimber", 2, 1), pl = C("#e3d6ba");
+    b.add(new T3.BoxGeometry(L, 1.05, W), [htS, htS, pl, pl, htF, htF], HX, 0.32 + 0.525, HZ);
+    var dark = C("#3e2616");
+    [[-1, -1], [-1, 1], [1, -1], [1, 1]].forEach(function (s) { b.box(0.13, 1.06, 0.13, dark, HX + s[0] * L / 2, 0.32, HZ + s[1] * W / 2); });
+    b.gable({ len: L, wid: W, rise: 1.05, over: 0.32, mat: M("shinglesRed", 4, 2.5), gmat: M("halfTimber", 1.4, 0.9), x: HX, y: 1.37, z: HZ, ridge: C("#5a1e14") });
+    b.box(0.38, 1.2, 0.38, M("stoneWarm", 0.5, 1.6), HX + 0.95, 1.85, HZ - 0.4);
+    b.box(0.47, 0.08, 0.47, M("stoneWarm", 0.6, 0.15), HX + 0.95, 3.05, HZ - 0.4);
+
+    var fz = HZ + W / 2;
+    b.box(0.72, 0.92, 0.08, M("stoneWarm", 0.8, 1), HX, 0.32, fz + 0.01);
+    b.box(0.5, 0.74, 0.04, C("#1a0d07"), HX, 0.32, fz + 0.05);
+    var glowM = new T3.MeshBasicMaterial({ color: lin("#ff8a3d"), transparent: true, opacity: 0.5 });
+    b.add(new T3.PlaneGeometry(0.42, 0.62), glowM, HX, 0.32 + 0.33, fz + 0.075, { noCast: true });
+    var leaf = new T3.Group(); leaf.position.set(HX - 0.25, 0.32, fz + 0.07); leaf.rotation.y = -1.1; b.g.add(leaf);
+    b.add(new T3.BoxGeometry(0.48, 0.72, 0.05), M("plankDark", 0.5, 1), 0.24, 0.36, 0, { parent: leaf });
+    var wg = "#ffd38a", ww = "#ff9a3c";
+    var w1 = b.window(HX - 1.0, 0.95, fz + 0.03, 0, 0.3, 0.3, wg, ww);
+    var w2 = b.window(HX + 1.0, 0.95, fz + 0.03, 0, 0.3, 0.3, wg, ww);
+    var w3 = b.window(HX + L / 2 + 0.03, 0.95, HZ, PI / 2, 0.3, 0.3, wg, ww);
+
+    var TX = -1.75, TZ = -1.5, sw = M("stoneWarm", 3, 2.2);
+    b.cyl(0.78, 0.86, 2.55, 22, sw, TX, 0, TZ);
+    b.cyl(0.96, 0.8, 0.22, 22, M("stoneWarm", 3, 0.25), TX, 2.55, TZ);
+    for (var c = 0; c < 12; c++) {
+      var a = c / 12 * 2 * PI;
+      b.box(0.24, 0.26, 0.18, M("stoneWarm", 0.3, 0.3), TX + Math.cos(a) * 0.86, 2.77, TZ + Math.sin(a) * 0.86, { ry: -a });
+    }
+    b.add(new T3.ConeGeometry(1.08, 1.45, 22), M("shinglesRed", 5, 2), TX, 3.03 + 0.725, TZ);
+    b.cyl(0.02, 0.02, 0.6, 6, dark, TX, 4.45, TZ);
+    var fpv = new T3.Group(); fpv.position.set(TX, 5.0, TZ); b.g.add(fpv);
+    var fsh = new T3.Shape(); fsh.moveTo(0, 0); fsh.lineTo(0.5, -0.1); fsh.lineTo(0, -0.22); fsh.closePath();
+    b.add(new T3.ShapeGeometry(fsh), C("#c0281c", { side: T3.DoubleSide }), 0, 0, 0, { parent: fpv, ry: -PI / 4 });
+    b.fx.push(function (t) { fpv.rotation.y = Math.sin(t * 2.4) * 0.35; });
+    var slitM = E("#ffc070", "#ff8a2a", 1.4);
+    [[1.35, 0.15], [2.05, -0.15]].forEach(function (s) {
+      var a = PI / 4 + s[1];
+      b.box(0.07, 0.34, 0.05, slitM, TX + Math.cos(a) * 0.8, s[0], TZ + Math.sin(a) * 0.8, { ry: PI / 2 - a, noCast: true });
+    });
+    b.box(0.4, 0.62, 0.06, C("#1f130b"), TX + 0.58, 0, TZ + 0.58, { ry: PI / 4 });
+
+    var BX = 1.9, BZ = 2.0;
+    b.cyl(0.26, 0.32, 0.22, 8, M("stoneWarm", 0.6, 0.3), BX, 0, BZ);
+    b.cyl(0.06, 0.09, 0.35, 8, M("iron"), BX, 0.22, BZ);
+    b.cyl(0.36, 0.2, 0.2, 14, M("iron"), BX, 0.57, BZ);
+    b.cyl(0.32, 0.32, 0.02, 14, E("#ff7a2a", "#ff5a10", 1.8), BX, 0.76, BZ, { noCast: true });
+    var flames = new T3.Group(); flames.position.set(BX, 0.77, BZ); b.g.add(flames);
+    var fm = [["#ff5a1a", 0.17, 0.75], ["#ff8a2a", 0.13, 0.6], ["#ffc04a", 0.09, 0.42], ["#fff0b0", 0.05, 0.26]];
+    var fl = [];
+    fm.forEach(function (f, i) {
+      var mat = new T3.MeshBasicMaterial({ color: lin(f[0]), transparent: true, opacity: 0.85, blending: T3.AdditiveBlending, depthWrite: false });
+      for (var k = 0; k < 3; k++) {
+        var m = b.add(new T3.ConeGeometry(f[1], f[2], 8), mat, Math.cos(k * 2.1 + i) * 0.08, f[2] / 2, Math.sin(k * 2.1 + i) * 0.08, { parent: flames, noCast: true, noReceive: true });
+        fl.push([m, i * 3 + k]);
+      }
+    });
+    var light = new T3.PointLight("#ff8a3d", 1.6, 5.5, 2); light.position.set(BX, 1.3, BZ); b.g.add(light);
+    b.fx.push(function (t) {
+      fl.forEach(function (q) { var m = q[0], ph = q[1]; m.scale.set(1 + Math.sin(t * 9 + ph) * 0.12, 1 + Math.sin(t * 11 + ph * 1.7) * 0.25, 1 + Math.cos(t * 8 + ph) * 0.12); });
+      light.intensity = 1.5 + Math.sin(t * 13) * 0.2 + Math.sin(t * 7.3) * 0.15;
+      glowM.opacity = 0.45 + Math.sin(t * 5) * 0.1;
+    });
+    var emberM = new T3.SpriteMaterial({ map: tex("ember"), blending: T3.AdditiveBlending, depthWrite: false, transparent: true });
+    var embers = [];
+    for (var e = 0; e < 10; e++) { var sp = new T3.Sprite(emberM); sp.scale.set(0.07, 0.07, 1); b.g.add(sp); embers.push([sp, b.rand() * 2, (b.rand() - 0.5) * 0.4, (b.rand() - 0.5) * 0.4]); }
+    var smokeM = []; var smoke = [];
+    for (var s2 = 0; s2 < 7; s2++) {
+      var mm = new T3.SpriteMaterial({ map: tex("smoke"), transparent: true, depthWrite: false, opacity: 0.6 });
+      var sp2 = new T3.Sprite(mm); b.g.add(sp2); smoke.push([sp2, s2 / 7]);
+    }
+    var CX = HX + 0.95, CZ = HZ - 0.4;
+    b.fx.push(function (t) {
+      embers.forEach(function (q) { var k = ((t * 0.6 + q[1]) % 1.2) / 1.2; q[0].position.set(BX + q[2] * k + Math.sin(t * 3 + q[1]) * 0.05, 1.0 + k * 1.6, BZ + q[3] * k); q[0].material.opacity = 1 - k; });
+      smoke.forEach(function (q) { var k = (t * 0.18 + q[1]) % 1; q[0].position.set(CX + k * 0.5, 3.15 + k * 1.5, CZ - k * 0.3); var sc = 0.25 + k * 0.7; q[0].scale.set(sc, sc, 1); q[0].material.opacity = 0.55 * (1 - k) * Math.min(1, k * 6); });
+    });
+
+    b.banner(HX - 0.62, fz + 0.4, 0, "bannerFire");
+    b.banner(HX + 0.62, fz + 0.4, 0, "bannerFire");
+    b.logs(-2.3, 1.0, 0.3); b.logs(-2.35, 1.6, -0.2);
+    var rack = C("#4a3020");
+    b.box(0.06, 0.7, 0.06, rack, -0.95, 0, 2.3); b.box(0.06, 0.7, 0.06, rack, -0.35, 0, 2.3); b.box(0.66, 0.05, 0.05, rack, -0.65, 0.62, 2.3);
+    for (var sp3 = 0; sp3 < 4; sp3++) {
+      b.beam([-0.88 + sp3 * 0.15, 0.02, 2.42], [-0.86 + sp3 * 0.15, 0.95, 2.26], 0.015, C("#7a5838"));
+      b.add(new T3.ConeGeometry(0.03, 0.12, 4), C("#b8b8b8", { metalness: 0.8, roughness: 0.3 }), -0.86 + sp3 * 0.15, 1.0, 2.255);
+    }
+    b.barrel(2.45, -0.5); b.barrel(2.55, -0.15); b.crate(2.5, 0.35, 0.3, 0.2); b.hay(-2.3, 2.3, 0.6);
+    b.pine(-2.5, 0.0, 0.85); b.pine(0.0, -2.55, 1.0); b.pine(1.0, -2.6, 0.8); b.oak(2.5, -2.3, 1.0);
+    b.bush(2.5, 2.5, 0.17, "#5a7a30"); b.bush(-2.6, -2.6, 0.2, "#5a7a30");
+    for (var j = 0; j < 14; j++) b.tuft(-2.8 + b.rand() * 5.6, -2.8 + b.rand() * 1.2, "#7a8a38");
+    b.rock(-1.3, 2.6, 0.13); b.rock(2.7, 1.2, 0.11);
+  }
+
+  /* ---------- Slytherin: Root Hall ---------- */
+  function sceneEarth(b) {
+    b.base(M("grassEarth", 3, 3), M("sideEarth", 3, 1));
+    var MX = -0.15, MZ = -0.15, R = 2.05, H = 1.3;
+    var sg = new T3.SphereGeometry(1, 56, 24, 0, 2 * PI, 0, PI / 2);
+    var pos = sg.attributes.position;
+    for (var i = 0; i < pos.count; i++) {
+      var x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+      var k = y > 0.02 ? 1 + (n3(x * 3, y * 3, z * 3) - 0.5) * 0.08 + Math.sin(x * 7 + z * 5) * 0.015 : 1;
+      pos.setXYZ(i, x * k, y * k, z * k);
+    }
+    sg.computeVertexNormals();
+    b.add(sg, M("grassEarth", 4, 2), MX, 0, MZ, { s: [R, H, R] });
+    function surf(r) { return r >= R ? 0 : H * Math.sqrt(1 - (r / R) * (r / R)); }
+
+    var TX = -0.5, TZ = -0.7;
+    var tg = new T3.CylinderGeometry(0.24, 0.44, 2.8, 12, 8);
+    var tp = tg.attributes.position;
+    for (var j = 0; j < tp.count; j++) {
+      var px = tp.getX(j), py = tp.getY(j), pz = tp.getZ(j), kk = 1 + (n3(px * 4, py * 2, pz * 4) - 0.5) * 0.25;
+      tp.setXYZ(j, px * kk + Math.sin(py * 1.6) * 0.06, py, pz * kk);
+    }
+    tg.computeVertexNormals();
+    var barkM = M("barkTree", 2, 2);
+    b.add(tg, barkM, TX, 0.85 + 1.4, TZ);
+    b.beam([TX, 2.9, TZ], [TX - 0.95, 3.55, TZ + 0.25], 0.1, barkM, null, 7);
+    b.beam([TX, 2.8, TZ], [TX + 0.85, 3.5, TZ - 0.35], 0.1, barkM, null, 7);
+    b.beam([TX, 3.0, TZ], [TX + 0.15, 3.7, TZ + 0.75], 0.09, barkM, null, 7);
+    var canopy = new T3.Group(); canopy.position.set(TX, 3.0, TZ); b.g.add(canopy);
+    [[0, 0.9, 0, 0.92, "#2f6f3c"], [-0.9, 0.6, 0.3, 0.68, "#285f34"], [0.85, 0.55, -0.35, 0.72, "#285f34"], [0.25, 0.55, 0.85, 0.66, "#3b8048"],
+     [-0.3, 1.35, -0.25, 0.58, "#3f8a4c"], [0.5, 1.2, 0.4, 0.52, "#4a9654"], [-0.6, 0.8, -0.75, 0.58, "#245a31"], [-0.45, 0.45, 0.75, 0.5, "#34763f"]].forEach(function (c, ci) {
+      var ig = new T3.IcosahedronGeometry(c[3], 1), ip = ig.attributes.position;
+      for (var q = 0; q < ip.count; q++) {
+        var ax = ip.getX(q), ay = ip.getY(q), az = ip.getZ(q), f = 1 + (n3(ax * 5 + ci, ay * 5, az * 5) - 0.5) * 0.35;
+        ip.setXYZ(q, ax * f, ay * f, az * f);
+      }
+      ig.computeVertexNormals();
+      b.add(ig, C(c[4], { flatShading: true, roughness: 0.9 }), c[0], c[1], c[2], { parent: canopy });
+    });
+    b.fx.push(function (t) { canopy.rotation.z = Math.sin(t * 0.7) * 0.025; canopy.rotation.x = Math.sin(t * 0.55 + 1) * 0.02; });
+
+    var rootM = M("barkTree", 1, 3);
+    [-0.25, 0.25, 1.15, 1.6, 2.6, -1.0].forEach(function (az, ri) {
+      var pts = [new T3.Vector3(TX, 1.25, TZ)];
+      var dx = Math.cos(az), dz = Math.sin(az);
+      for (var s = 1; s <= 7; s++) {
+        var rr = 0.55 + s * 0.27, wob = Math.sin(s * 1.3 + ri) * 0.12;
+        var x = MX + dx * rr - dz * wob, z = MZ + dz * rr + dx * wob;
+        var dist = Math.hypot(x - MX, z - MZ);
+        pts.push(new T3.Vector3(x, surf(dist) + 0.04 - (s === 7 ? 0.1 : 0), z));
+      }
+      b.add(new T3.TubeGeometry(new T3.CatmullRomCurve3(pts), 40, 0.085 - ri * 0.004, 7, false), rootM, 0, 0, 0);
+    });
+
+    var door = new T3.Group(); var da = PI / 4;
+    door.position.set(MX + Math.cos(da) * 1.6, 0, MZ + Math.sin(da) * 1.6); door.rotation.y = PI / 4; b.g.add(door);
+    var sl = M("stoneGrey", 1, 1), sl2 = C("#b4b8b6", { flatShading: true });
+    b.add(new T3.BoxGeometry(1.0, 1.02, 0.85), sl, 0, 0.51, 0, { parent: door });
+    b.add(new T3.BoxGeometry(1.12, 0.16, 0.95), M("grassEarth", 1, 1), 0, 1.08, -0.02, { parent: door });
+    [[-0.3, 1.12, 0.3, 0.2], [0.35, 1.14, 0.15, 0.18], [0.0, 1.2, -0.2, 0.22]].forEach(function (m) {
+      b.add(new T3.IcosahedronGeometry(m[3], 0), C("#3f7a38", { flatShading: true }), m[0], m[1], m[2], { parent: door });
+    });
+    b.add(new T3.BoxGeometry(0.15, 0.62, 0.15), sl2, -0.36, 0.31, 0.44, { parent: door });
+    b.add(new T3.BoxGeometry(0.15, 0.62, 0.15), sl2, 0.36, 0.31, 0.44, { parent: door });
+    b.add(new T3.TorusGeometry(0.36, 0.075, 6, 14, PI), sl2, 0, 0.62, 0.44, { parent: door });
+    var dsh = new T3.Shape(); dsh.moveTo(-0.29, 0); dsh.lineTo(-0.29, 0.62); dsh.absarc(0, 0.62, 0.29, PI, 0, true); dsh.lineTo(0.29, 0); dsh.closePath();
+    var doorM = new T3.MeshStandardMaterial({ color: lin("#123a22"), emissive: lin("#2dff7a"), emissiveIntensity: 0.6, roughness: 0.6 });
+    b.add(new T3.ShapeGeometry(dsh), doorM, 0, 0, 0.43, { parent: door, noCast: true });
+    b.add(new T3.BoxGeometry(0.9, 0.06, 0.32), sl, 0, 0, 0.6, { parent: door });
+    var gL = new T3.PointLight("#5cff9a", 0.9, 3.2, 2); gL.position.set(0, 0.5, 0.9); door.add(gL);
+    b.fx.push(function (t) { var k = 0.5 + Math.sin(t * 1.6) * 0.2; doorM.emissiveIntensity = k; gL.intensity = 0.6 + k * 0.6; });
+
+    var winM = new T3.MeshStandardMaterial({ color: lin("#a6ffc4"), emissive: lin("#3cff8a"), emissiveIntensity: 0.9 });
+    [0.12, 1.45].forEach(function (az) {
+      var r = R * Math.sqrt(1 - Math.pow(0.6 / H, 2)) + 0.02;
+      var x = MX + Math.cos(az) * r, z = MZ + Math.sin(az) * r;
+      var ring = b.add(new T3.TorusGeometry(0.17, 0.05, 8, 20), sl2, x, 0.6, z);
+      ring.lookAt(x + Math.cos(az), 0.75, z + Math.sin(az));
+      var gm = b.add(new T3.CircleGeometry(0.15, 18), winM, x, 0.6, z, { noCast: true });
+      gm.lookAt(x + Math.cos(az), 0.75, z + Math.sin(az));
+    });
+
+    var stoneM = C("#a3a9ab", { flatShading: true, roughness: 0.8 });
+    var runeM = E("#9effc0", "#3cff8a", 1.4);
+    [[-1.45, 2.4, 0.08], [2.4, -1.45, -0.08]].forEach(function (s, i) {
+      b.add(new T3.CylinderGeometry(0.15, 0.26, 1.2 + i * 0.15, 4, 1), stoneM, s[0], 0.6 + i * 0.075, s[1], { ry: PI / 4, rz: s[2] });
+      b.add(new T3.IcosahedronGeometry(0.13, 0), C("#3f7a38", { flatShading: true }), s[0], 1.22 + i * 0.15, s[1]);
+      b.box(0.05, 0.55, 0.02, runeM, s[0] + 0.15, 0.35, s[1] + 0.15, { ry: PI / 4, noCast: true });
+    });
+    var capM = new T3.MeshStandardMaterial({ color: lin("#7ff0d0"), emissive: lin("#2fe0b0"), emissiveIntensity: 0.9 });
+    [[-2.0, 1.6], [-1.85, 1.75], [-2.15, 1.85], [1.65, 2.1], [1.85, 1.95], [0.4, 2.6], [2.5, 0.6], [2.35, 0.75]].forEach(function (m, i) {
+      var s = 0.6 + (i % 3) * 0.25;
+      b.cyl(0.02 * s, 0.025 * s, 0.12 * s, 6, C("#e6eedd"), m[0], 0, m[1]);
+      b.add(new T3.SphereGeometry(0.07 * s, 10, 6, 0, 2 * PI, 0, PI / 2), capM, m[0], 0.12 * s, m[1], { noCast: true });
+    });
+    b.fx.push(function (t) { capM.emissiveIntensity = 0.7 + Math.sin(t * 2) * 0.35; runeM.emissiveIntensity = 1.1 + Math.sin(t * 1.4) * 0.4; });
+    [2.35, 2.75, 3.15, 3.55].forEach(function (r, i) {
+      b.add(new T3.CylinderGeometry(0.17, 0.2, 0.05, 7), C("#8f9694", { flatShading: true }), MX + Math.cos(da) * r + (i % 2 ? 0.08 : -0.08), 0.02, MZ + Math.sin(da) * r - (i % 2 ? 0.08 : -0.08), { ry: i });
+    });
+
+    b.banner(0.65, 2.55, 0, "bannerEarth");
+    b.pine(2.45, -2.45, 1.1); b.pine(1.5, -2.65, 0.85); b.pine(-2.55, 0.7, 0.9); b.pine(-2.6, -0.6, 0.75);
+    b.bush(-2.4, 2.5, 0.2, "#2f6a2e"); b.bush(2.55, 1.6, 0.18, "#2f6a2e"); b.bush(-2.5, -2.5, 0.22, "#2f6a2e");
+    for (var f2 = 0; f2 < 18; f2++) {
+      var fx = -2.8 + b.rand() * 5.6, fz = -2.8 + b.rand() * 5.6;
+      if (Math.hypot(fx - MX, fz - MZ) > R + 0.15) b.tuft(fx, fz, "#3f7a32");
+    }
+    b.rock(-2.7, 1.2, 0.14, "#8f9694"); b.rock(1.3, 2.75, 0.12, "#8f9694"); b.rock(2.75, -0.4, 0.13, "#8f9694");
+  }
+
+
+  /* ================= DARK AGE in the new design languages ================= */
+  TEX.skep = [256, 256, function (g, w, h, r) {
+    g.fillStyle = "#c99a48"; g.fillRect(0, 0, w, h);
+    for (var i = 0; i < 2600; i++) { var x = r() * w, y = r() * h, l = 6 + r() * 12; g.strokeStyle = rgba(["#e8c870", "#a8782e", "#f2dc94"][(r() * 3) | 0], 0.7); g.lineWidth = 1.3; g.beginPath(); g.moveTo(x, y); g.lineTo(x + l, y + (r() - 0.5) * 2); g.stroke(); }
+    for (var y = 0; y < h; y += 21) { g.fillStyle = "rgba(60,36,10,.55)"; g.fillRect(0, y, w, 3); g.fillStyle = "rgba(255,240,190,.2)"; g.fillRect(0, y + 3, w, 2); }
+    for (var x2 = 0; x2 < w; x2 += 32) for (var y2 = 0; y2 < h; y2 += 21) { g.fillStyle = "rgba(60,36,10,.4)"; g.fillRect(x2 + (y2 / 21 % 2) * 16, y2 + 4, 3, 15); }
+  }];
+  TEX.canvasBY = [256, 256, cloth("#f0c63e", "#2a2622", "#2a2622")];
+  TEX.basalt = [256, 256, stone("#4a3c3c", "#16100f", 5, 3)];
+  TEX.drift = [256, 256, planks("#9c958a", 9)];
+  TEX.pearl = [256, 256, function (g, w, h, r) {
+    g.fillStyle = "#efe8e2"; g.fillRect(0, 0, w, h);
+    blotch(g, w, h, r, 26, ["#d8e6f2", "#f2d8e0", "#ffffff", "#e0d6cc"], 0.45, 20, 70);
+    for (var y = 0; y < h; y += 10) { g.strokeStyle = "rgba(150,130,120," + (0.08 + r() * 0.1) + ")"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(0, y); for (var x = 0; x <= w; x += 16) g.lineTo(x, y + Math.sin(x * 0.05 + y) * 2); g.stroke(); }
+  }];
+  TEX.ironPlate = [256, 256, function (g, w, h, r) {
+    g.fillStyle = "#1e1414"; g.fillRect(0, 0, w, h);
+    for (var y = 0; y < h; y += 64) for (var x = (y / 64 % 2) * 32 - 32; x < w + 64; x += 64) {
+      g.fillStyle = jit("#6a2a20", r, 0.3); g.fillRect(x + 2, y + 2, 60, 60);
+      g.fillStyle = "rgba(255,200,150,.12)"; g.fillRect(x + 2, y + 2, 60, 3);
+      g.fillStyle = "rgba(0,0,0,.3)"; g.fillRect(x + 2, y + 58, 60, 4);
+      g.fillStyle = "#b08040"; [[8, 8], [54, 8], [8, 54], [54, 54]].forEach(function (p) { g.beginPath(); g.arc(x + p[0], y + p[1], 2.5, 0, 6.3); g.fill(); });
+    }
+  }];
+  TEX.net = [128, 128, function (g, w, h) { g.clearRect(0, 0, w, h); g.strokeStyle = "rgba(226,214,186,1)"; g.lineWidth = 2.5; for (var i = 0; i <= w; i += 16) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, h); g.stroke(); g.beginPath(); g.moveTo(0, i); g.lineTo(w, i); g.stroke(); } }];
+
+  function dGlow(col, em, k) { return new T3.MeshStandardMaterial({ color: lin(col), emissive: lin(em), emissiveIntensity: k == null ? 1 : k, roughness: 0.5 }); }
+  function dRing(r, a) { return [Math.cos(a) * r, Math.sin(a) * r]; }
+  function dLathe(profile, seg) { return new T3.LatheGeometry(profile.map(function (p) { return new T3.Vector2(p[0], p[1]); }), seg || 32); }
+  function dFlame(b, x, y, z, s, li) {
+    var grp = new T3.Group(); grp.position.set(x, y, z); b.g.add(grp);
+    var fl = [];
+    [["#ff5a1a", 0.17, 0.75], ["#ff8a2a", 0.13, 0.6], ["#ffc04a", 0.09, 0.42], ["#fff0b0", 0.05, 0.26]].forEach(function (f, i) {
+      var mat = new T3.MeshBasicMaterial({ color: lin(f[0]), transparent: true, opacity: 0.85, blending: T3.AdditiveBlending, depthWrite: false });
+      for (var k = 0; k < 3; k++) fl.push([b.add(new T3.ConeGeometry(f[1] * s, f[2] * s, 8), mat, Math.cos(k * 2.1 + i) * 0.08 * s, f[2] * s / 2, Math.sin(k * 2.1 + i) * 0.08 * s, { parent: grp, noCast: true, noReceive: true }), i * 3 + k]);
+    });
+    var L = null; if (li) { L = new T3.PointLight("#ff8a3d", li, 4 * s + 2, 2); L.position.set(x, y + 0.4 * s, z); b.g.add(L); }
+    var ph = b.rand() * 9;
+    b.fx.push(function (t) { fl.forEach(function (q) { var p = q[1] + ph; q[0].scale.set(1 + Math.sin(t * 9 + p) * 0.12, 1 + Math.sin(t * 11 + p * 1.7) * 0.25, 1 + Math.cos(t * 8 + p) * 0.12); }); if (L) L.intensity = li * (1 + Math.sin(t * 13 + ph) * 0.12); });
+  }
+  function dSmoke(b, x, y, z, n) {
+    var list = [];
+    for (var i = 0; i < n; i++) { var sp = new T3.Sprite(new T3.SpriteMaterial({ map: tex("smoke"), transparent: true, depthWrite: false, opacity: 0.5 })); b.g.add(sp); list.push([sp, i / n]); }
+    b.fx.push(function (t) { list.forEach(function (q) { var k = (t * 0.18 + q[1]) % 1; q[0].position.set(x + k * 0.5, y + k * 1.4, z - k * 0.3); var sc = 0.22 + k * 0.7; q[0].scale.set(sc, sc, 1); q[0].material.opacity = 0.5 * (1 - k) * Math.min(1, k * 6); }); });
+  }
+  function dSkep(b, x, y0, z, R, H) {
+    var pts = [];
+    for (var i = 0; i <= 26; i++) { var t = i / 26, y = t * H, r = R * Math.pow(Math.max(0, 1 - Math.pow(t, 2.4)), 0.5) * (1 + 0.035 * Math.sin(t * H * 30)); pts.push([Math.max(0.001, r), y]); }
+    pts.push([0.001, H]);
+    b.add(dLathe(pts, 32), M("skep", 5, H * 4), x, y0, z);
+    return function (y) { var t = (y - y0) / H; return R * Math.pow(Math.max(0, 1 - Math.pow(t, 2.4)), 0.5); };
+  }
+  function dPennant(b, x, y, z, col) {
+    var pv = new T3.Group(); pv.position.set(x, y, z); b.g.add(pv);
+    var sh = new T3.Shape(); sh.moveTo(0, 0); sh.lineTo(0.42, -0.08); sh.lineTo(0, -0.18); sh.closePath();
+    b.add(new T3.ShapeGeometry(sh), C(col, { side: T3.DoubleSide }), 0, 0, 0, { parent: pv, ry: -PI / 4 });
+    var ph = b.rand() * 6; b.fx.push(function (t) { pv.rotation.y = Math.sin(t * 2.2 + ph) * 0.35; });
+  }
+
+  /* -------- Hufflepuff: Sky Hall, a straw hive raised on a stilted hex deck -------- */
+  function dAir(b) {
+    b.base(M("grassAir", 3, 3), M("sideAir", 3, 1));
+    b.decal("path", 0.6, 1.5, 1.2, 2.2, -0.3);
+    var post = M("plankDark", 0.3, 1), dark = C("#2a2622"), wood = M("plankWarm", 2, 2);
+    var DY = 0.78;
+    for (var k = 0; k < 6; k++) { var p = dRing(1.2, k * PI / 3 + PI / 6); b.cyl(0.07, 0.09, DY, 7, post, p[0] - 0.2, 0, p[1] - 0.2); }
+    for (var k2 = 0; k2 < 6; k2++) { var a = k2 * PI / 3 + PI / 6, p1 = dRing(1.2, a), p2 = dRing(1.2, a + PI / 3); b.beam([p1[0] - 0.2, 0.15, p1[1] - 0.2], [p2[0] - 0.2, DY - 0.08, p2[1] - 0.2], 0.025, post); }
+    b.add(new T3.CylinderGeometry(1.42, 1.42, 0.12, 6), [M("plankDark", 4, 0.3), wood, wood], -0.2, DY + 0.06, -0.2, { ry: PI / 6 });
+    b.add(new T3.CylinderGeometry(1.44, 1.44, 0.035, 6, 1, true), dark, -0.2, DY + 0.11, -0.2, { ry: PI / 6 });
+    var rOn = dSkep(b, -0.2, DY + 0.12, -0.2, 1.0, 1.65);
+    var lamp = dGlow("#ffd27a", "#ffa420", 1.0);
+    [[PI / 4 - 0.85, DY + 0.75], [PI / 4 + 0.85, DY + 0.75], [PI / 4 - 1.7, DY + 0.6]].forEach(function (w) {
+      var r = rOn(w[1]) + 0.02, x = -0.2 + Math.cos(w[0]) * r, z = -0.2 + Math.sin(w[0]) * r;
+      var m = b.add(new T3.CircleGeometry(0.09, 6), lamp, x, w[1], z, { noCast: true }); m.lookAt(x + Math.cos(w[0]) * 3, w[1] + 0.3, z + Math.sin(w[0]) * 3);
+      var f = b.add(new T3.RingGeometry(0.09, 0.13, 6), dark, x, w[1], z, { noCast: true }); f.lookAt(x + Math.cos(w[0]) * 3, w[1] + 0.3, z + Math.sin(w[0]) * 3);
+    });
+    var dr = rOn(DY + 0.35), dg = new T3.Group(); dg.position.set(-0.2 + Math.cos(PI / 4) * (dr - 0.02), DY + 0.12, -0.2 + Math.sin(PI / 4) * (dr - 0.02)); dg.rotation.y = PI / 4; b.g.add(dg);
+    var ash = new T3.Shape(); ash.moveTo(-0.24, 0); ash.lineTo(-0.24, 0.32); ash.absarc(0, 0.32, 0.24, PI, 0, true); ash.lineTo(0.24, 0); ash.closePath();
+    b.add(new T3.ShapeGeometry(ash), dGlow("#3a2008", "#ff9a20", 0.35), 0, 0, 0.04, { parent: dg, noCast: true });
+    b.add(new T3.TorusGeometry(0.26, 0.04, 6, 6, PI), dark, 0, 0.32, 0.05, { parent: dg });
+    b.add(new T3.BoxGeometry(0.75, 0.04, 0.32), M("canvasBY", 0.8, 0.4), 0, 0.72, 0.2, { parent: dg, rx: 0.35 });
+    for (var s = 0; s < 4; s++) b.box(0.5, DY + 0.12 - s * 0.22 - 0.1, 0.24, M("plankWarm", 0.5, 0.3), 0.55 + s * 0.17, 0, 0.55 + s * 0.17, { ry: PI / 4 });
+    b.cyl(0.02, 0.02, 0.45, 6, dark, -0.2, DY + 1.7, -0.2);
+    var rose = new T3.Group(); rose.position.set(-0.2 + 0.03, DY + 2.15, -0.2 + 0.03); rose.rotation.y = PI / 4; b.g.add(rose);
+    var spin = new T3.Group(); rose.add(spin);
+    for (var bl = 0; bl < 6; bl++) { var g = new T3.Group(); g.rotation.z = bl * PI / 3; spin.add(g); b.add(new T3.PlaneGeometry(0.1, 0.3), M("canvasBY", 0.3, 0.6, { side: T3.DoubleSide }), 0, 0.18, 0.02, { parent: g, ry: 0.4 }); }
+    b.fx.push(function (t, dt) { spin.rotation.z -= dt * 2.4; });
+    [[-1.9, 1.35, 0.46, 0.75], [-1.95, 0.35, 0.36, 0.6], [1.45, -1.95, 0.42, 0.7]].forEach(function (q) {
+      b.add(new T3.CylinderGeometry(q[2] + 0.12, q[2] + 0.15, 0.1, 6), M("plankDark", 2, 0.2), q[0], 0.05, q[1], { ry: PI / 6 });
+      dSkep(b, q[0], 0.1, q[1], q[2], q[3]);
+      b.add(new T3.CircleGeometry(0.09, 6), C("#140c04"), q[0] + Math.cos(PI / 4) * q[2] * 0.95, 0.22, q[1] + Math.sin(PI / 4) * q[2] * 0.95, { ry: PI / 4, noCast: true });
+    });
+    var MX = 1.95, MZ = -0.35, MH = 3.0;
+    b.cyl(0.05, 0.08, MH, 8, post, MX, 0, MZ);
+    b.beam([MX, MH * 0.85, MZ], [MX - 0.55, 0.05, MZ - 0.5], 0.01, C("#e8dcc0"));
+    var sh = new T3.Shape(); sh.moveTo(0, 0); sh.quadraticCurveTo(0.5, -0.55, 0.12, -1.55); sh.lineTo(-0.04, -1.55); sh.closePath();
+    var sv = new T3.Group(); sv.position.set(MX, MH - 0.15, MZ); sv.rotation.y = PI / 2 + 0.6; b.g.add(sv);
+    var sail = b.add(new T3.ShapeGeometry(sh), M("canvasBY", 1, 1, { side: T3.DoubleSide }), 0, 0, 0, { parent: sv });
+    b.fx.push(function (t) { sail.scale.x = 1 + Math.sin(t * 1.6) * 0.2; });
+    dPennant(b, MX, MH, MZ, "#f0c63e");
+    var lm = new T3.Group(); lm.position.set(0.95, 1.45, 0.95); b.g.add(lm);
+    b.beam([0.95, 0.0, 0.95], [0.95, 1.55, 0.95], 0.03, post);
+    b.add(new T3.CylinderGeometry(0.06, 0.07, 0.14, 6), lamp, 0, -0.1, 0, { parent: lm, noCast: true });
+    var jar = new T3.MeshStandardMaterial({ color: lin("#f2a72e"), emissive: lin("#c06a10"), emissiveIntensity: 0.4, roughness: 0.25 });
+    [[-0.9, 2.2], [-0.65, 2.35], [-0.95, 2.45]].forEach(function (q) { b.cyl(0.09, 0.09, 0.2, 6, jar, q[0], 0, q[1]); b.cyl(0.06, 0.06, 0.04, 6, dark, q[0], 0.2, q[1]); });
+    b.hay(1.95, 1.9, 0.4); b.hay(2.3, 1.4, -0.3); b.crate(1.55, 2.35, 0.26, 0.3);
+    b.banner(-0.5, 1.75, 0, "bannerAir", 1.5);
+    b.hay(-2.45, -2.35, 0.4); b.hay(0.6, -2.55, 1.2); b.hay(0.95, -2.4, 0.2); dSkep(b, 2.5, 0, -2.5, 0.16, 0.32);
+    for (var j = 0; j < 14; j++) b.tuft(-2.8 + b.rand() * 5.6, 1.3 + b.rand() * 1.5, "#5a9238");
+  }
+
+  /* -------- Ravenclaw: Tide Hall, a driftwood hut under a conch-shell roof by the water -------- */
+  function dConch(b, x, z, H, R, y0, turns, ridgeCol) {
+    var prof = [[0.001, 0]];
+    [[0.75, 0.04], [1.0, 0.3], [1.0, 0.6], [0.82, 0.95], [0.6, 1.3], [0.44, 1.6], [0.31, 1.95], [0.2, 2.3], [0.11, 2.62], [0.04, 2.85], [0.001, 2.95]].forEach(function (q) { prof.push([q[0] * R, q[1] / 2.95 * H]); });
+    b.add(dLathe(prof, 36), M("pearl", 3, 3, { roughness: 0.35, metalness: 0.08, color: lin("#f2dcd2") }), x, y0, z);
+    function rAt(y) { for (var i = 1; i < prof.length; i++) if (prof[i][1] >= y) { var a = prof[i - 1], c = prof[i], k = (y - a[1]) / Math.max(1e-6, c[1] - a[1]); return a[0] + (c[0] - a[0]) * k; } return 0; }
+    var pts = [];
+    for (var s = 0; s <= 140; s++) { var t = s / 140, y = 0.12 * H + t * 0.82 * H, a = t * PI * 2 * (turns || 4); pts.push(new T3.Vector3(x + Math.cos(a) * (rAt(y) + 0.012), y0 + y, z + Math.sin(a) * (rAt(y) + 0.012))); }
+    b.add(new T3.TubeGeometry(new T3.CatmullRomCurve3(pts), 280, 0.075 * R, 6, false), M("pearl", 1, 8, { color: lin(ridgeCol || "#9a6e64"), roughness: 0.4 }), 0, 0, 0);
+    return rAt;
+  }
+  function dWater(b) {
+    var grass = M("grassWater", 2.5, 2.5), side = M("sideWater", 2.5, 1), bottom = C("#21180f");
+    b.add(new T3.BoxGeometry(4.9, 0.7, 4.9), [side, side, grass, bottom, side, side], -0.55, -0.35, -0.55);
+    b.add(new T3.BoxGeometry(6, 0.35, 1.1), M("dirt", 2, 1), 0, -0.525, 2.45);
+    b.add(new T3.BoxGeometry(1.1, 0.35, 4.9), M("dirt", 2, 1), 2.45, -0.525, -0.55);
+    var wtex = tex("water", 2, 1), wtex2 = tex("water", 1, 2);
+    b.add(new T3.BoxGeometry(6, 0.27, 1.1), new T3.MeshStandardMaterial({ map: wtex, transparent: true, opacity: 0.86, roughness: 0.12, metalness: 0.25 }), 0, -0.215, 2.45, { noCast: true });
+    b.add(new T3.BoxGeometry(1.1, 0.27, 4.9), new T3.MeshStandardMaterial({ map: wtex2, transparent: true, opacity: 0.86, roughness: 0.12, metalness: 0.25 }), 2.45, -0.215, -0.55, { noCast: true });
+    b.fx.push(function (t) { wtex.offset.set(t * 0.03, Math.sin(t * 0.4) * 0.02); wtex2.offset.set(Math.sin(t * 0.4) * 0.02, -t * 0.03); });
+    var sand = M("dirt", 1.5, 1.5, { color: lin("#f0e2c0") });
+    b.add(new T3.CylinderGeometry(1.75, 1.85, 0.08, 28), sand, -0.6, 0.04, -0.6);
+    var HX = -0.6, HZ = -0.6, drift = M("drift", 4, 1);
+    b.cyl(1.0, 1.05, 0.95, 16, drift, HX, 0.08, HZ);
+    b.add(new T3.TorusGeometry(1.02, 0.04, 6, 32), C("#6a5a48"), HX, 0.35, HZ, { rx: PI / 2 });
+    b.add(new T3.TorusGeometry(1.02, 0.04, 6, 32), C("#6a5a48"), HX, 0.85, HZ, { rx: PI / 2 });
+    dConch(b, HX, HZ, 1.75, 1.18, 1.0, 4);
+    var bz = C("#c08a4a", { metalness: 0.75, roughness: 0.3 }), glass = dGlow("#bfe8ff", "#4ab0f0", 0.7);
+    [PI / 4 - 0.8, PI / 4 + 0.8, -0.5].forEach(function (a) {
+      var p = dRing(1.05, a), x = HX + p[0], z = HZ + p[1];
+      var g = b.add(new T3.CircleGeometry(0.11, 16), glass, x, 0.6, z, { noCast: true }); g.lookAt(x + p[0], 0.6, z + p[1]);
+      var r = b.add(new T3.TorusGeometry(0.12, 0.025, 6, 16), bz, x, 0.6, z); r.lookAt(x + p[0], 0.6, z + p[1]);
+    });
+    var mouth = new T3.Group(); mouth.position.set(HX + Math.cos(PI / 4) * 1.03, 0.08, HZ + Math.sin(PI / 4) * 1.03); mouth.rotation.y = PI / 4; b.g.add(mouth);
+    b.add(new T3.TorusGeometry(0.34, 0.09, 8, 24, PI * 1.25), M("pearl", 2, 0.5, { color: lin("#f6dcd4") }), 0, 0.34, 0.03, { parent: mouth, rz: -PI * 0.125 });
+    b.add(new T3.CircleGeometry(0.31, 22), dGlow("#1a3a5a", "#2a7ac8", 0.45), 0, 0.34, 0.02, { parent: mouth, noCast: true });
+    dConch(b, 0.9, -1.95, 2.0, 0.42, 0.0, 4.5);
+    b.box(0.95, 0.07, 1.25, M("drift", 1, 2), HX, -0.02, 2.42);
+    [[-0.42, 1.85], [0.42, 1.85], [-0.42, 2.98], [0.42, 2.98]].forEach(function (q) { b.cyl(0.04, 0.045, 0.85, 7, C("#6a5a48"), HX + q[0], -0.4, q[1]); });
+    b.box(0.7, 0.06, 1.3, M("drift", 1, 2), 2.45, -0.02, 0.6);
+    [[2.15, 0.0], [2.75, 0.0], [2.15, 1.2], [2.75, 1.2]].forEach(function (q) { b.cyl(0.035, 0.04, 0.8, 7, C("#6a5a48"), q[0], -0.4, q[1]); });
+    var bsh = new T3.Shape(); bsh.moveTo(-0.5, 0); bsh.quadraticCurveTo(-0.3, 0.2, 0, 0.2); bsh.quadraticCurveTo(0.3, 0.2, 0.5, 0); bsh.quadraticCurveTo(0.3, -0.2, 0, -0.2); bsh.quadraticCurveTo(-0.3, -0.2, -0.5, 0);
+    var boat = new T3.Group(); boat.position.set(2.4, -0.12, -0.55); boat.rotation.y = PI / 2; b.g.add(boat);
+    b.add(new T3.ExtrudeGeometry(bsh, { depth: 0.16, bevelEnabled: false }), M("drift", 2, 2), 0, 0, 0, { parent: boat, rx: -PI / 2 });
+    b.add(new T3.BoxGeometry(0.06, 0.03, 0.34), C("#5a4a3a"), 0.05, 0.15, 0, { parent: boat });
+    b.fx.push(function (t) { boat.rotation.z = Math.sin(t * 1.2) * 0.04; boat.position.y = -0.12 + Math.sin(t * 1.5) * 0.012; });
+    var netM = new T3.MeshStandardMaterial({ map: tex("net", 2, 1), transparent: true, alphaTest: 0.4, side: T3.DoubleSide, roughness: 1 });
+    [[0.75, 0.75], [1.45, 0.05]].forEach(function (q) { b.cyl(0.03, 0.035, 1.0, 6, C("#6a5a48"), q[0], 0, q[1]); });
+    var net = b.add(new T3.PlaneGeometry(1.0, 0.6), netM, 1.1, 0.68, 0.4, { ry: -PI / 4, noCast: true });
+    b.fx.push(function (t) { net.rotation.x = Math.sin(t * 1.3) * 0.06; });
+    b.cyl(0.04, 0.05, 1.1, 6, C("#6a5a48"), -1.95, 0, 0.9); b.beam([-1.95, 1.05, 0.9], [-1.7, 1.05, 0.9], 0.025, C("#6a5a48"));
+    var bell = new T3.Group(); bell.position.set(-1.72, 1.02, 0.9); b.g.add(bell);
+    b.add(new T3.ConeGeometry(0.1, 0.16, 12, 1, true), bz, 0, -0.1, 0, { parent: bell, s: [1, 1, 1] });
+    b.fx.push(function (t) { bell.rotation.z = Math.sin(t * 1.8) * 0.12; });
+    var shellM = M("pearl", 0.3, 0.3, { color: lin("#f6d8cc") });
+    [[0.2, 0.9], [-1.4, 0.85], [0.95, -0.7]].forEach(function (q, i) { b.add(new T3.SphereGeometry(0.08, 10, 6, 0, 2 * PI, 0, PI / 2), shellM, q[0], 0.08, q[1], { s: [1, 0.5, 1.3], ry: i }); });
+    b.add(new T3.SphereGeometry(0.11, 14, 10), dGlow("#bfe8ff", "#4ab0f0", 1.2), 0.75, 1.02, 0.75, { noCast: true });
+    var reed = C("#6a8a3a", { flatShading: true });
+    [[-2.75, 2.1], [-2.65, 2.85], [1.0, 2.75]].forEach(function (q) { for (var k = 0; k < 5; k++) b.add(new T3.ConeGeometry(0.02, 0.5 + b.rand() * 0.3, 3), reed, q[0] + (b.rand() - 0.5) * 0.18, 0.1, q[1] + (b.rand() - 0.5) * 0.18, { rz: (b.rand() - 0.5) * 0.4 }); });
+    b.banner(-1.75, -0.05 + 1.2, 0.08, "bannerWater", 1.5);
+    b.rock(-2.5, -2.3, 0.16, "#9aa6ae"); b.rock(-2.2, -2.6, 0.12, "#9aa6ae");
+  }
+
+  /* -------- Gryffindor: Ember Keep, basalt forge-huts around a fire pit -------- */
+  function dFrustum(b, x, y0, z, r0, r1, h, mat) { return b.add(new T3.CylinderGeometry(r1, r0, h, 4, 1), mat, x, y0 + h / 2, z, { ry: PI / 4 }); }
+  function dFire(b) {
+    b.base(M("grassFire", 3, 3, { color: lin("#c8b890") }), M("sideFire", 3, 1));
+    b.decal("path", 0.5, 0.6, 3.2, 3.0);
+    var bas = M("basalt", 3, 1), iron = M("ironPlate", 2, 1), gold = C("#e3a83a", { metalness: 0.7, roughness: 0.3 }), magma = dGlow("#ffb060", "#ff4a10", 1.5);
+    var HX = -0.65, HZ = -0.75;
+    dFrustum(b, HX, 0, HZ, 1.75, 1.6, 0.18, M("basalt", 3, 0.2));
+    dFrustum(b, HX, 0.18, HZ, 1.5, 1.32, 1.05, bas);
+    dFrustum(b, HX, 1.23, HZ, 1.42, 1.38, 0.08, gold);
+    dFrustum(b, HX, 1.31, HZ, 1.05, 0.92, 0.6, bas);
+    dFrustum(b, HX, 1.85, HZ, 0.98, 0.95, 0.06, gold);
+    dFrustum(b, HX, 1.91, HZ, 0.62, 0.5, 0.32, iron);
+    var spk = M("iron"), e1 = 1.36 * 0.707, e2 = 0.94 * 0.707;
+    [[e1, 1.31], [e2, 1.91]].forEach(function (q) {
+      for (var k = -3; k <= 3; k++) { var o = k / 3 * q[0] * 0.9; [[o, q[0]], [q[0], o], [o, -q[0]], [-q[0], o]].forEach(function (pp) { b.add(new T3.ConeGeometry(0.04, 0.2, 4), spk, HX + pp[0], q[1] + 0.1, HZ + pp[1]); }); }
+    });
+    b.cyl(0.3, 0.2, 0.18, 8, M("iron"), HX, 2.23, HZ);
+    b.cyl(0.27, 0.27, 0.02, 8, magma, HX, 2.41, HZ, { noCast: true });
+    dFlame(b, HX, 2.42, HZ, 0.7, 1.0);
+    var fz = HZ + 1.41 * 0.707 + 0.01;
+    var ash = new T3.Shape(); ash.moveTo(-0.27, 0); ash.lineTo(-0.27, 0.4); ash.lineTo(0, 0.66); ash.lineTo(0.27, 0.4); ash.lineTo(0.27, 0); ash.closePath();
+    var gg = new T3.MeshBasicMaterial({ color: lin("#ff8a3d"), transparent: true, opacity: 0.6 });
+    b.add(new T3.ShapeGeometry(ash), C("#120808"), HX, 0.18, fz, { noCast: true });
+    b.add(new T3.ShapeGeometry(ash), gg, HX, 0.21, fz + 0.005, { noCast: true, s: [0.78, 0.82, 1] });
+    var head = new T3.Group(); head.position.set(HX, 1.05, fz + 0.04); b.g.add(head);
+    b.add(new T3.SphereGeometry(0.13, 12, 9), gold, 0, 0, 0, { parent: head, s: [1, 1, 0.7] });
+    b.add(new T3.SphereGeometry(0.06, 10, 8), gold, 0, -0.04, 0.09, { parent: head });
+    for (var m = 0; m < 10; m++) { var a = m / 10 * 2 * PI; b.add(new T3.ConeGeometry(0.035, 0.12, 4), gold, Math.cos(a) * 0.15, Math.sin(a) * 0.15, -0.02, { parent: head, rz: a - PI / 2 }); }
+    [-0.65, 0.65].forEach(function (dx) { b.box(0.14, 0.32, 0.03, dGlow("#ffd38a", "#ff9a3c", 1.2), HX + dx, 0.6, fz, { noCast: true }); b.box(0.03, 0.32, 0.14, dGlow("#ffd38a", "#ff9a3c", 1.2), HX + 1.41 * 0.707 + 0.01, 0.6, HZ + dx, { noCast: true }); });
+    var CX = HX + 0.85, CZ = HZ - 0.85;
+    dFrustum(b, CX, 1.0, CZ, 0.32, 0.2, 1.75, bas);
+    b.cyl(0.15, 0.15, 0.05, 8, magma, CX, 2.75, CZ, { noCast: true });
+    dFlame(b, CX, 2.78, CZ, 0.4, 0.4); dSmoke(b, CX, 3.1, CZ, 5);
+    var PX = 0.95, PZ = 0.85;
+    for (var r = 0; r < 9; r++) { var p = dRing(0.48, r / 9 * 2 * PI); b.add(new T3.DodecahedronGeometry(0.13, 0), C("#3a3032", { flatShading: true }), PX + p[0], 0.08, PZ + p[1], { ry: r, s: [1, 0.7, 1] }); }
+    b.add(new T3.CylinderGeometry(0.42, 0.42, 0.04, 16), magma, PX, 0.04, PZ, { noCast: true });
+    dFlame(b, PX, 0.06, PZ, 0.9, 1.6);
+    var embers = [], em = new T3.SpriteMaterial({ map: tex("ember"), blending: T3.AdditiveBlending, depthWrite: false, transparent: true });
+    for (var e = 0; e < 8; e++) { var sp = new T3.Sprite(em); sp.scale.set(0.06, 0.06, 1); b.g.add(sp); embers.push([sp, b.rand() * 2, (b.rand() - 0.5) * 0.5, (b.rand() - 0.5) * 0.5]); }
+    b.fx.push(function (t) { embers.forEach(function (q) { var k = ((t * 0.6 + q[1]) % 1.2) / 1.2; q[0].position.set(PX + q[2] * k, 0.4 + k * 1.8, PZ + q[3] * k); q[0].material.opacity = 1 - k; }); gg.opacity = 0.5 + Math.sin(t * 5) * 0.1; magma.emissiveIntensity = 1.3 + Math.sin(t * 2) * 0.3; });
+    var FX = 1.55, FZ = -1.35;
+    dFrustum(b, FX, 0, FZ, 0.75, 0.65, 0.8, bas);
+    dFrustum(b, FX, 0.8, FZ, 0.82, 0.3, 0.55, iron);
+    b.box(0.4, 0.4, 0.03, dGlow("#ffb060", "#ff6a1a", 1.2), FX, 0.05, FZ + 0.48, { noCast: true });
+    b.cyl(0.11, 0.14, 0.22, 8, M("plankDark", 0.4, 0.3), FX - 0.1, 0, FZ + 0.85);
+    b.box(0.3, 0.09, 0.13, M("iron"), FX - 0.1, 0.22, FZ + 0.85, { ry: 0.6 });
+    var stake = C("#6a4a2c", { flatShading: true });
+    for (var s2 = 0; s2 < 11; s2++) { var z = -2.6 + s2 * 0.38; b.add(new T3.ConeGeometry(0.07, 0.75, 5), stake, -2.6, 0.32, z, { rz: 0.25 }); }
+    for (var s3 = 0; s3 < 7; s3++) { var x = -2.2 + s3 * 0.38; b.add(new T3.ConeGeometry(0.07, 0.75, 5), stake, x, 0.32, -2.6, { rx: -0.25 }); }
+    b.banner(HX - 0.55, fz + 0.45, 0, "bannerFire", 1.55); b.banner(HX + 0.55, fz + 0.45, 0, "bannerFire", 1.55);
+    b.logs(2.2, 0.6, 0.3); b.logs(2.25, 1.25, -0.1);
+    var ore = C("#4a3c3e", { flatShading: true });
+    for (var o = 0; o < 6; o++) b.add(new T3.DodecahedronGeometry(0.08 + b.rand() * 0.05, 0), ore, 2.3 + (b.rand() - 0.5) * 0.4, 0.06, -0.4 + (b.rand() - 0.5) * 0.4);
+    b.rock(1.0, -2.55, 0.3, "#4a3e3a"); b.rock(2.55, -2.5, 0.26, "#5a4a44"); b.rock(2.2, -2.75, 0.18, "#4a3e3a");
+  }
+  var DARKNEW = { air: dAir, water: dWater, fire: dFire };
+
+  var SCENES = { air: sceneAir, water: sceneWater, fire: sceneFire, earth: sceneEarth };
+
+  /* ---------- views ---------- */
+  var views = [], paused = false, time = 0, last = performance.now();
+  var VIEW_H = 8.1, TARGET = new T3.Vector3(0, 1.15, 0), DIR = new T3.Vector3(1, 0.816, 1).normalize();
+
+  var SIL_B = new T3.MeshBasicMaterial({ color: lin("#1b2028") }), SIL_G = new T3.MeshBasicMaterial({ color: lin("#a9b2bc") });
+  var state = { ver: "new", sil: false };
+  function buildScene(fn) {
+    var scene = new T3.Scene();
+    scene.add(new T3.HemisphereLight("#d6e6ff", "#5a4630", 0.65));
+    var sun = new T3.DirectionalLight("#fff0d6", 1.55);
+    sun.position.set(-3.5, 9, 6.5); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+    var sc = sun.shadow.camera; sc.left = -6; sc.right = 6; sc.top = 6; sc.bottom = -6; sc.near = 1; sc.far = 30;
+    sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.02; sun.shadow.radius = 3; scene.add(sun);
+    var rim = new T3.DirectionalLight("#9fc4ff", 0.35); rim.position.set(6, 5, -6); scene.add(rim);
+    var b = new B(scene); fn(b); b.fx.forEach(function (f) { f(0, 0); });
+    scene.updateMatrixWorld(true);
+    var list = [], sprites = [];
+    scene.traverse(function (o) { if (o.isMesh) { var bb = new T3.Box3().setFromObject(o); list.push([o, o.material, bb.max.y < 0.12]); } else if (o.isSprite) sprites.push(o); });
+    return { scene: scene, fx: b.fx, list: list, sprites: sprites, sil: false };
+  }
+  function setSil(a, on) {
+    if (a.sil === on) return; a.sil = on;
+    a.list.forEach(function (q) { q[0].material = on ? (q[2] ? SIL_G : SIL_B) : q[1]; });
+    a.sprites.forEach(function (s) { s.visible = !on; });
+  }
+  function makeView(el) {
+    var key = el.getAttribute("data-scene"), oldFn = SCENES[key], newFn = DARKNEW[key] || oldFn;
+    if (!oldFn) return;
+    var renderer;
+    try { renderer = new T3.WebGLRenderer({ antialias: true, alpha: true }); }
+    catch (e) { var p = el.querySelector(".fallback"); if (p) p.textContent = "This browser can't show the 3D preview (WebGL is off)."; return; }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputEncoding = T3.sRGBEncoding; renderer.toneMapping = T3.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.25;
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = T3.PCFSoftShadowMap;
+    var cam = new T3.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
+    cam.position.copy(TARGET).addScaledVector(DIR, 30); cam.lookAt(TARGET);
+    var built = {};
+    var fb = el.querySelector(".fallback"); if (fb) fb.remove();
+    el.appendChild(renderer.domElement);
+    var v = { el: el, renderer: renderer, cam: cam, visible: true, dirty: true };
+    v.sync = function () {
+      var k = state.ver;
+      if (!built[k]) built[k] = buildScene(k === "new" ? newFn : oldFn);
+      setSil(built[k], state.sil);
+      v.scene = built[k].scene; v.fx = built[k].fx; v.dirty = true;
+      el.classList.toggle("sil", state.sil);
+    };
+    v.sync();
+    function resize() {
+      var w = el.clientWidth, h = el.clientHeight; if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      var a = w / h;
+      cam.left = -VIEW_H * a / 2; cam.right = VIEW_H * a / 2; cam.top = VIEW_H / 2; cam.bottom = -VIEW_H / 2;
+      cam.updateProjectionMatrix(); v.dirty = true;
+    }
+    resize();
+    if (window.ResizeObserver) new ResizeObserver(resize).observe(el); else window.addEventListener("resize", resize);
+    if (window.IntersectionObserver) new IntersectionObserver(function (en) { v.visible = en[0].isIntersecting; if (v.visible) v.dirty = true; }).observe(el);
+    views.push(v);
+  }
+  arts.forEach(makeView);
+  function refreshAll() {
+    views.forEach(function (v) { v.sync(); });
+    document.querySelectorAll("[data-ver]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.ver === state.ver ? "true" : "false"); });
+    document.querySelectorAll("[data-view]").forEach(function (b) { b.setAttribute("aria-pressed", (b.dataset.view === "sil") === state.sil ? "true" : "false"); });
+  }
+  document.querySelectorAll("[data-ver]").forEach(function (b) { b.addEventListener("click", function () { state.ver = b.dataset.ver; refreshAll(); }); });
+  document.querySelectorAll("[data-view]").forEach(function (b) { b.addEventListener("click", function () { state.sil = b.dataset.view === "sil"; refreshAll(); }); });
+
+  function frame(now) {
+    var dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (!paused) time += dt;
+    views.forEach(function (v) {
+      if (!v.visible) return;
+      if (paused && !v.dirty) return;
+      v.fx.forEach(function (f) { f(time, paused ? 0 : dt); });
+      v.renderer.render(v.scene, v.cam); v.dirty = false;
+    });
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  var btn = document.getElementById("motion");
+  function setPaused(p) {
+    paused = p;
+    btn.setAttribute("aria-pressed", p ? "true" : "false");
+    btn.textContent = p ? "Play animation" : "Pause animation";
+  }
+  btn.addEventListener("click", function () { setPaused(!paused); });
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) setPaused(true);
+})();
+</script>

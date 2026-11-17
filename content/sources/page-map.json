@@ -1,0 +1,2496 @@
+{
+  "files": [
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "sha256": "0233b7d99bb269c6d46826ec88ab101a3f174a0492824614fb150910a0802d94",
+      "pages": 20
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "sha256": "bbe7a0ec7ada34eee6245f232c4cf3fac3185825e2574573525a10373868021d",
+      "pages": 20
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "sha256": "f7b54cf991d67ff2aec17f22e0ac720fc637b330e5c72be242397349e2db8f7b",
+      "pages": 24
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "sha256": "2f67dd67d7f8473e28bbe7ff9dfb00001f1a3f3fbd930e5ab0147c69fcc6cb56",
+      "pages": 24
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "sha256": "be653535d44ed1267af882e6c71b2d8d7c911bf85c234e1500395d82c02dd617",
+      "pages": 20
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "sha256": "62683b88d6a4960ac71144e17ab30b7c1e9d357e8d76eb593f249e7770c369e6",
+      "pages": 20
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "sha256": "49a9cfd1aec1dad46b83ccd065b9018ab0ae6c64059f0208498e8b3810965b43",
+      "pages": 24
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "sha256": "926a7684ae7cf2cfc71e62ef07cc572eb8cdf428819406a83328f79884e8edd1",
+      "pages": 24
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "sha256": "cdb9e589beb61688478fe1a1c8fcb1d2fb7e4734e91a24b3b05ccb331ad1c46a",
+      "pages": 20
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "sha256": "062ce572f51e4bdbcb0f85b03ed41df0bfbefe3e79579ebe4499a06d0de700b3",
+      "pages": 20
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "sha256": "d27daca6cd638b66435e82d044c281bacb8b05b70e52acb4b87b1495a6d65316",
+      "pages": 24
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "sha256": "f4615220517293bc6b7ef26d0fdcd95fa86abe9def457125f3cf06222563ef95",
+      "pages": 24
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "sha256": "cba1b54135e60f2fa51823a07bb6736ef153c201407625949061159c881e54e1",
+      "pages": 24
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "sha256": "73728d21887732544a56c4140b54f9f03d7ef6d164ca089a147bafd74987519a",
+      "pages": 20
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "sha256": "62a72e741c18e466b5973cb412e8e36f94eba38718f29ee5b4863bcdb768b5cf",
+      "pages": 20
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "sha256": "125435b6f4c96d91521c32cd8eb8c1edfd358460ffd3cf0f64a7c0f497b5b966",
+      "pages": 24
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "sha256": "eab1eca81a84a4b81ea0c961fd85c04ed2348e34f1c14bf580324d7d7d5cda6f",
+      "pages": 24
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "sha256": "c90c0ba15fa5571b0e97ea6a0d93ad91d0459078747be8f2dd84f1ae4adeafec",
+      "pages": 24
+    }
+  ],
+  "pages": [
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g5u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g5u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g5u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g5u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g5u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g5u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g5u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g5u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g5u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g5u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g5u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g5u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g5u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g5u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g5u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g5u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g5u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g5u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g5u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g5u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g5u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g5u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g5u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g5u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g5u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g5u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g5u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g5u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g5u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g5u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g5u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g5u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g5u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g5u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g5u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g5u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": "g5u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": "g5u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": "g5u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": "g5u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": "g5u5",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": "g5u6",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 21,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 22,
+      "unitId": "g5u5",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 23,
+      "unitId": "g5u6",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "5_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 24,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g5u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g5u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g5u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g5u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g5u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g5u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g5u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g5u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g5u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g5u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g5u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g5u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": "g5u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": "g5u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": "g5u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": "g5u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": "g5u7",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": "g5u8",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 21,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 22,
+      "unitId": "g5u7",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 23,
+      "unitId": "g5u8",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "5_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 24,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g6u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g6u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g6u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g6u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g6u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g6u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g6u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g6u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g6u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g6u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g6u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g6u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_01_02_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g6u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g6u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g6u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g6u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g6u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g6u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g6u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g6u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g6u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g6u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g6u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g6u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_03_04_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g6u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g6u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g6u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g6u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g6u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g6u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g6u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g6u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g6u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g6u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g6u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g6u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": "g6u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": "g6u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": "g6u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": "g6u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": "g6u5",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": "g6u6",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 21,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 22,
+      "unitId": "g6u5",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 23,
+      "unitId": "g6u6",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "6_Sinif_Tema_05_06_Kapsamli_Calisma.pdf",
+      "page": 24,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g6u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g6u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g6u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g6u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g6u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g6u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g6u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g6u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g6u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g6u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g6u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g6u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": "g6u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": "g6u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": "g6u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": "g6u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": "g6u7",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": "g6u8",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 21,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 22,
+      "unitId": "g6u7",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 23,
+      "unitId": "g6u8",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "6_Sinif_Tema_07_08_Kapsamli_Calisma.pdf",
+      "page": 24,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g7u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g7u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g7u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g7u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g7u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g7u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g7u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g7u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g7u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g7u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g7u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g7u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g7u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g7u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g7u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g7u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g7u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g7u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g7u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g7u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g7u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g7u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g7u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g7u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g7u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g7u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g7u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g7u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g7u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g7u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g7u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g7u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g7u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g7u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g7u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g7u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": "g7u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": "g7u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": "g7u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": "g7u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": "g7u5",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": "g7u6",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 21,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 22,
+      "unitId": "g7u5",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 23,
+      "unitId": "g7u6",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "7_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 24,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g7u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g7u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g7u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g7u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g7u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g7u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g7u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g7u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g7u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g7u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g7u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g7u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": "g7u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": "g7u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": "g7u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": "g7u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": "g7u7",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": "g7u8",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 21,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 22,
+      "unitId": "g7u7",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 23,
+      "unitId": "g7u8",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "7_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 24,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g7u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g7u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g7u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g7u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g7u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g7u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g7u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g7u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g7u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g7u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g7u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g7u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": "g7u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": "g7u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": "g7u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": "g7u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": "g7u9",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": "g7u10",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 21,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 22,
+      "unitId": "g7u9",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 23,
+      "unitId": "g7u10",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "7_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 24,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g8u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g8u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g8u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g8u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g8u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g8u1",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g8u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g8u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g8u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g8u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g8u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g8u2",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_01_02_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g8u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g8u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g8u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g8u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g8u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g8u3",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g8u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g8u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g8u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g8u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g8u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g8u4",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_03_04_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g8u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g8u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g8u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g8u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g8u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g8u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g8u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g8u5",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g8u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g8u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g8u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g8u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": "g8u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": "g8u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": "g8u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": "g8u6",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": "g8u5",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": "g8u6",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 21,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 22,
+      "unitId": "g8u5",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 23,
+      "unitId": "g8u6",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "8_Sinif_Unite_05_06_Kapsamli_Calisma.pdf",
+      "page": 24,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g8u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g8u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g8u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g8u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g8u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g8u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g8u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g8u7",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g8u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g8u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g8u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g8u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": "g8u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": "g8u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": "g8u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": "g8u8",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": "g8u7",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": "g8u8",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 21,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 22,
+      "unitId": "g8u7",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 23,
+      "unitId": "g8u8",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "8_Sinif_Unite_07_08_Kapsamli_Calisma.pdf",
+      "page": 24,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 1,
+      "unitId": null,
+      "classification": "cover"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 2,
+      "unitId": "g8u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 3,
+      "unitId": "g8u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 4,
+      "unitId": "g8u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 5,
+      "unitId": "g8u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 6,
+      "unitId": "g8u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 7,
+      "unitId": "g8u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 8,
+      "unitId": "g8u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 9,
+      "unitId": "g8u9",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 10,
+      "unitId": "g8u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 11,
+      "unitId": "g8u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 12,
+      "unitId": "g8u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 13,
+      "unitId": "g8u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 14,
+      "unitId": "g8u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 15,
+      "unitId": "g8u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 16,
+      "unitId": "g8u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 17,
+      "unitId": "g8u10",
+      "classification": "explicit_unit_heading"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 18,
+      "unitId": "g8u9",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 19,
+      "unitId": "g8u10",
+      "classification": "unit_writing_workshop"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 20,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 21,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 22,
+      "unitId": "g8u9",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 23,
+      "unitId": "g8u10",
+      "classification": "unit_answer_key"
+    },
+    {
+      "file": "8_Sinif_Unite_09_10_Kapsamli_Calisma.pdf",
+      "page": 24,
+      "unitId": null,
+      "classification": "mixed_workshop_or_answers"
+    }
+  ]
+}

@@ -19,7 +19,7 @@ A browser-playable, touch-first real-time strategy game for Mr. Saymaz's Grades 
 - **Platform**: web browser, installable as a PWA. Landscape. No accounts and no install needed to play.
 - **Match**: 1v1 against an AI rival, three arenas, each about 15–20 minutes.
 - **Core loop**: gather Food, Lumber and Gold; build, upgrade and train; reach the next age; build an army; destroy the rival's Town Center.
-- **Wait or do it now**: most timers (construction, upgrades, training, research) can be waited out or finished instantly with an English task. A few key moments are required English with no waiting option: the age-up (the Age Ceremony), the first construction of each newly unlocked building type, and summoning the signature creature and heroes. English is how a student out-paces the rival, never a wall: wrong answers only cost time, and nobody gets stuck (same rule as SnowPax).
+- **Wait or do it now**: most timers (construction, upgrades, training, research) can be waited out or finished instantly with an English task. About 8–9 key moments per arena are required English with no waiting option: the gold mine claim, the key building and special building foundations, the key research, the hero summon, the Age Ceremony, the creature's new form and the battle cry (`LANGUAGE_TASKS.md`). Wrong answers only cost time, and nobody gets stuck (same rule as SnowPax).
 
 ## 2. Players, teams and nations
 
@@ -62,10 +62,10 @@ Four ages: **Dark, Mythic, Arcane, Celestial** (confirmed). Ages are reached **d
 | Arena 3 | Arcane (quick start) | **Celestial** | Final forms and map-scale abilities |
 
 - **No carry-over** between arenas except the starting age (confirmed). Each arena is self-contained.
-- **Quick start**: Arenas 2 and 3 open with the Town Center and a few core buildings already standing in the starting age, so the early game is not replayed.
+- **Quick start**: Arenas 2 and 3 open with the Town Center and the Dark-age buildings already standing, upgraded to the starting age, so the early game is not replayed. The special buildings (Beast Pen, Sanctum, Workshop) are never pre-built: their foundations are required English in each arena.
 - **Age-up timing**: around minute 6–9 of the arena, leaving time to use the new age before the finale.
 - **The rival ages up too**, on a timer set by its difficulty, so the race to the next age is part of the fight.
-- **Age-up requirements**: resources and one key building (Sanctum for Arcane, Workshop for Celestial). Then the **Age Ceremony** at the Town Center is **required**: there is no timer to wait out (`LANGUAGE_TASKS.md`). Wrong answers bring hints and the right answer, so nobody is stuck.
+- **Age-up requirements**: resources and one key building founded in this arena (Barracks for Mythic, Sanctum for Arcane, Workshop for Celestial), plus one Sanctum research for Arcane and Celestial. Then the **Age Ceremony** at the Town Center is **required**: there is no timer to wait out (`LANGUAGE_TASKS.md`). Wrong answers bring hints and the right answer, so nobody is stuck.
 - **The age-up moment**: every building transforms into its next-age form, one by one, with the nation's elemental choreography (as solMaxima's evolutions: air ribbons, rising embers, growing vines, water arches). Under 8 seconds, skippable. The signature creature takes its next form at the same time.
 
 ## 5. Visual design languages
@@ -204,7 +204,7 @@ One panel that fits a phone without scrolling (as solMaxima's opening screen):
 5. ~~Carry-over~~: none except the starting age.
 6. ~~Unlock threshold~~: 60% first-try accuracy, minimum 8 tasks.
 7. ~~Language tasks~~: wait or do it now per job, with the age-up (Age Ceremony) required, as in `LANGUAGE_TASKS.md`.
-8. ~~Other required tasks~~: the first construction of each newly unlocked building type, and summoning the signature creature and heroes.
+8. ~~Other required tasks~~: gold mine claim, key building and special building foundations, key research (Arenas 2–3), hero summon, creature's new form and battle cry; 8–9 per arena.
 9. Protected time: full pause on Relaxed and a quarter speed on Challenge (proposed).
 10. Arena settings and map themes.
 11. League game ID and the exact win rule.

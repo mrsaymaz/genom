@@ -17,6 +17,7 @@ A browser-playable, touch-first real-time strategy game for Mr. Saymaz's Grades 
 
 - **Look**: 2.5D isometric (three.js), inspired by Red Alert 2 for readability and by Warcraft 3, Age of Empires 2/3, Rise of Nations and Rise of Legends for aesthetics. Bright and readable at phone size.
 - **Platform**: web browser, installable as a PWA. Landscape. No accounts and no install needed to play.
+- **Deployment**: a static build hosted on Vercel for Mr. Saymaz's students, as SnowPax is (`vercel.json`: build with `npm run build`, publish `dist`; no environment variables).
 - **Match**: 1v1 against an AI rival, three arenas, each about 15–20 minutes.
 - **Core loop**: gather Food, Lumber and Gold; build, upgrade and train; reach the next age; build an army; destroy the rival's Town Center.
 - **Wait or do it now**: most timers (construction, upgrades, training, research) can be waited out or finished instantly with an English task. Key moments are required English with no waiting option, and **each arena demands more**: 5 required tasks in Arena 1, 8 in Arena 2 and 11 in Arena 3 (`LANGUAGE_TASKS.md`). Wrong answers only cost time, and nobody gets stuck (same rule as SnowPax).
@@ -155,7 +156,7 @@ Three arenas, climbing in difficulty, each self-contained. **[OPEN]** Settings f
 - Difficulty comes from AI behaviour and skill, never resource cheats.
 - AI skill compensates for matchup edges.
 - The setup screen shows only a general description ("tougher rival"), never odds.
-- **Unlocking**: the next arena opens with a win and **60% first-try accuracy** on the English tasks, counted only if the student completed at least 8 tasks in the arena (`LANGUAGE_TASKS.md`).
+- **Unlocking**: the next arena opens with a win and **60% first-try accuracy** on the English tasks, over every task the student did in the arena; the required tasks guarantee there are always some to count (`LANGUAGE_TASKS.md`).
 - **Pace**: Relaxed (no task timers, slower rival) or Challenge (task timers, full-speed rival), as in SnowPax.
 
 ## 8. Main screen
@@ -170,7 +171,7 @@ One panel that fits a phone without scrolling (as solMaxima's opening screen):
 ## 9. English League
 
 - Wins are claimed as Ulti points through the League client (game ID to be assigned; see SnowPax `docs/ENGLISH-LEAGUE.md`). The League decides the points.
-- Win rule (proposed): a win plus 60% of tasks right first time (at least 8 tasks) on Relaxed, or 2+ stars on Challenge. Stars: 1 for the win, 2 for 60%+ first-try, 3 for 80%+.
+- Win rule (proposed): a win plus 60% of tasks right first time on Relaxed, or 2+ stars on Challenge. Stars: 1 for the win, 2 for 60%+ first-try, 3 for 80%+.
 - `public/config.js` holds the League address; an empty value gives a practice-only copy with no requests.
 - No ads, no accounts, no tracking beyond the League claim. Progress is saved per device.
 
@@ -202,7 +203,7 @@ One panel that fits a phone without scrolling (as solMaxima's opening screen):
 3. ~~Team choice~~: always the student's League team.
 4. ~~Icons~~: no emoji outside language tasks; all other icons are drawn.
 5. ~~Carry-over~~: none except the starting age.
-6. ~~Unlock threshold~~: 60% first-try accuracy, minimum 8 tasks.
+6. ~~Unlock threshold~~: 60% first-try accuracy over all tasks done in the arena; no minimum task count.
 7. ~~Language tasks~~: wait or do it now per job, with the age-up (Age Ceremony) required, as in `LANGUAGE_TASKS.md`.
 8. ~~Other required tasks~~: they climb by arena: 5 in Arena 1, 8 in Arena 2, 11 in Arena 3 (`LANGUAGE_TASKS.md`).
 9. Protected time: full pause on Relaxed and a quarter speed on Challenge (proposed).

@@ -4,7 +4,7 @@ A touch-first, browser-based real-time strategy game for Grades 5–8 English st
 
 Students lead their own League team (Hufflepuff, Ravenclaw, Gryffindor or Slytherin) through four ages (**Dark, Mythic, Arcane and Celestial**) across three arenas. Every timer in the game (construction, upgrades, training, research and the age-up) can be waited out or finished instantly with English, at 3D task stations built on the SnowPax language bank.
 
-**Status:** design and concept art. No game code yet.
+**Status:** design and concept art. No game code yet. The game will be deployed on Vercel as a static browser game, as SnowPax is.
 
 ## What's here
 

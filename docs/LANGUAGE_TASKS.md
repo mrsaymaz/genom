@@ -53,7 +53,6 @@ These cannot be waited out. **Each arena demands more than the last:** Arena 1 i
 
 - The task formats climb too (see "Difficulty by arena"): Arena 1 uses matching, pictures, sorting, clues and spelling with the first letter given; Arena 3 adds grammar repair, reading and dialogue.
 - **Quick starts** in Arenas 2 and 3 include the Town Center and the Dark-age buildings only. The Beast Pen, Sanctum and Workshop are never pre-built, because nothing carries over between arenas.
-- **The 8-task minimum** for the 60% rule: Arena 1's 5 required tasks fall short, so a student must do at least 3 optional speed-ups for Arena 1 to count. Arenas 2 and 3 meet it with the required tasks alone.
 - Arena 3 holds about 8 minutes of required English, so it should run toward the 20-minute end of the range; check this in testing.
 - **Required never means stuck.** A wrong answer brings a hint, then an explanation and the right answer, so every item eventually completes. First-try accuracy is still recorded.
 - Required tasks can be paused and resumed; accepted answers are kept.
@@ -96,7 +95,7 @@ Emoji pictures (the bank's licensed Fluent Emoji images) appear **only inside la
 ## Scoring and unlocking
 
 - **Unlock rule: 60% first-try accuracy** in the arena (lower than SnowPax's 80%, because the student is also running a battle).
-- **Minimum:** an arena counts only if the student completed **at least 8 tasks** in it, so the percentage means something.
+- Accuracy counts every task the student did in the arena, required and optional. There is no minimum task count: the required tasks (5, 8 and 11 per arena) guarantee there is always enough to count.
 - Every item counts once toward first-try accuracy; retries after a hint do not count against it twice.
 - The **English League claim** (Ulti points) needs a win plus the 60% rule on Relaxed, or 2+ stars on Challenge. **[OPEN]** confirm with the League.
 - Stars per arena (proposed): 1 for the win, 2 for 60%+ first-try, 3 for 80%+ first-try.

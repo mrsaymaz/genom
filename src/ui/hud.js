@@ -3,6 +3,8 @@
 import { CONFIG } from '../config.js';
 import { ICONS } from './icons.js';
 import { T } from '../sim/map.js';
+import { ActionRing } from './ring.js';
+import { TILE } from '../render/art.js';
 
 const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
 const RES = ['food', 'lumber', 'gold'];
@@ -41,12 +43,15 @@ export class HUD {
     addEventListener('pointerup', () => { this.miniDrag = false; });
     // Bottom: selection panel and command card.
     this.panel = h('div', 'panel hidden');
-    this.card = h('div', 'card');
+    this.wheelAt = null; // tile point the build wheel is drawn around, while it is open
     this.toasts = h('div', 'toasts');
     this.boxEl = h('div', 'dragbox hidden');
-    root.append(this.top, this.obj, this.quick, this.mini, this.panel, this.card, this.toasts, this.boxEl);
+    root.append(this.top, this.obj, this.quick, this.mini, this.panel, this.toasts, this.boxEl);
+    // Rings go last so their buttons sit above toasts and panels.
+    this.ring = new ActionRing(root, 'on-map');
+    this.thumb = new ActionRing(root, 'thumb');
     this.terrainImg = this.drawTerrain();
-    this.cardKey = ''; this.panelKey = ''; this.miniT = 0;
+    this.panelKey = ''; this.miniT = 0;
   }
 
   // ---------- per-frame refresh ----------
@@ -136,47 +141,78 @@ export class HUD {
     }
   }
 
-  // ---------- command card ----------
+  // ---------- actions: rings on the map and the thumb zone ----------
+  // Buildings show their actions in a ring around themselves; a building outline being placed
+  // shows its tick and cross beside it; selected units get thumb-zone buttons (bottom right),
+  // where Build opens a wheel of buildings.
   commands() {
-    const g = this.g, w = g.world, t = w.teams[0];
+    const g = this.g, w = g.world, v = g.view;
     const ents = g.sel.map(id => w.get(id)).filter(e => e && e.team === 0);
-    let buttons = [];
+    const compact = v.h < 460;
+    const bounds = { w: v.w, h: v.h, top: compact ? 44 : 56, bottom: 4 };
+    const ppu = v.h / v.zoom;
+    let ring = null, thumb = null;
+
     if (g.placing) {
-      buttons = [
-        { id: 'ok', icon: ICONS.check, label: 'Place', cls: g.placing.ok ? 'go' : 'off', act: () => g.confirmPlacement() },
-        { id: 'no', icon: ICONS.cancel, label: 'Cancel', cls: 'stop', act: () => g.cancelPlacement() },
-      ];
+      const p = g.placing, s = CONFIG.buildings[p.type].size;
+      // The tick sits to the right of the outline and the cross to the left.
+      ring = {
+        anchor: v.screen(p.x + s / 2, p.y + s / 2, 0.3),
+        items: [
+          { id: 'ok', icon: ICONS.check, label: 'Build', cls: 'go', poor: !p.ok, act: () => g.confirmPlacement() },
+          { id: 'no', icon: ICONS.cancel, label: 'Cancel', cls: 'stop', act: () => g.cancelPlacement() },
+        ],
+        opts: { radius: s * TILE * ppu * 0.62 + 40, center: 90, step: 180 },
+      };
     } else if (g.rallyMode) {
-      buttons = [{ id: 'no', icon: ICONS.cancel, label: 'Cancel', cls: 'stop', act: () => { g.rallyMode = false; } }];
-    } else if (ents.length && ents.every(e => e.cat === 'unit')) {
-      if (ents.some(e => e.type === 'worker')) {
-        buttons = CONFIG.buildOrder.map(type => {
-          const d = CONFIG.buildings[type];
-          return { id: 'b' + type, icon: ICONS[type], label: d.name, cost: d.cost, cls: w.canAfford(0, d.cost) ? '' : 'poor', act: () => g.startPlacement(type) };
-        });
-      }
-      buttons.push({ id: 'stop', icon: ICONS.stop, label: 'Stop', act: () => g.stop() });
+      thumb = { items: [{ id: 'no', icon: ICONS.cancel, label: 'Cancel', cls: 'stop', act: () => { g.rallyMode = false; } }] };
     } else if (ents.length === 1 && ents[0].cat === 'bld') {
       const b = ents[0], d = CONFIG.buildings[b.type];
-      if (!b.built) buttons = [{ id: 'cc', icon: ICONS.cancel, label: 'Cancel', cls: 'stop', act: () => g.cancelConstruction(b.id) }];
+      let items = [];
+      if (!b.built) items = [{ id: 'cc', icon: ICONS.cancel, label: 'Cancel', cls: 'stop', hint: 'Cancel construction (refund)', act: () => g.cancelConstruction(b.id) }];
       else {
-        buttons = (d.trains || []).map(type => {
-          const u = CONFIG.units[type];
-          return { id: 't' + type, icon: ICONS[type], label: u.name, cost: u.cost, cls: w.canAfford(0, u.cost) && b.queue.length < 5 ? '' : 'poor', act: () => g.trainUnit(b.id, type) };
+        items = (d.trains || []).map(type => {
+          const u = CONFIG.units[type], n = b.queue.filter(q => q.type === type).length, first = b.queue[0];
+          return {
+            id: 't' + type, icon: ICONS[type], label: u.name, cost: u.cost, hint: `Train a ${u.name}. Hold to queue five.`,
+            poor: !w.canAfford(0, u.cost) || b.queue.length >= 5, badge: n,
+            progress: first && first.type === type ? Math.min(1, first.t / u.time) : 0,
+            act: () => g.trainUnit(b.id, type), hold: () => g.trainUnit(b.id, type, 5),
+          };
         });
-        if (d.trains) buttons.push({ id: 'rally', icon: ICONS.rally, label: 'Rally', act: () => { g.rallyMode = true; g.hud.toast('Tap where new units should go.'); } });
+        if (d.trains) items.push({ id: 'rally', icon: ICONS.rally, label: 'Rally', hint: 'Set where new units go', act: () => { g.rallyMode = true; this.toast('Tap where new units should go.'); } });
+      }
+      const [cx, cy] = w.center(b), view = g.view.blds.get(b.id);
+      const hgt = view ? Math.min(2.2, view.art.height * 0.45) : 1;
+      const anchor = v.screen(cx, cy, hgt), radius = b.w * TILE * ppu * 0.5 + 34;
+      ring = { anchor, items, opts: { radius, center: anchor[1] - radius < bounds.top + 40 ? 90 : -90 } };
+    } else if (ents.length && ents.every(e => e.cat === 'unit')) {
+      const workers = ents.filter(e => e.type === 'worker');
+      if (!workers.length) this.wheelAt = null;
+      if (this.wheelAt) {
+        // The build wheel: a full ring of buildings around where the worker stood.
+        const items = CONFIG.buildOrder.map(type => {
+          const d = CONFIG.buildings[type];
+          return { id: 'b' + type, icon: ICONS[type], label: d.name, cost: d.cost, poor: !w.canAfford(0, d.cost), act: () => { this.wheelAt = null; g.startPlacement(type); } };
+        });
+        items.push({ id: 'back', icon: ICONS.cancel, label: 'Close', cls: 'stop', act: () => { this.wheelAt = null; } });
+        ring = { anchor: v.screen(this.wheelAt[0], this.wheelAt[1], 0.5), items, opts: { radius: compact ? 96 : 110, center: -90, step: 360 / items.length } };
+      } else {
+        thumb = { items: [
+          ...(workers.length ? [{ id: 'build', icon: ICONS.build, label: 'Build', cls: 'main', act: () => { const u = workers[0]; this.wheelAt = [u.x, u.y]; } }] : []),
+          { id: 'stop', icon: ICONS.stop, label: 'Stop', act: () => g.stop() },
+        ] };
       }
     }
-    const key = buttons.map(b => b.id + (b.cls || '')).join('|');
-    if (key === this.cardKey) return;
-    this.cardKey = key;
-    this.card.innerHTML = '';
-    for (const b of buttons) {
-      const el = h('button', `cmd ${b.cls || ''}`, `${b.icon}<span class="lbl">${b.label}</span>${b.cost ? `<span class="costs">${costHtml(b.cost)}</span>` : ''}`);
-      el.onclick = ev => { ev.stopPropagation(); b.act(); this.cardKey = ''; };
-      this.card.append(el);
-    }
-    void t;
+    if (!(ents.length && ents.every(e => e.cat === 'unit' ) && ents.some(e => e.type === 'worker'))) this.wheelAt = null;
+
+    if (ring && (ring.anchor[0] < -40 || ring.anchor[0] > v.w + 40 || ring.anchor[1] < -40 || ring.anchor[1] > v.h + 40)) ring = null;
+    if (ring) this.ring.show(ring.anchor, ring.items, { ...ring.opts, bounds }); else this.ring.hide();
+    if (thumb) {
+      // The thumb zone: buttons in a quarter circle around the bottom-right corner.
+      const corner = [v.w - 10, v.h - 10];
+      this.thumb.show(corner, thumb.items, { radius: compact ? 62 : 74, center: -135, step: 62, bounds });
+    } else this.thumb.hide();
   }
 
   // ---------- minimap ----------
@@ -213,7 +249,7 @@ export class HUD {
   toast(text, kind = '') {
     const el = h('div', `toast ${kind}`, text);
     this.toasts.append(el);
-    while (this.toasts.children.length > 3) this.toasts.firstChild.remove();
+    while (this.toasts.children.length > 2) this.toasts.firstChild.remove();
     setTimeout(() => el.classList.add('out'), 2600);
     setTimeout(() => el.remove(), 3200);
   }

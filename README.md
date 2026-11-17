@@ -34,13 +34,14 @@ npm test
 
 ### Controls
 
-- **Tap** a unit or building to select it.
+- **Tap** a building to select it. Its actions pop up in a ring around it: train units, set the rally point, or cancel construction. Tap a train button to queue one; **hold** it to queue five. Tap the building again to close the ring.
+- **Tap** a unit to select it. With workers selected, **Build** (bottom right) opens a wheel of buildings around the worker.
 - **Tap** the ground, a tree, berries, a mine or an enemy to give the selected units an order.
 - **Drag** to select a group.
 - **Two fingers** move the map; **pinch** to zoom.
 - **Mouse:** right-click gives orders, right- or middle-drag pans, and the wheel zooms. WASD or the arrow keys also pan.
 - Space pauses and Esc cancels.
-- **To place a building:** move its outline, then tap it again or tap the tick.
+- **To place a building:** drag its outline, then tap the tick beside it (or tap the outline again). The cross cancels.
 
 ## What's here
 

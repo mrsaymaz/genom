@@ -137,6 +137,7 @@ class Game {
 
   // ---------- input actions ----------
   tap(sx, sy, dbl) {
+    if (this.hud.wheelAt) { this.hud.wheelAt = null; return; } // a tap on the map closes the build wheel
     if (this.placing) {
       const tile = this.view.pick(sx, sy), p = this.placing, s = CONFIG.buildings[p.type].size;
       if (tile && tile[0] >= p.x && tile[0] < p.x + s && tile[1] >= p.y && tile[1] < p.y + s) this.confirmPlacement();
@@ -156,7 +157,7 @@ class Game {
       const workers = mine.filter(u => u.type === 'worker');
       if (workers.length && target.cat === 'bld' && (!target.built || CONFIG.buildings[target.type].farm)) { this.order(mine, target, tile); return; }
       if (dbl && target.cat === 'unit') { this.sel = this.onScreen(u => u.type === target.type); return; }
-      this.sel = [target.id];
+      this.sel = this.sel.length === 1 && this.sel[0] === target.id && target.cat === 'bld' ? [] : [target.id];
       return;
     }
     if (mine.length) { this.order(mine, target, tile); return; }
@@ -233,12 +234,18 @@ class Game {
   missing(cost) { const r = this.world.teams[0].res; return Object.entries(cost).filter(([k, v]) => r[k] < v).map(([k, v]) => `${Math.ceil(v - r[k])} ${k}`).join(', '); }
 
   // ---------- commands from the HUD ----------
-  trainUnit(bid, type) {
+  // Queues one unit, or up to `count` (hold a train button to queue five).
+  trainUnit(bid, type, count = 1) {
     const w = this.world, b = w.get(bid), d = CONFIG.units[type];
     if (!b) return;
-    if (b.queue.length >= 5) { this.hud.toast('The queue is full.'); return; }
-    if (!w.canAfford(0, d.cost)) { this.hud.toast(`Not enough: ${this.missing(d.cost)}.`, 'bad'); return; }
-    w.train(bid, type);
+    let n = 0;
+    while (n < count && b.queue.length < 5 && w.canAfford(0, d.cost)) { w.train(bid, type); n++; }
+    if (!n) {
+      if (b.queue.length >= 5) this.hud.toast('The queue is full (5).');
+      else this.hud.toast(`Not enough: ${this.missing(d.cost)}.`, 'bad');
+      return;
+    }
+    if (count > 1) this.hud.toast(`Queued ${n} ${d.name}${n > 1 ? 's' : ''}.`);
     const t = w.teams[0];
     if (t.pop + b.queue.length > t.popCap) this.hud.toast('Build a House to raise your population limit.');
   }
@@ -258,7 +265,8 @@ class Game {
   selectArmy() { const a = this.army(); if (a.length) { this.sel = a.map(u => u.id); const u = a[0]; this.view.centerOn(u.x, u.y); } }
   goHome() { const tc = this.home(); if (tc) { this.view.centerOn(tc.x + 2, tc.y + 2); this.sel = [tc.id]; } }
   escape() {
-    if (this.placing) this.cancelPlacement();
+    if (this.hud.wheelAt) this.hud.wheelAt = null;
+    else if (this.placing) this.cancelPlacement();
     else if (this.rallyMode) this.rallyMode = false;
     else if (this.sel.length) this.sel = [];
     else this.togglePause();

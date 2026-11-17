@@ -22,6 +22,8 @@ export const ICONS = {
   idle: svg('<circle cx="10" cy="7" r="3.2" fill="currentColor"/><path d="M4 21c0-5 2.5-8.5 6-8.5s6 3.5 6 8.5z" fill="currentColor"/><path d="M16 3h6l-6 6h6" stroke="currentColor" stroke-width="1.6" fill="none"/>'),
   army: svg('<circle cx="7" cy="8" r="2.6" fill="currentColor"/><circle cx="17" cy="8" r="2.6" fill="currentColor"/><path d="M2 20c0-4 2-6.5 5-6.5s5 2.5 5 6.5zM12 20c0-4 2-6.5 5-6.5s5 2.5 5 6.5z" fill="currentColor"/><path d="M12 2v9" stroke="currentColor" stroke-width="1.6"/>'),
   objectives: svg('<rect x="4" y="3" width="16" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.8"/>'),
+  build: svg('<path d="M3 20l9-9 2 2-9 9a1.4 1.4 0 01-2-2z" fill="currentColor"/><path d="M10 6l4-4 3 1 4 4-2 2-2-1-3 3-4-4 1-1z" fill="currentColor"/>'),
+  back: svg('<path d="M14 5l-7 7 7 7" stroke="currentColor" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
   rally: svg('<path d="M6 21V3" stroke="currentColor" stroke-width="2"/><path d="M6 3h12l-3 4 3 4H6z" fill="currentColor"/>'),
 };
 

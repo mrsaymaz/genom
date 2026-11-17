@@ -28,7 +28,16 @@ export class Input {
     this.el.setPointerCapture?.(e.pointerId);
     const [x, y] = this.pos(e);
     this.p.set(e.pointerId, { x0: x, y0: y, x, y, t: performance.now(), button: e.button, mouse: e.pointerType === 'mouse', moved: false });
-    if (this.p.size === 2) { this.multi = true; this.g.endBox(); const [a, b] = [...this.p.values()]; this.pinch = Math.hypot(a.x - b.x, a.y - b.y); this.mid = [(a.x + b.x) / 2, (a.y + b.y) / 2]; }
+    // Long-press: a steady finger for half a second (selects all of a kind, opens the build wheel).
+    clearTimeout(this.lpTimer);
+    if (this.p.size === 1) {
+      const q = this.p.get(e.pointerId);
+      this.lpTimer = setTimeout(() => {
+        if (!this.p.has(e.pointerId) || q.moved || this.multi || (q.mouse && q.button !== 0)) return;
+        if (this.g.longPress(q.x, q.y)) { q.long = true; navigator.vibrate?.(15); }
+      }, 500);
+    }
+    if (this.p.size === 2) { clearTimeout(this.lpTimer); this.multi = true; this.g.endBox(); const [a, b] = [...this.p.values()]; this.pinch = Math.hypot(a.x - b.x, a.y - b.y); this.mid = [(a.x + b.x) / 2, (a.y + b.y) / 2]; }
     if (this.p.size === 1) this.multi = false;
   }
 
@@ -57,6 +66,8 @@ export class Input {
     const q = this.p.get(e.pointerId);
     this.p.delete(e.pointerId);
     if (!q) return;
+    if (!this.p.size) clearTimeout(this.lpTimer);
+    if (q.long) return;
     if (this.multi) { if (!this.p.size) this.multi = false; return; }
     if (q.moved) { if (!this.g.placing && !(q.mouse && q.button !== 0)) this.g.finishBox(); return; }
     const now = performance.now();

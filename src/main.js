@@ -11,6 +11,7 @@ import { ICONS, EMBLEMS } from './ui/icons.js';
 import { Tutorial } from './tutorial.js';
 
 const STEP = 1 / 20;
+const plural = (name, n) => (n === 1 || name.endsWith('s') ? name : name.endsWith('man') ? `${name.slice(0, -3)}men` : `${name}s`);
 const $ = s => document.querySelector(s);
 const store = { get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode */ } } };
 
@@ -23,7 +24,7 @@ class Game {
     const old = $('#view'), fresh = old.cloneNode(false); old.replaceWith(fresh); // a clean WebGL context each match
     this.canvas = fresh;
     this.view = new View(this.canvas, this.world);
-    this.sel = []; this.placing = null; this.rallyMode = false;
+    this.sel = []; this.placing = null; this.rallyMode = false; this.amoveMode = false; this.focus = null;
     this.paused = false; this.over = false; this.pings = [];
     this.calmFor = 0; this.raided = false; this.alertT = 0;
     this.hud = new HUD($('#hud'), this);
@@ -146,9 +147,18 @@ class Game {
     }
     const w = this.world, target = this.entityAt(sx, sy), tile = this.view.pick(sx, sy);
     if (this.rallyMode) {
-      const b = w.get(this.sel[0]);
-      if (b && tile) b.rally = { x: Math.floor(tile[0]), y: Math.floor(tile[1]), target: target && target.cat === 'res' ? target.id : (target?.cat === 'bld' && CONFIG.buildings[target.type].farm ? target.id : null) };
+      const rally = tile && { x: Math.floor(tile[0]), y: Math.floor(tile[1]), target: target && target.cat === 'res' ? target.id : (target?.cat === 'bld' && CONFIG.buildings[target.type].farm ? target.id : null) };
+      if (rally) for (const id of this.sel) { const b = w.get(id); if (b?.cat === 'bld') b.rally = rally; }
       this.rallyMode = false;
+      return;
+    }
+    if (this.amoveMode) {
+      // Attack-move: walk there and fight everything met on the way.
+      this.amoveMode = false;
+      const ids = this.sel.filter(id => { const u = w.get(id); return u?.cat === 'unit' && u.team === 0; });
+      if (target && target.team !== undefined && target.team !== 0) w.orderAttack(ids, target.id);
+      else if (tile) w.orderAttackMove(ids, tile[0], tile[1]);
+      if (tile) { const [x, z] = this.view.toWorld(tile[0], tile[1]); this.flag(x, z, '#ff6060'); }
       return;
     }
     const mine = this.sel.map(id => w.get(id)).filter(e => e && e.team === 0 && e.cat === 'unit');
@@ -156,12 +166,35 @@ class Game {
       // Workers tapping their own unfinished building or a farm get to work instead of selecting it.
       const workers = mine.filter(u => u.type === 'worker');
       if (workers.length && target.cat === 'bld' && (!target.built || CONFIG.buildings[target.type].farm)) { this.order(mine, target, tile); return; }
-      if (dbl && target.cat === 'unit') { this.sel = this.onScreen(u => u.type === target.type); return; }
+      if (dbl) { this.selectAllOf(target); return; }
+      this.focus = target.id;
       this.sel = this.sel.length === 1 && this.sel[0] === target.id && target.cat === 'bld' ? [] : [target.id];
       return;
     }
     if (mine.length) { this.order(mine, target, tile); return; }
     this.sel = target ? [target.id] : [];
+  }
+  // Long-press: on a worker, open the build wheel; on anything else of yours, select all of that kind.
+  longPress(sx, sy) {
+    if (this.placing || this.rallyMode || this.amoveMode) return false;
+    const t = this.entityAt(sx, sy);
+    if (!t || t.team !== 0) return false;
+    if (t.cat === 'unit' && t.type === 'worker') {
+      if (!this.sel.includes(t.id)) this.sel = [t.id];
+      this.hud.wheelAt = [t.x, t.y];
+      return true;
+    }
+    this.selectAllOf(t);
+    return true;
+  }
+  // Every built building of that type, or every unit of that type on screen.
+  selectAllOf(t) {
+    this.focus = t.id;
+    if (t.cat === 'bld') {
+      const all = [...this.world.buildings(0)].filter(b => b.type === t.type && (b.built || b.id === t.id)).map(b => b.id);
+      this.sel = [t.id, ...all.filter(id => id !== t.id)];
+      if (all.length > 1) this.hud.toast(`All ${all.length} ${plural(CONFIG.buildings[t.type].name, all.length)} selected.`);
+    } else this.sel = this.onScreen(u => u.type === t.type);
   }
   command(sx, sy) {
     if (this.placing) { this.cancelPlacement(); return; }
@@ -234,20 +267,33 @@ class Game {
   missing(cost) { const r = this.world.teams[0].res; return Object.entries(cost).filter(([k, v]) => r[k] < v).map(([k, v]) => `${Math.ceil(v - r[k])} ${k}`).join(', '); }
 
   // ---------- commands from the HUD ----------
-  // Queues one unit, or up to `count` (hold a train button to queue five).
-  trainUnit(bid, type, count = 1) {
-    const w = this.world, b = w.get(bid), d = CONFIG.units[type];
-    if (!b) return;
+  // Queues one unit, or up to `count` (hold a train button to queue five). With several
+  // buildings selected, each unit goes to the one with the shortest queue.
+  trainUnit(bids, type, count = 1) {
+    const w = this.world, d = CONFIG.units[type];
+    const list = [].concat(bids).map(id => w.get(id)).filter(b => b && b.built && CONFIG.buildings[b.type].trains?.includes(type));
+    if (!list.length) return;
     let n = 0;
-    while (n < count && b.queue.length < 5 && w.canAfford(0, d.cost)) { w.train(bid, type); n++; }
+    for (; n < count; n++) {
+      const b = list.filter(x => x.queue.length < 5).sort((x, y) => x.queue.length - y.queue.length)[0];
+      if (!b || !w.canAfford(0, d.cost)) break;
+      w.train(b.id, type);
+    }
     if (!n) {
-      if (b.queue.length >= 5) this.hud.toast('The queue is full (5).');
+      if (list.every(b => b.queue.length >= 5)) this.hud.toast('The queue is full (5).');
       else this.hud.toast(`Not enough: ${this.missing(d.cost)}.`, 'bad');
       return;
     }
-    if (count > 1) this.hud.toast(`Queued ${n} ${d.name}${n > 1 ? 's' : ''}.`);
-    const t = w.teams[0];
-    if (t.pop + b.queue.length > t.popCap) this.hud.toast('Build a House to raise your population limit.');
+    if (count > 1) this.hud.toast(`Queued ${n} ${plural(d.name, n)}.`);
+    const t = w.teams[0], queued = list.reduce((s2, b) => s2 + b.queue.length, 0);
+    if (t.pop + queued > t.popCap) this.hud.toast('Build a House to raise your population limit.');
+  }
+  holdPosition() { this.world.orderHold(this.sel); this.hud.toast('Holding position.'); }
+  selectAllIdle() {
+    const idle = this.idleWorkers();
+    if (!idle.length) return;
+    this.sel = idle.map(u => u.id);
+    this.hud.toast(`${idle.length} idle worker${idle.length > 1 ? 's' : ''} selected.`);
   }
   cancelTraining(bid, i) { this.world.cancel(bid, i); }
   cancelConstruction(bid) { this.world.cancelConstruction(bid); this.events(); this.sel = []; }
@@ -266,6 +312,7 @@ class Game {
   goHome() { const tc = this.home(); if (tc) { this.view.centerOn(tc.x + 2, tc.y + 2); this.sel = [tc.id]; } }
   escape() {
     if (this.hud.wheelAt) this.hud.wheelAt = null;
+    else if (this.amoveMode) this.amoveMode = false;
     else if (this.placing) this.cancelPlacement();
     else if (this.rallyMode) this.rallyMode = false;
     else if (this.sel.length) this.sel = [];

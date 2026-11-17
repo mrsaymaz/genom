@@ -8,6 +8,14 @@ import { TILE } from '../render/art.js';
 
 const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
 const RES = ['food', 'lumber', 'gold'];
+// A button with a tap action and a separate long-press action.
+const holdable = (el, tap, hold) => {
+  let timer = 0, held = false;
+  el.addEventListener('pointerdown', () => { held = false; clearTimeout(timer); timer = setTimeout(() => { held = true; navigator.vibrate?.(15); hold(); }, 500); });
+  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) el.addEventListener(ev, () => clearTimeout(timer));
+  el.addEventListener('click', () => { if (held) { held = false; return; } tap(); });
+  el.addEventListener('contextmenu', e => e.preventDefault());
+};
 const costHtml = cost => Object.entries(cost || {}).map(([k, v]) => `<span class="cost">${ICONS[k]}${v}</span>`).join('');
 const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
@@ -30,7 +38,7 @@ export class HUD {
     this.obj.append(this.objHead, this.objBody);
     // Quick-select buttons.
     this.quick = h('div', 'quick');
-    this.idleBtn = h('button', 'icon-btn', `${ICONS.idle}<i></i>`); this.idleBtn.title = 'Next idle worker'; this.idleBtn.onclick = () => game.selectIdleWorker();
+    this.idleBtn = h('button', 'icon-btn', `${ICONS.idle}<i></i>`); this.idleBtn.title = 'Next idle worker (hold: all idle workers)'; holdable(this.idleBtn, () => game.selectIdleWorker(), () => game.selectAllIdle());
     this.armyBtn = h('button', 'icon-btn', `${ICONS.army}<i></i>`); this.armyBtn.title = 'Select all soldiers'; this.armyBtn.onclick = () => game.selectArmy();
     this.homeBtn = h('button', 'icon-btn', ICONS.towncenter); this.homeBtn.title = 'Go to Town Center'; this.homeBtn.onclick = () => game.goHome();
     this.quick.append(this.idleBtn, this.armyBtn, this.homeBtn);
@@ -166,18 +174,28 @@ export class HUD {
       };
     } else if (g.rallyMode) {
       thumb = { items: [{ id: 'no', icon: ICONS.cancel, label: 'Cancel', cls: 'stop', act: () => { g.rallyMode = false; } }] };
-    } else if (ents.length === 1 && ents[0].cat === 'bld') {
-      const b = ents[0], d = CONFIG.buildings[b.type];
+    } else if (g.amoveMode) {
+      thumb = { items: [{ id: 'no', icon: ICONS.cancel, label: 'Cancel', cls: 'stop', act: () => { g.amoveMode = false; } }] };
+    } else if (ents.length && ents.every(e => e.cat === 'bld' && e.type === ents[0].type) && (ents.length === 1 || ents.every(e => e.built))) {
+      // One building, or every building of one type (double-tap or long-press): the ring sits on
+      // the building that was tapped, and training goes to whichever has the shortest queue.
+      const b = ents.find(e => e.id === g.focus) || ents[0], d = CONFIG.buildings[b.type], ids = ents.map(e => e.id);
       let items = [];
       if (!b.built) items = [{ id: 'cc', icon: ICONS.cancel, label: 'Cancel', cls: 'stop', hint: 'Cancel construction (refund)', act: () => g.cancelConstruction(b.id) }];
       else {
         items = (d.trains || []).map(type => {
-          const u = CONFIG.units[type], n = b.queue.filter(q => q.type === type).length, first = b.queue[0];
+          const u = CONFIG.units[type];
+          let n = 0, prog = 0, room = false;
+          for (const e of ents) {
+            n += e.queue.filter(q => q.type === type).length;
+            if (e.queue.length < 5) room = true;
+            const first = e.queue[0];
+            if (first && first.type === type) prog = Math.max(prog, Math.min(1, first.t / u.time));
+          }
           return {
             id: 't' + type, icon: ICONS[type], label: u.name, cost: u.cost, hint: `Train a ${u.name}. Hold to queue five.`,
-            poor: !w.canAfford(0, u.cost) || b.queue.length >= 5, badge: n,
-            progress: first && first.type === type ? Math.min(1, first.t / u.time) : 0,
-            act: () => g.trainUnit(b.id, type), hold: () => g.trainUnit(b.id, type, 5),
+            poor: !w.canAfford(0, u.cost) || !room, badge: n, progress: prog,
+            act: () => g.trainUnit(ids, type), hold: () => g.trainUnit(ids, type, 5),
           };
         });
         if (d.trains) items.push({ id: 'rally', icon: ICONS.rally, label: 'Rally', hint: 'Set where new units go', act: () => { g.rallyMode = true; this.toast('Tap where new units should go.'); } });
@@ -198,8 +216,13 @@ export class HUD {
         items.push({ id: 'back', icon: ICONS.cancel, label: 'Close', cls: 'stop', act: () => { this.wheelAt = null; } });
         ring = { anchor: v.screen(this.wheelAt[0], this.wheelAt[1], 0.5), items, opts: { radius: compact ? 96 : 110, center: -90, step: 360 / items.length } };
       } else {
+        const soldiers = ents.length > workers.length;
         thumb = { items: [
           ...(workers.length ? [{ id: 'build', icon: ICONS.build, label: 'Build', cls: 'main', act: () => { const u = workers[0]; this.wheelAt = [u.x, u.y]; } }] : []),
+          ...(soldiers ? [
+            { id: 'amove', icon: ICONS.amove, label: 'Attack', cls: workers.length ? '' : 'main', hint: 'Attack-move: tap a spot; they fight everything on the way', act: () => { g.amoveMode = true; this.toast('Tap where to attack.'); } },
+            { id: 'hold', icon: ICONS.hold, label: 'Hold', hint: 'Hold position: stay put and strike anything in reach', on: ents.every(e => e.type === 'worker' || e.order?.type === 'hold'), act: () => g.holdPosition() },
+          ] : []),
           { id: 'stop', icon: ICONS.stop, label: 'Stop', act: () => g.stop() },
         ] };
       }
@@ -211,7 +234,8 @@ export class HUD {
     if (thumb) {
       // The thumb zone: buttons in a quarter circle around the bottom-right corner.
       const corner = [v.w - 10, v.h - 10];
-      this.thumb.show(corner, thumb.items, { radius: compact ? 62 : 74, center: -135, step: 62, bounds });
+      const n = thumb.items.length, r = n <= 2 ? (compact ? 62 : 74) : n === 3 ? (compact ? 100 : 112) : (compact ? 132 : 146);
+      this.thumb.show(corner, thumb.items, { radius: r, center: -135, step: n <= 2 ? 62 : 90 / (n - 1), bounds });
     } else this.thumb.hide();
   }
 

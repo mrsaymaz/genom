@@ -201,6 +201,7 @@ export class World {
       this.setOrder(u, { type: 'build', target: bid });
     }
   }
+  orderHold(ids) { for (const id of ids) { const u = this.get(id); if (u?.cat === 'unit' && u.type !== 'worker') this.setOrder(u, { type: 'hold' }); } }
   orderReturn(ids) { for (const id of ids) { const u = this.get(id); if (u?.carry) this.setOrder(u, { type: 'return', then: u.order?.target ?? null }); } }
 
   // Smart command: what the player meant by tapping a target with units selected.
@@ -406,6 +407,20 @@ export class World {
         if (!e) { this.setOrder(u, null); break; }
         if (o.auto && this.distTo(u, e) > d.sight + 3) { this.setOrder(u, null); break; }
         this.fight(u, e, dt);
+        break;
+      }
+      case 'hold': {
+        // Hold position: strike anything that comes within reach, but never step away.
+        let best = null, bd = d.range + 0.05;
+        for (const e of this.ents.values()) {
+          if (e.team === undefined || e.team === u.team || (e.cat !== 'unit' && e.cat !== 'bld')) continue;
+          const dd = this.distTo(u, e);
+          if (dd <= bd) { bd = dd; best = e; }
+        }
+        if (best) {
+          u.facing = Math.atan2(this.center(best)[1] - u.y, this.center(best)[0] - u.x);
+          if (u.cd <= 0) { u.cd = d.cooldown; u.work = 0.01; this.damage(u, best, d.damage); }
+        }
         break;
       }
       case 'gather': this.gather(u, o, dt); break;

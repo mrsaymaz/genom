@@ -95,3 +95,26 @@ test('the Challenge rival attacks sooner than the Relaxed rival', () => {
   const firstWave = pace => { const w = new World({ pace }); const ai = new RivalAI(w, 1); let t = 0; while (ai.wave === 0 && t < 900) { ai.update(0.05); w.step(0.05); t += 0.05; } return t; };
   assert.ok(firstWave('challenge') < firstWave('relaxed'));
 });
+
+test('soldiers on hold position fight in reach but never chase', () => {
+  const w = new World();
+  const tc = [...w.buildings(0)].find(b => b.type === 'towncenter');
+  const guard = w.spawnUnit(0, 'spearman', tc);
+  const [gx, gy] = [guard.x, guard.y];
+  w.orderHold([guard.id]);
+  // An archer shoots from beyond the spearman's reach: the spearman must stay put.
+  const archer = w.spawnUnit(1, 'archer', tc);
+  archer.x = archer.px = gx + 3.5; archer.y = archer.py = gy;
+  w.orderAttack([archer.id], guard.id);
+  run(w, 3);
+  assert.ok(Math.hypot(guard.x - gx, guard.y - gy) < 0.6, 'the guard stayed in place');
+  assert.equal(guard.order?.type, 'hold');
+  // A spearman walks into reach and gets hit.
+  const raider = w.spawnUnit(1, 'spearman', tc);
+  raider.x = raider.px = gx + 0.8; raider.y = raider.py = gy;
+  w.setOrder(archer, null); archer.x = archer.px = 1; archer.y = archer.py = 1;
+  const hp = raider.hp;
+  w.setOrder(raider, { type: 'hold' });
+  run(w, 3);
+  assert.ok(!w.get(raider.id) || raider.hp < hp, 'the guard struck the raider in reach');
+});

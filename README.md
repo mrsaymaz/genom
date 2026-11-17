@@ -35,6 +35,9 @@ npm test
 ### Controls
 
 - **Tap** a building to select it. Its actions pop up in a ring around it: train units, set the rally point, or cancel construction. Tap a train button to queue one; **hold** it to queue five. Tap the building again to close the ring.
+- **Double-tap** (or long-press) a building to select every building of that type; training then goes to whichever has the shortest queue.
+- **Long-press** a worker to open the build wheel straight away. Long-press any other unit to select all of that kind on screen. Long-press the idle-worker button to select every idle worker.
+- With soldiers selected, the thumb zone offers **Attack** (attack-move: tap a spot and they fight everything on the way), **Hold** (stay put and strike anything in reach) and **Stop**.
 - **Tap** a unit to select it. With workers selected, **Build** (bottom right) opens a wheel of buildings around the worker.
 - **Tap** the ground, a tree, berries, a mine or an enemy to give the selected units an order.
 - **Drag** to select a group.

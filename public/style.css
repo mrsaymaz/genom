@@ -156,3 +156,4 @@ h2 { margin: 14px 0 8px; font: 600 15px Fredoka, Nunito, sans-serif; color: var(
   .team small { display: none; }
   .sheet button.big { margin-top: 8px; padding: 8px; font-size: 19px; }
 }
+.rbtn.on .face { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(242, 192, 64, 0.45), 0 3px 8px rgba(0, 0, 0, 0.35); }

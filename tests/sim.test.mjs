@@ -118,3 +118,37 @@ test('soldiers on hold position fight in reach but never chase', () => {
   run(w, 3);
   assert.ok(!w.get(raider.id) || raider.hp < hp, 'the guard struck the raider in reach');
 });
+
+test('a saved match continues exactly as if it had never stopped', () => {
+  const a = new World({ pace: 'challenge' }), aiA = new RivalAI(a, 1);
+  run(a, 200, [aiA]);
+  const data = JSON.parse(JSON.stringify({ w: a.save(), ai: aiA.save() }));
+  const b = World.load(data.w), aiB = new RivalAI(b, 1);
+  aiB.load(data.ai);
+  run(a, 120, [aiA]); run(b, 120, [aiB]);
+  const sig = w => JSON.stringify([w.time.toFixed(2), w.teams.map(t => [t.res, t.pop, t.popCap]), [...w.ents.values()].map(e => [e.id, e.cat, Math.round((e.x ?? 0) * 100), Math.round((e.y ?? 0) * 100), Math.round(e.hp ?? e.amount)])]);
+  assert.equal(sig(b), sig(a));
+});
+
+test('the Town bell shelters workers, the Town Center hits harder, and the all-clear sends them back', () => {
+  const w = new World();
+  const tc = [...w.buildings(0)].find(b => b.type === 'towncenter');
+  const tree = w.nearestResource(...w.center(tc), 'tree', 40);
+  const workers = [...w.units()].filter(u => u.team === 0);
+  w.orderGather(workers.map(u => u.id), tree.id);
+  run(w, 10);
+  assert.equal(w.ringBell(0), 3);
+  run(w, 15);
+  assert.equal(w.sheltered(tc).length, 3, 'all three are inside');
+  assert.equal([...w.units()].filter(u => u.team === 0).length, 0, 'none are out on the map');
+  assert.equal(w.teams[0].pop, 3, 'they still count towards population');
+  // An enemy near the Town Center takes the boosted damage.
+  const raider = w.spawnUnit(1, 'spearman', tc);
+  const hp = raider.hp;
+  tc.cd = 0; w.step(0.05);
+  assert.ok(hp - raider.hp > 4 * 1.9, 'the Town Center shot harder');
+  w.remove(raider);
+  w.allClear(0);
+  assert.equal(w.sheltered(tc).length, 0);
+  assert.ok(workers.every(u => u.order?.type === 'gather' && u.order.target === tree.id), 'everyone went back to the trees');
+});

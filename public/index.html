@@ -28,7 +28,11 @@
         <button class="pace" data-pace="relaxed"><b>Relaxed</b><small>The rival builds slowly and attacks with small groups.</small></button>
         <button class="pace" data-pace="challenge"><b>Challenge</b><small>A faster rival with bigger attacks.</small></button>
       </div>
-      <button id="start" class="big">Start</button>
+      <button id="continue" class="big continue hidden"></button>
+      <div class="row">
+        <button id="start" class="big">Start</button>
+        <button class="open-settings icon-only" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10.3 2h3.4l.5 2.6 1.7.8 2.3-1.4 2.4 2.4-1.4 2.3.8 1.7 2.6.5v3.4l-2.6.5-.8 1.7 1.4 2.3-2.4 2.4-2.3-1.4-1.7.8-.5 2.6h-3.4l-.5-2.6-1.7-.8-2.3 1.4-2.4-2.4 1.4-2.3-.8-1.7L2 13.7v-3.4l2.6-.5.8-1.7L4 5.8l2.4-2.4 2.3 1.4 1.7-.8zM12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z"/></svg></button>
+      </div>
     </div>
   </section>
 
@@ -38,9 +42,25 @@
     <div class="sheet small">
       <h1>Paused</h1>
       <button id="resume" class="big">Resume</button>
+      <button class="open-settings">Sound and graphics</button>
       <button id="restart">Restart</button>
       <button id="quit">Quit to menu</button>
       <p class="note">Tap to select. Tap the ground or a target to give orders. Drag to select a group. Use two fingers to move the map and pinch to zoom.</p>
+    </div>
+  </section>
+
+  <section id="settings" class="screen hidden">
+    <div class="sheet small settings">
+      <h1>Settings</h1>
+      <label class="slider"><span>Sound effects</span><input id="set-sfx" type="range" min="0" max="100" step="5"></label>
+      <label class="slider"><span>Voices</span><input id="set-voice" type="range" min="0" max="100" step="5"></label>
+      <label class="check"><input id="set-mute" type="checkbox"><span>Mute everything</span></label>
+      <h2>Graphics</h2>
+      <div id="set-quality" class="seg">
+        <button data-q="auto">Auto</button><button data-q="high">High</button><button data-q="medium">Medium</button><button data-q="low">Low</button>
+      </div>
+      <p class="note">Auto lowers the graphics by itself if the game runs slowly on your device.</p>
+      <button id="settings-done" class="big">Done</button>
     </div>
   </section>
 

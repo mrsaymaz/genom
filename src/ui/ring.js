@@ -46,6 +46,7 @@ export class ActionRing {
     items.forEach((it, i) => {
       const el = document.createElement('button');
       el.className = `rbtn ${it.cls || ''}`;
+      el.dataset.id = it.id;
       el.style.animationDelay = `${i * 30}ms`;
       el.innerHTML = `<span class="face">${it.icon}<span class="lbl">${it.label}</span></span>${it.cost ? `<span class="tag">${costHtml(it.cost)}</span>` : ''}<i class="badge"></i>`;
       el.title = it.hint || it.label;

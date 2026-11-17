@@ -25,6 +25,11 @@ export const ICONS = {
   build: svg('<path d="M3 20l9-9 2 2-9 9a1.4 1.4 0 01-2-2z" fill="currentColor"/><path d="M10 6l4-4 3 1 4 4-2 2-2-1-3 3-4-4 1-1z" fill="currentColor"/>'),
   amove: svg('<path d="M4 20l2-2M6 18l9-9 1-5 4-1-1 4-5 1-9 9z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M5 14l5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'),
   hold: svg('<path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z" fill="currentColor"/><path d="M12 5.5v13" stroke="#1b2128" stroke-width="1.6" opacity=".5"/>'),
+  bell: svg('<path d="M12 3a1.5 1.5 0 011.5 1.5v.6A6 6 0 0118 11v4l2 2.5H4L6 15v-4a6 6 0 014.5-5.9v-.6A1.5 1.5 0 0112 3z" fill="currentColor"/><path d="M9.5 19.5a2.5 2.5 0 005 0z" fill="currentColor"/>'),
+  clear: svg('<path d="M12 3a1.5 1.5 0 011.5 1.5v.6A6 6 0 0118 11v4l2 2.5H4L6 15v-4a6 6 0 014.5-5.9v-.6A1.5 1.5 0 0112 3z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 11.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
+  sound: svg('<path d="M3 9h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 010 7M18 6a8.5 8.5 0 010 12" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>'),
+  soundOff: svg('<path d="M3 9h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'),
+  pointer: svg('<path d="M12 22L4 11h5V2h6v9h5z" fill="#f7d466" stroke="#3a2600" stroke-width="1.6" stroke-linejoin="round"/>'),
   back: svg('<path d="M14 5l-7 7 7 7" stroke="currentColor" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
   rally: svg('<path d="M6 21V3" stroke="currentColor" stroke-width="2"/><path d="M6 3h12l-3 4 3 4H6z" fill="currentColor"/>'),
 };

@@ -4,7 +4,7 @@ A touch-first, browser-based real-time strategy game for Grades 5–8 English st
 
 Students lead their own League team (Hufflepuff, Ravenclaw, Gryffindor or Slytherin) through four ages (**Dark, Mythic, Arcane and Celestial**) across three arenas. Every timer in the game (construction, upgrades, training, research and the age-up) can be waited out or finished instantly with English, at 3D task stations built on the SnowPax language bank.
 
-**Status:** first playable slice. This is a Dark Age tutorial skirmish against one computer rival on an invented map, Sunmeadow Vale. It has no language tasks yet. The game deploys to Vercel as a static browser game, as SnowPax does.
+**Status:** first playable slice. It is for home practice: the tutorial points at what to tap next and gives hints when a student is stuck. Matches save themselves (Continue on the start screen), units speak short English lines, and graphics quality adjusts itself to the device. This is a Dark Age tutorial skirmish against one computer rival on an invented map, Sunmeadow Vale. It has no language tasks yet. The game deploys to Vercel as a static browser game, as SnowPax does.
 
 ## Play and build
 
@@ -44,6 +44,7 @@ npm test
 - **Two fingers** move the map; **pinch** to zoom.
 - **Mouse:** right-click gives orders, right- or middle-drag pans, and the wheel zooms. WASD or the arrow keys also pan.
 - Space pauses and Esc cancels.
+- **The Town bell:** tap the Town Center, then **Bell**. Workers hide inside and the Town Center shoots harder. Tap **All clear** to send them back to work. A warning appears as soon as a rival army sets off.
 - **To place a building:** drag its outline, then tap the tick beside it (or tap the outline again). The cross cancels.
 
 ## What's here

@@ -10,6 +10,7 @@ export class World {
   constructor({ teams = ['hufflepuff', 'gryffindor'], pace = 'relaxed', seed = CONFIG.map.seed } = {}) {
     this.cfg = CONFIG;
     this.pace = CONFIG.pace[pace] ? pace : 'relaxed';
+    this.seed = seed;
     this.map = generateMap(CONFIG.map.size, seed);
     this.size = this.map.size;
     this.time = 0;
@@ -76,6 +77,7 @@ export class World {
     if (e.cat === 'unit') this.teams[e.team].pop--;
     this.events.push({ type: 'removed', id: e.id, cat: e.cat, kind: e.kind || e.type, team: e.team });
     if (e.cat === 'bld') {
+      for (const u of this.allUnits()) if (u.inside === e.id) this.leaveShelter(u, e);
       this.recount();
       if (e.type === 'towncenter' && this.winner === null) { this.winner = 1 - e.team; this.events.push({ type: 'end', winner: this.winner }); }
     }
@@ -125,7 +127,9 @@ export class World {
     }
   }
 
-  *units() { for (const e of this.ents.values()) if (e.cat === 'unit') yield e; }
+  // Units out on the map. Workers sheltering inside a Town Center are left out (see allUnits).
+  *units() { for (const e of this.ents.values()) if (e.cat === 'unit' && !e.inside) yield e; }
+  *allUnits() { for (const e of this.ents.values()) if (e.cat === 'unit') yield e; }
   *buildings(team) { for (const e of this.ents.values()) if (e.cat === 'bld' && (team === undefined || e.team === team)) yield e; }
   *resources(kind) { for (const e of this.ents.values()) if (e.cat === 'res' && (!kind || e.kind === kind)) yield e; }
   get(id) { return this.ents.get(id); }
@@ -221,6 +225,60 @@ export class World {
     return 'move';
   }
 
+  // ---------- the Town bell ----------
+  // Every worker runs to the nearest Town Center and shelters inside until the all-clear.
+  ringBell(team) {
+    const tcs = [...this.buildings(team)].filter(b => b.type === 'towncenter' && b.built);
+    if (!tcs.length) return 0;
+    let n = 0;
+    for (const u of this.units()) {
+      if (u.team !== team || u.type !== 'worker' || u.order?.type === 'shelter') continue;
+      const tc = tcs.reduce((a, b) => (this.distTo(u, a) <= this.distTo(u, b) ? a : b));
+      const resume = u.order && u.order.type !== 'move' ? u.order : null;
+      this.setOrder(u, { type: 'shelter', target: tc.id, resume });
+      n++;
+    }
+    this.teams[team].bell = n > 0;
+    return n;
+  }
+  allClear(team) {
+    for (const u of [...this.allUnits()]) {
+      if (u.team !== team) continue;
+      if (u.inside) this.leaveShelter(u, this.get(u.inside));
+      else if (u.order?.type === 'shelter') this.setOrder(u, u.order.resume || null);
+    }
+    this.teams[team].bell = false;
+  }
+  leaveShelter(u, b) {
+    const spot = b && this.freeTileNear(b);
+    if (spot) { u.x = u.px = spot[0] + 0.5; u.y = u.py = spot[1] + 0.5; }
+    u.inside = 0;
+    const resume = u.order?.resume || null;
+    this.setOrder(u, resume && (resume.target === undefined || this.get(resume.target)) ? resume : null);
+  }
+  sheltered(b) { const out = []; for (const u of this.allUnits()) if (u.inside === b.id) out.push(u); return out; }
+
+  // ---------- saving ----------
+  // A match saves as plain data. The map itself is rebuilt from its seed.
+  save() {
+    return {
+      v: 1, seed: this.seed, pace: this.pace, time: this.time, nextId: this.nextId, winner: this.winner,
+      teams: this.teams.map(t => ({ key: t.key, res: t.res, stats: t.stats, bell: !!t.bell })),
+      ents: [...this.ents.values()],
+    };
+  }
+  static load(data) {
+    const w = new World({ teams: data.teams.map(t => t.key), pace: data.pace, seed: data.seed });
+    w.ents = new Map(); w.occ.fill(0);
+    for (const e of data.ents) { w.ents.set(e.id, e); if (e.cat !== 'unit') w.mark(e, e.id); }
+    Object.assign(w, { time: data.time, nextId: data.nextId, winner: data.winner, events: [] });
+    data.teams.forEach((t, i) => { Object.assign(w.teams[i], { res: t.res, stats: t.stats, bell: t.bell }); });
+    for (const t of w.teams) t.pop = 0;
+    for (const u of w.allUnits()) w.teams[u.team].pop++;
+    w.recount();
+    return w;
+  }
+
   // ---------- geometry helpers ----------
   distTo(u, e) {
     if (e.cat === 'unit') return Math.hypot(u.x - e.x, u.y - e.y) - UNIT_R;
@@ -283,7 +341,7 @@ export class World {
   nearestEnemy(u, radius, onlyUnits = false) {
     let best = null, bd = radius;
     for (const e of this.ents.values()) {
-      if (e.team === undefined || e.team === u.team || (onlyUnits && e.cat !== 'unit')) continue;
+      if (e.team === undefined || e.team === u.team || e.inside || (onlyUnits && e.cat !== 'unit')) continue;
       if (e.cat === 'bld' && !onlyUnits) { const d = this.distTo(u, e) + 2; if (d < bd) { bd = d; best = e; } continue; }
       if (e.cat !== 'unit') continue;
       const d = this.distTo(u, e);
@@ -373,7 +431,8 @@ export class World {
         const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
         let best = null, bd = d.attack.range + b.w / 2;
         for (const u of this.units()) { if (u.team === b.team) continue; const dd = Math.hypot(u.x - cx, u.y - cy); if (dd < bd) { bd = dd; best = u; } }
-        if (best) { b.cd = d.attack.cooldown; this.damage(b, best, d.attack.damage); }
+        // Each sheltering worker adds an extra arrow's worth of damage.
+        if (best) { b.cd = d.attack.cooldown; this.damage(b, best, d.attack.damage * (1 + 0.35 * this.sheltered(b).length)); }
       }
     }
   }
@@ -413,7 +472,7 @@ export class World {
         // Hold position: strike anything that comes within reach, but never step away.
         let best = null, bd = d.range + 0.05;
         for (const e of this.ents.values()) {
-          if (e.team === undefined || e.team === u.team || (e.cat !== 'unit' && e.cat !== 'bld')) continue;
+          if (e.team === undefined || e.team === u.team || e.inside || (e.cat !== 'unit' && e.cat !== 'bld')) continue;
           const dd = this.distTo(u, e);
           if (dd <= bd) { bd = dd; best = e; }
         }
@@ -421,6 +480,12 @@ export class World {
           u.facing = Math.atan2(this.center(best)[1] - u.y, this.center(best)[0] - u.x);
           if (u.cd <= 0) { u.cd = d.cooldown; u.work = 0.01; this.damage(u, best, d.damage); }
         }
+        break;
+      }
+      case 'shelter': {
+        const b = this.get(o.target);
+        if (!b) { this.setOrder(u, o.resume || null); break; }
+        if (this.approach(u, b, 0.8, dt)) { u.inside = b.id; u.path = null; [u.x, u.y] = this.center(b); u.px = u.x; u.py = u.y; }
         break;
       }
       case 'gather': this.gather(u, o, dt); break;

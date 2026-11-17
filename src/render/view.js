@@ -9,11 +9,9 @@ const DIR = new THREE.Vector3(1, 0.816, 1).normalize();
 const lin = c => new THREE.Color(c).convertSRGBToLinear();
 
 export class View {
-  constructor(canvas, world) {
+  constructor(canvas, world, quality = 'high') {
     this.world = world; this.size = world.size;
-    const mobile = matchMedia('(pointer: coarse)').matches;
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: !mobile || devicePixelRatio < 2, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, mobile ? 1.5 : 2));
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: quality === 'high', powerPreference: 'high-performance' });
     this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.2;
@@ -23,10 +21,10 @@ export class View {
     this.scene.background = lin('#9cc8e8');
     this.scene.fog = new THREE.Fog(this.scene.background, 60, 140);
     this.cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 200);
-    this.zoom = matchMedia("(max-height: 460px)").matches ? 18 : 22; this.target = new THREE.Vector3();
+    this.zoom = matchMedia('(max-height: 460px)').matches ? 18 : 22; this.target = new THREE.Vector3();
     this.scene.add(new THREE.HemisphereLight(lin('#dfeeff'), lin('#5a4630'), 0.7));
     this.sun = new THREE.DirectionalLight(lin('#fff0d6'), 1.5);
-    this.sun.castShadow = true; this.sun.shadow.mapSize.set(mobile ? 1024 : 2048, mobile ? 1024 : 2048);
+    this.sun.castShadow = true;
     this.sun.shadow.bias = -0.0006; this.sun.shadow.normalBias = 0.03;
     this.scene.add(this.sun, this.sun.target);
     const rim = new THREE.DirectionalLight(lin('#9fc4ff'), 0.35); rim.position.set(30, 25, -30); this.scene.add(rim);
@@ -43,6 +41,23 @@ export class View {
     this.arrowMat = new THREE.MeshBasicMaterial({ color: lin('#3a2a1a') });
     this.arrowGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.7, 4).rotateZ(Math.PI / 2);
     this.dustMat = new THREE.MeshBasicMaterial({ color: lin('#d8ccb0'), transparent: true, opacity: 0.6, depthWrite: false });
+    this.setQuality(quality);
+  }
+
+  // Graphics quality: high (sharp, soft shadows), medium (lighter shadows, lower resolution on
+  // sharp screens) or low (no shadows, one pixel per screen point) for older devices.
+  setQuality(q) {
+    const dpr = devicePixelRatio || 1, r = this.renderer;
+    const shadows = q !== 'low', size = q === 'high' ? 2048 : 1024;
+    r.setPixelRatio(q === 'high' ? Math.min(dpr, 2) : q === 'medium' ? Math.min(dpr, 1.5) : 1);
+    if (this.quality !== undefined && (r.shadowMap.enabled !== shadows || this.sun.shadow.mapSize.x !== size)) {
+      this.scene.traverse(o => { if (o.material) for (const m of [].concat(o.material)) m.needsUpdate = true; });
+      this.sun.shadow.map?.dispose(); this.sun.shadow.map = null;
+    }
+    r.shadowMap.enabled = shadows; this.sun.castShadow = shadows;
+    this.sun.shadow.mapSize.set(size, size);
+    this.quality = q;
+    if (this.w) this.resize(this.w, this.h);
   }
 
   toWorld(tx, ty) { return [(tx - this.size / 2) * TILE, (ty - this.size / 2) * TILE]; }
@@ -149,7 +164,8 @@ export class View {
       this.setGhost(null);
       const g = new THREE.Group();
       const art = makeBuilding(this.world.teams[team].key, type);
-      art.group.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = 0.55; o.castShadow = false; } });
+      const ghostly = m => { const c = m.clone(); c.transparent = true; c.opacity = 0.55; return c; };
+      art.group.traverse(o => { if (o.isMesh) { o.material = Array.isArray(o.material) ? o.material.map(ghostly) : ghostly(o.material); o.castShadow = false; } });
       g.add(art.group);
       const tiles = new THREE.Mesh(new THREE.PlaneGeometry(size * TILE, size * TILE).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x40ff80, transparent: true, opacity: 0.35, depthWrite: false }));
       tiles.position.y = 0.06; g.add(tiles);

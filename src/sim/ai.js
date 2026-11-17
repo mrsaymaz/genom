@@ -10,6 +10,9 @@ export class RivalAI {
     this.home = [...world.buildings(team)].find(b => b.type === 'towncenter');
   }
 
+  save() { return { tick: this.tick, wave: this.wave, nextWave: this.nextWave, nextTrain: this.nextTrain }; }
+  load(d) { Object.assign(this, d); }
+
   get t() { return this.w.teams[this.team]; }
   mine(type) { return [...this.w.buildings(this.team)].filter(b => b.type === type); }
   units(type) { return [...this.w.units()].filter(u => u.team === this.team && (!type || u.type === type)); }
@@ -102,7 +105,11 @@ export class RivalAI {
       const need = this.p.firstWave + this.wave * this.p.waveGrowth;
       if (idle.length >= need) {
         const target = this.targetBuilding();
-        if (target) { const [tx, ty] = w.center(target); w.orderAttackMove(idle.slice(0, need).map(s => s.id), tx, ty); }
+        if (target) {
+          const ids = idle.slice(0, need).map(s => s.id), [tx, ty] = w.center(target);
+          w.orderAttackMove(ids, tx, ty);
+          w.events.push({ type: 'wave', team: this.team, ids, target: target.id, n: this.wave + 1 });
+        }
         this.wave++;
         this.nextWave = w.time + this.p.waveEvery;
       } else this.nextWave = w.time + 15;

@@ -28,13 +28,15 @@ export class HUD {
     this.res = {};
     for (const k of [...RES, 'pop']) { const s = h('div', 'res', `${ICONS[k]}<b>0</b>`); s.title = k === 'pop' ? 'Population' : k[0].toUpperCase() + k.slice(1); this.res[k] = s.querySelector('b'); this.top.append(s); }
     this.clock = h('div', 'clock', '0:00');
+    this.muteBtn = h('button', 'icon-btn'); this.muteBtn.onclick = () => game.toggleMute?.();
     this.pauseBtn = h('button', 'icon-btn', ICONS.pause); this.pauseBtn.title = 'Pause'; this.pauseBtn.onclick = () => game.togglePause();
-    this.top.append(this.clock, this.pauseBtn);
+    this.top.append(this.clock, this.muteBtn, this.pauseBtn);
+    this.paintMute();
     // Objectives.
     this.obj = h('div', 'objectives');
     this.objHead = h('button', 'obj-head');
     this.objBody = h('div', 'obj-body');
-    this.objHead.onclick = () => this.obj.classList.toggle('closed');
+    this.objHead.onclick = () => { this.obj.classList.toggle('closed'); this.objOpenT = this.obj.classList.contains('closed') ? 0 : 8; };
     this.obj.append(this.objHead, this.objBody);
     // Quick-select buttons.
     this.quick = h('div', 'quick');
@@ -54,10 +56,15 @@ export class HUD {
     this.wheelAt = null; // tile point the build wheel is drawn around, while it is open
     this.toasts = h('div', 'toasts');
     this.boxEl = h('div', 'dragbox hidden');
-    root.append(this.top, this.obj, this.quick, this.mini, this.panel, this.toasts, this.boxEl);
+    // Alerts (raids, the bell) sit under the top bar, with buttons to act on them.
+    this.alertEl = h('div', 'alert hidden'); this.alertOn = false; this.alertT = 0;
+    // The tutorial pointer: a bouncing arrow over what to tap next.
+    this.marker = h('div', 'marker hidden', ICONS.pointer);
+    root.append(this.top, this.obj, this.quick, this.mini, this.panel, this.toasts, this.boxEl, this.alertEl);
     // Rings go last so their buttons sit above toasts and panels.
     this.ring = new ActionRing(root, 'on-map');
     this.thumb = new ActionRing(root, 'thumb');
+    root.append(this.marker);
     this.terrainImg = this.drawTerrain();
     this.panelKey = ''; this.miniT = 0;
   }
@@ -74,22 +81,89 @@ export class HUD {
     this.idleBtn.classList.toggle('dim', !idle);
     this.armyBtn.querySelector('i').textContent = army || '';
     this.armyBtn.classList.toggle('dim', !army);
-    this.objectives();
+    this.objectives(dt);
     this.selection();
     this.commands();
+    this.pointer();
+    if (this.alertOn && this.alertT > 0 && (this.alertT -= dt) <= 0) this.closeAlert();
     this.miniT -= dt;
     if (this.miniT <= 0) { this.miniT = 0.25; this.drawMini(); }
   }
 
-  objectives() {
+  // The goal panel opens on each new goal, then folds down to a one-line strip so it covers
+  // less of the map. Tap the strip to open it again.
+  objectives(dt) {
     const tut = this.g.tutorial, step = tut.step, n = tut.i;
+    if (this.objOpenT > 0 && (this.objOpenT -= dt) <= 0) this.obj.classList.add('closed');
     const key = step ? n : 'done';
     if (key === this.objKey) return;
     this.objKey = key;
-    this.objHead.innerHTML = `${ICONS.objectives}<span>${step ? `Goal ${n + 1} of ${tut.total}` : 'All goals done'}</span>`;
-    this.objBody.innerHTML = step ? `<b>${step.title}</b><p>${step.hint}</p>` : '<p>Well played!</p>';
-    this.obj.classList.remove('closed');
+    this.objHead.innerHTML = `${ICONS.objectives}<span class="n">${step ? `${n + 1}/${tut.total}` : ''}</span><b>${step ? step.title : 'All goals done!'}</b>`;
+    this.objBody.innerHTML = step ? `<p>${step.hint}</p>` : '<p>Well played! Now win the match.</p>';
+    this.obj.classList.remove('closed'); this.objOpenT = 8;
     this.obj.classList.remove('pulse'); void this.obj.offsetWidth; this.obj.classList.add('pulse');
+  }
+
+  // ---------- the tutorial pointer ----------
+  pointer() {
+    const g = this.g, v = g.view, tut = g.tutorial;
+    const guide = !g.paused && !g.over ? tut.guide() : {};
+    const uiEl = guide.ui ? this.root.querySelector(guide.ui) : null;
+    if (this.pointed && this.pointed !== uiEl) this.pointed.classList.remove('pointed');
+    this.pointed = uiEl;
+    this.marker.classList.toggle('nudge', tut.nudge > 0);
+    let x, y, angle = 0;
+    if (uiEl) {
+      uiEl.classList.add('pointed');
+      const r = uiEl.getBoundingClientRect(), root = this.root.getBoundingClientRect();
+      x = r.left + r.width / 2 - root.left; y = r.top - root.top - 6;
+      if (y < 60) { y = r.bottom - root.top + 6; angle = 180; }
+    } else if (guide.at && g.world.get(guide.at.id)) {
+      const e = guide.at, [cx, cy] = g.world.center(e);
+      const hgt = e.cat === 'unit' ? 1.4 : e.cat === 'res' ? (e.kind === 'tree' ? 2.6 : 1.4) : Math.max(1.5, (v.blds.get(e.id)?.art.height || 2) * 0.9);
+      [x, y] = v.screen(cx, cy, hgt);
+      // Off screen: an arrow on the edge of the screen points the way.
+      const m = 34, top = 56;
+      if (x < m || x > v.w - m || y < top || y > v.h - m) {
+        const ox = v.w / 2, oy = v.h / 2, dx = x - ox, dy = y - oy;
+        const k = Math.min((v.w / 2 - m) / Math.abs(dx || 1e-6), (v.h / 2 - m) / Math.abs(dy || 1e-6));
+        x = ox + dx * k; y = Math.max(top, oy + dy * k);
+        angle = Math.atan2(dy, dx) * 180 / Math.PI - 90;
+        this.marker.classList.add('edge');
+      } else this.marker.classList.remove('edge');
+    } else { this.marker.classList.add('hidden'); return; }
+    this.marker.classList.remove('hidden');
+    this.marker.style.transform = `translate(${x - 18}px, ${y - 36}px) rotate(${angle}deg)`;
+    this.marker.style.transformOrigin = '18px 36px';
+  }
+
+  // ---------- alerts ----------
+  alert(text, actions = [], kind = '', ttl = 0) {
+    this.alertEl.className = `alert ${kind}`;
+    this.alertEl.innerHTML = `<span>${text}</span>`;
+    for (const a of actions) {
+      const b = h('button', '', `${a.icon || ''}<span>${a.label}</span>`);
+      b.onclick = e => { e.stopPropagation(); a.act(); if (!a.keep) this.closeAlert(); };
+      this.alertEl.append(b);
+    }
+    const x = h('button', 'x', ICONS.cancel); x.title = 'Close'; x.onclick = () => this.closeAlert();
+    this.alertEl.append(x);
+    this.alertOn = true; this.alertT = ttl;
+  }
+  closeAlert() { this.alertEl.className = 'alert hidden'; this.alertOn = false; this.bellShown = false; }
+  // While workers shelter, a lasting banner offers the all-clear.
+  bellAlert(safe = false) {
+    const n = this.g.world.allUnits ? [...this.g.world.allUnits()].filter(u => u.team === 0 && (u.inside || u.order?.type === 'shelter')).length : 0;
+    this.alert(safe ? 'It looks safe now.' : `Bell! ${n} workers are hiding. The Town Center shoots harder.`,
+      [{ label: 'All clear', icon: ICONS.clear, act: () => this.g.allClear() }], safe ? 'good' : 'bell', 0);
+    this.bellShown = true;
+  }
+  clearAlert() { if (this.bellShown) this.closeAlert(); }
+  paintMute() {
+    const m = this.g.audio?.settings.muted;
+    this.muteBtn.innerHTML = m ? ICONS.soundOff : ICONS.sound;
+    this.muteBtn.title = m ? 'Sound off (tap to turn on)' : 'Sound on (tap to mute)';
+    this.muteBtn.classList.toggle('dim', !!m);
   }
 
   // ---------- selection panel ----------
@@ -199,6 +273,11 @@ export class HUD {
           };
         });
         if (d.trains) items.push({ id: 'rally', icon: ICONS.rally, label: 'Rally', hint: 'Set where new units go', act: () => { g.rallyMode = true; this.toast('Tap where new units should go.'); } });
+        if (b.type === 'towncenter') {
+          items.push(w.teams[0].bell
+            ? { id: 'clear', icon: ICONS.clear, label: 'All clear', cls: 'go', hint: 'Send the workers back to work', badge: w.sheltered(b).length, act: () => g.allClear() }
+            : { id: 'bell', icon: ICONS.bell, label: 'Bell', cls: 'warn', hint: 'Ring the Town bell: workers hide inside and the Town Center shoots harder', act: () => g.ringBell() });
+        }
       }
       const [cx, cy] = w.center(b), view = g.view.blds.get(b.id);
       const hgt = view ? Math.min(2.2, view.art.height * 0.45) : 1;
@@ -274,8 +353,10 @@ export class HUD {
     const el = h('div', `toast ${kind}`, text);
     this.toasts.append(el);
     while (this.toasts.children.length > 2) this.toasts.firstChild.remove();
-    setTimeout(() => el.classList.add('out'), 2600);
-    setTimeout(() => el.remove(), 3200);
+    const life = kind === 'hint' ? 6000 : 2600;
+    setTimeout(() => el.classList.add('out'), life);
+    setTimeout(() => el.remove(), life + 600);
+    if (kind === 'bad') this.g.audio?.sfx('deny', 0.4);
   }
   box(x0, y0, x1, y1) {
     const s = this.boxEl.style;

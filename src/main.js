@@ -9,39 +9,112 @@ import { Input } from './input.js';
 import { HUD } from './ui/hud.js';
 import { ICONS, EMBLEMS } from './ui/icons.js';
 import { Tutorial } from './tutorial.js';
+import { Audio } from './audio.js';
 
 const STEP = 1 / 20;
 const plural = (name, n) => (n === 1 || name.endsWith('s') ? name : name.endsWith('man') ? `${name.slice(0, -3)}men` : `${name}s`);
 const $ = s => document.querySelector(s);
-const store = { get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode */ } } };
+const store = {
+  get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode or full */ } },
+  del(k) { try { localStorage.removeItem(k); } catch { /* private mode */ } },
+};
+const SAVE_KEY = 'genom.save';
+const audio = new Audio();
+const QUALITIES = ['high', 'medium', 'low'];
+// The quality a device starts on when the setting is Auto: what worked last time, or a guess.
+function autoQuality() {
+  const last = store.get('genom.autoQuality', null);
+  if (QUALITIES.includes(last)) return last;
+  const weak = matchMedia('(pointer: coarse)').matches || (navigator.deviceMemory || 8) <= 4 || (navigator.hardwareConcurrency || 8) <= 4;
+  return weak ? 'medium' : 'high';
+}
+function loadSave() { try { const d = JSON.parse(store.get(SAVE_KEY, 'null')); return d && d.v === 1 ? d : null; } catch { return null; } }
 
 class Game {
-  constructor({ team, pace }) {
-    const rivals = TEAM_IDS.filter(t => t !== team);
-    this.rivalKey = rivals[Math.floor(Math.random() * rivals.length)];
-    this.world = new World({ teams: [team, this.rivalKey], pace });
-    this.ai = new RivalAI(this.world, 1);
+  constructor({ team, pace }, saved = null) {
+    this.audio = audio;
+    if (saved) {
+      // Continue a saved match.
+      this.rivalKey = saved.rivalKey;
+      this.world = World.load(saved.world);
+      this.ai = new RivalAI(this.world, 1); this.ai.load(saved.ai);
+    } else {
+      const rivals = TEAM_IDS.filter(t => t !== team);
+      this.rivalKey = rivals[Math.floor(Math.random() * rivals.length)];
+      this.world = new World({ teams: [team, this.rivalKey], pace });
+      this.ai = new RivalAI(this.world, 1);
+    }
     const old = $('#view'), fresh = old.cloneNode(false); old.replaceWith(fresh); // a clean WebGL context each match
     this.canvas = fresh;
-    this.view = new View(this.canvas, this.world);
+    this.qualitySetting = store.get('genom.quality', 'auto');
+    this.view = new View(this.canvas, this.world, this.qualitySetting === 'auto' ? autoQuality() : this.qualitySetting);
+    this.fps = { frames: 0, t: 0, checks: 0 };
     this.sel = []; this.placing = null; this.rallyMode = false; this.amoveMode = false; this.focus = null;
     this.paused = false; this.over = false; this.pings = [];
-    this.calmFor = 0; this.raided = false; this.alertT = 0;
+    this.calmFor = 0; this.raided = false; this.alertT = 0; this.saveT = 0; this.workT = 0;
     this.hud = new HUD($('#hud'), this);
     this.tutorial = new Tutorial(this);
+    if (saved) { this.tutorial.i = saved.tutorial; this.raided = saved.raided; this.calmFor = saved.calmFor; }
     this.input = new Input(this.canvas, this);
     this.onResize = () => this.view.resize(innerWidth, innerHeight);
     addEventListener('resize', this.onResize); this.onResize();
-    const tc = this.home();
-    this.view.centerOn(tc.x + 3, tc.y - 1);
+    if (saved?.cam) { this.view.target.set(saved.cam.x, 0, saved.cam.z); this.view.zoom = saved.cam.zoom; this.view.updateCamera(); } else {
+      const tc = this.home();
+      this.view.centerOn(tc.x + 3, tc.y - 1);
+    }
     this.acc = 0; this.last = performance.now(); this.time = 0;
     this.frame = this.frame.bind(this);
     this.raf = requestAnimationFrame(this.frame);
-    this.hud.toast(`Your rival is ${CONFIG.teams[this.rivalKey].name} (${CONFIG.teams[this.rivalKey].element}).`);
+    // Save whenever the student leaves the page (another app, the tab closing, the screen locking).
+    this.onHide = () => { if (document.visibilityState === 'hidden') { this.save(); if (!this.paused) this.togglePause(true); } };
+    this.onPageHide = () => this.save();
+    document.addEventListener('visibilitychange', this.onHide);
+    addEventListener('pagehide', this.onPageHide);
+    if (this.world.teams[0].bell) this.hud.bellAlert();
+    const r = CONFIG.teams[this.rivalKey];
+    this.hud.toast(saved ? 'Welcome back! Your match is just as you left it.' : `Your rival is ${r.name} (${r.element}).`);
+  }
+
+  // ---------- saving ----------
+  save() {
+    if (this.over) return;
+    const v = this.view;
+    store.set(SAVE_KEY, JSON.stringify({
+      v: 1, savedAt: Date.now(), team: this.world.teams[0].key, rivalKey: this.rivalKey, pace: this.world.pace,
+      world: this.world.save(), ai: this.ai.save(), tutorial: this.tutorial.i, raided: this.raided, calmFor: this.calmFor,
+      cam: { x: v.target.x, z: v.target.z, zoom: v.zoom },
+    }));
+  }
+
+  // ---------- graphics quality ----------
+  setQuality(setting) {
+    this.qualitySetting = setting;
+    store.set('genom.quality', setting);
+    this.view.setQuality(setting === 'auto' ? autoQuality() : setting);
+    this.fps = { frames: 0, t: 0, checks: 0 };
+  }
+  // On Auto, a slow device steps down a level (after a warm-up), and remembers it for next time.
+  watchFps(dt) {
+    if (this.qualitySetting !== 'auto' || this.paused) return;
+    const f = this.fps;
+    f.frames++; f.t += dt;
+    if (f.t < (f.checks ? 6 : 9)) return;
+    const fps = f.frames / f.t;
+    f.frames = 0; f.t = 0; f.checks++;
+    const i = QUALITIES.indexOf(this.view.quality);
+    if (fps < 26 && i < QUALITIES.length - 1) {
+      const next = QUALITIES[i + 1];
+      this.view.setQuality(next);
+      store.set('genom.autoQuality', next);
+      this.hud.toast(`Graphics set to ${next} so the game runs smoothly.`);
+    }
   }
 
   dispose() {
     cancelAnimationFrame(this.raf);
+    document.removeEventListener('visibilitychange', this.onHide);
+    removeEventListener('pagehide', this.onPageHide);
     this.input.dispose();
     removeEventListener('resize', this.onResize);
     this.view.renderer.dispose(); this.view.renderer.forceContextLoss();
@@ -66,11 +139,15 @@ class Game {
         this.events();
         this.watch(STEP);
       }
-      this.tutorial.update();
+      this.tutorial.update(dt);
+      this.saveT += dt;
+      if (this.saveT > 20) { this.saveT = 0; this.save(); }
+      this.workSounds(dt);
     }
+    this.watchFps(dt);
     for (const b of this.world.buildings()) if (!b.built) this.view.syncBuilding(b);
     this.pings = this.pings.filter(p => (p.t -= dt / 3) > 0);
-    this.sel = this.sel.filter(id => this.world.get(id));
+    this.sel = this.sel.filter(id => { const e = this.world.get(id); return e && !e.inside; });
     this.hud.update(dt);
     this.view.render(this.paused ? 0 : this.acc / STEP, this.time, dt, this.rings());
   }
@@ -80,31 +157,90 @@ class Game {
     const w = this.world, v = this.view;
     for (const ev of w.drainEvents()) {
       if (ev.type === 'placed') v.addBuilding(w.get(ev.id));
-      else if (ev.type === 'built') { const b = w.get(ev.id); if (b) { v.syncBuilding(b); if (b.team === 0) this.hud.toast(`${CONFIG.buildings[b.type].name} complete.`); } }
-      else if (ev.type === 'removed') {
+      else if (ev.type === 'built') {
+        const b = w.get(ev.id);
+        if (b) { v.syncBuilding(b); if (b.team === 0) { this.hud.toast(`${CONFIG.buildings[b.type].name} complete.`); audio.sfx('built'); audio.say('built', b.type, true); } }
+      } else if (ev.type === 'trained' && ev.team === 0) {
+        const u = w.get(ev.id);
+        if (u) { audio.sfx('trained'); audio.say('trained', u.type); }
+      } else if (ev.type === 'deposit' && ev.team === 0) {
+        const u = w.get(ev.id);
+        if (u && this.onScreen1(u.x, u.y)) audio.sfx('deposit', 0.15);
+      } else if (ev.type === 'removed') {
         v.removeEntity(ev);
+        if (ev.cat === 'bld') audio.sfx('crumble', 0.3);
         if (ev.cat === 'bld' && ev.team === 0) this.hud.toast(`Your ${CONFIG.buildings[ev.kind].name} was destroyed.`, 'bad');
       } else if (ev.type === 'hit') {
         const a = w.get(ev.from), t = w.get(ev.to);
         if (!a || !t) continue;
-        if (ev.ranged) { const [ax, ay] = w.center(a), [bx, by] = w.center(t); v.arrow(v.toWorld(ax, ay), v.toWorld(bx, by)); }
-        else if (t.cat === 'bld' && Math.random() < 0.3) { const [bx, by] = w.center(t), [x, z] = v.toWorld(bx, by); v.dust({ x, z }, 2, t.w * TILE * 0.8); }
+        const [bx, by] = w.center(t);
+        if (ev.ranged) { const [ax, ay] = w.center(a); v.arrow(v.toWorld(ax, ay), v.toWorld(bx, by)); }
+        else if (t.cat === 'bld' && Math.random() < 0.3) { const [x, z] = v.toWorld(bx, by); v.dust({ x, z }, 2, t.w * TILE * 0.8); }
+        if (this.onScreen1(bx, by)) audio.sfx(ev.ranged ? 'arrow' : 'clash', 0.09);
         if (t.team === 0 && a.team !== 0 && this.world.time - this.alertT > 20) {
           this.alertT = this.world.time;
-          this.hud.toast('You are under attack!', 'bad');
-          const [px, py] = w.center(t); this.pings.push({ x: px, y: py, t: 1 });
+          this.pings.push({ x: bx, y: by, t: 1 });
+          if (!this.onScreen1(bx, by) || !this.hud.alertOn) {
+            audio.sfx('alarm'); audio.say('underAttack', undefined, true);
+            const workersHit = t.cat === 'unit' && t.type === 'worker';
+            this.hud.alert('We are under attack!', [
+              { label: 'Go there', icon: ICONS.army, act: () => this.view.centerOn(bx, by) },
+              ...(workersHit || t.type === 'towncenter' ? [{ label: 'Ring the bell', icon: ICONS.bell, act: () => this.ringBell() }] : []),
+            ], 'bad', 10);
+          }
         }
+      } else if (ev.type === 'wave' && ev.team !== 0) {
+        // The rival's army has set off: warn early, while there is still time to get ready.
+        const units = ev.ids.map(id => w.get(id)).filter(Boolean);
+        if (!units.length) continue;
+        const ax = units.reduce((s2, u) => s2 + u.x, 0) / units.length, ay = units.reduce((s2, u) => s2 + u.y, 0) / units.length;
+        this.pings.push({ x: ax, y: ay, t: 1 });
+        audio.sfx('alarm'); audio.say('wave', undefined, true);
+        this.hud.alert(`Enemy army coming: ${units.length} soldiers!`, [
+          { label: 'Show me', icon: ICONS.army, act: () => { const alive = units.filter(u => w.get(u.id)); if (alive[0]) this.view.centerOn(alive[0].x, alive[0].y); } },
+          { label: 'Ring the bell', icon: ICONS.bell, act: () => this.ringBell() },
+        ], 'bad', 14);
       } else if (ev.type === 'end') this.end(ev.winner === 0);
     }
   }
 
-  // Tracks whether the rival's raid has reached the base and been beaten off (tutorial goal).
+  // Tracks whether the rival's raid has reached the base and been beaten off (tutorial goal),
+  // and suggests the all-clear once the danger has passed.
   watch(dt) {
     const tc = this.home();
     if (!tc) return;
     const [cx, cy] = this.world.center(tc);
     const near = [...this.world.units()].some(u => u.team !== 0 && u.type !== 'worker' && Math.hypot(u.x - cx, u.y - cy) < 15);
     if (near) { this.raided = true; this.calmFor = 0; } else this.calmFor += dt;
+    if (this.world.teams[0].bell && this.calmFor > 6 && !this.safeHinted) { this.safeHinted = true; this.hud.bellAlert(true); }
+  }
+
+  // ---------- the Town bell ----------
+  ringBell() {
+    const n = this.world.ringBell(0);
+    if (!n) { this.hud.toast('No workers are outside.'); return; }
+    this.safeHinted = false;
+    audio.sfx('bell'); audio.say('bell', undefined, true);
+    this.sel = this.sel.filter(id => this.world.get(id)?.type !== 'worker');
+    this.hud.bellAlert();
+  }
+  allClear() {
+    this.world.allClear(0);
+    audio.sfx('clear'); audio.say('allClear', undefined, true);
+    this.hud.clearAlert();
+  }
+
+  onScreen1(tx, ty) { const [x, y] = this.view.screen(tx, ty, 0.5); return x > -40 && y > -40 && x < this.view.w + 40 && y < this.view.h + 40; }
+  // Now and then, a working sound from a worker on screen: chopping, digging, picking, hammering.
+  workSounds(dt) {
+    this.workT -= dt;
+    if (this.workT > 0) return;
+    this.workT = 0.7 + Math.random() * 0.9;
+    const busy = [...this.world.units()].filter(u => u.team === 0 && u.type === 'worker' && !(u.path && u.path.length) && (u.order?.type === 'gather' || u.order?.type === 'build') && this.onScreen1(u.x, u.y));
+    if (!busy.length) return;
+    const u = busy[Math.floor(Math.random() * busy.length)], t = this.world.get(u.order.target);
+    if (!t || this.world.distTo(u, t) > 1.2) return;
+    audio.sfx(u.order.type === 'build' ? 'hammer' : t.kind === 'tree' ? 'chop' : t.kind === 'gold' ? 'mine' : 'pick', 0.3);
   }
 
   rings() {
@@ -138,6 +274,7 @@ class Game {
 
   // ---------- input actions ----------
   tap(sx, sy, dbl) {
+    this.tutorial.acted();
     if (this.hud.wheelAt) { this.hud.wheelAt = null; return; } // a tap on the map closes the build wheel
     if (this.placing) {
       const tile = this.view.pick(sx, sy), p = this.placing, s = CONFIG.buildings[p.type].size;
@@ -159,6 +296,7 @@ class Game {
       if (target && target.team !== undefined && target.team !== 0) w.orderAttack(ids, target.id);
       else if (tile) w.orderAttackMove(ids, tile[0], tile[1]);
       if (tile) { const [x, z] = this.view.toWorld(tile[0], tile[1]); this.flag(x, z, '#ff6060'); }
+      audio.sfx('order'); audio.say('attack');
       return;
     }
     const mine = this.sel.map(id => w.get(id)).filter(e => e && e.team === 0 && e.cat === 'unit');
@@ -168,11 +306,19 @@ class Game {
       if (workers.length && target.cat === 'bld' && (!target.built || CONFIG.buildings[target.type].farm)) { this.order(mine, target, tile); return; }
       if (dbl) { this.selectAllOf(target); return; }
       this.focus = target.id;
-      this.sel = this.sel.length === 1 && this.sel[0] === target.id && target.cat === 'bld' ? [] : [target.id];
+      const closing = this.sel.length === 1 && this.sel[0] === target.id && target.cat === 'bld';
+      this.sel = closing ? [] : [target.id];
+      if (!closing) this.greet(target);
       return;
     }
     if (mine.length) { this.order(mine, target, tile); return; }
     this.sel = target ? [target.id] : [];
+    if (target) audio.sfx('select');
+  }
+  // A selected unit answers in English.
+  greet(e) {
+    audio.sfx('select');
+    if (e.cat === 'unit') audio.say(e.type === 'worker' ? 'selectWorker' : 'selectSoldier');
   }
   // Long-press: on a worker, open the build wheel; on anything else of yours, select all of that kind.
   longPress(sx, sy) {
@@ -195,6 +341,7 @@ class Game {
       this.sel = [t.id, ...all.filter(id => id !== t.id)];
       if (all.length > 1) this.hud.toast(`All ${all.length} ${plural(CONFIG.buildings[t.type].name, all.length)} selected.`);
     } else this.sel = this.onScreen(u => u.type === t.type);
+    this.greet(t);
   }
   command(sx, sy) {
     if (this.placing) { this.cancelPlacement(); return; }
@@ -205,7 +352,12 @@ class Game {
     if (!tile && !target) return;
     const [tx, ty] = target ? this.world.center(target) : tile;
     const what = this.world.command(units.map(u => u.id), target, tx, ty);
-    if (what) { const [x, z] = this.view.toWorld(target ? tx : tile[0], target ? ty : tile[1]); this.flag(x, z, what === 'attack' ? '#ff6060' : '#ffffff'); }
+    if (!what) return;
+    const [x, z] = this.view.toWorld(target ? tx : tile[0], target ? ty : tile[1]);
+    this.flag(x, z, what === 'attack' ? '#ff6060' : '#ffffff');
+    audio.sfx('order');
+    const line = what === 'gather' ? (target.cat === 'bld' ? 'farm' : { tree: 'gatherLumber', gold: 'gatherGold', berries: 'gatherFood' }[target.kind]) : what === 'return' ? 'move' : what;
+    audio.say(line);
   }
   flag(x, z, color) { this.view.dust({ x, z }, 3, 0.4); void color; }
   hover(sx, sy) { if (this.placing) this.moveGhost(sx, sy); }
@@ -241,10 +393,29 @@ class Game {
   startPlacement(type) {
     const d = CONFIG.buildings[type], t = this.world.teams[0];
     if (!this.world.canAfford(0, d.cost)) { this.hud.toast(`Not enough: ${this.missing(d.cost)}.`, 'bad'); return; }
-    const center = this.view.pick(this.view.w / 2, this.view.h / 2) || [this.world.size / 2, this.world.size / 2];
-    this.placing = { type, x: 0, y: 0, ok: false, builders: this.sel.filter(id => this.world.get(id)?.type === 'worker') };
-    this.setGhostAt(center[0], center[1]);
+    const builders = this.sel.filter(id => this.world.get(id)?.type === 'worker');
+    this.placing = { type, x: 0, y: 0, ok: false, builders };
+    // The outline starts on open grass next to the builder (or mid-screen without one).
+    const u = this.world.get(builders[0]);
+    const from = u ? [u.x, u.y] : (this.view.pick(this.view.w / 2, this.view.h / 2) || [this.world.size / 2, this.world.size / 2]);
+    const spot = this.freeSpot(type, from[0], from[1]);
+    this.setGhostAt(spot[0], spot[1]);
+    if (u) { const [sx, sy] = this.view.screen(spot[0], spot[1], 0); if (sx < 60 || sy < 60 || sx > this.view.w - 60 || sy > this.view.h - 60) this.view.centerOn(spot[0], spot[1]); }
     void t;
+  }
+  // The nearest spot (by the centre of the footprint) where the building fits.
+  freeSpot(type, fx, fy) {
+    const s = CONFIG.buildings[type].size;
+    for (let r = 2; r < 14; r++) {
+      let best = null, bd = 1e9;
+      for (let y = Math.floor(fy - r - s); y <= fy + r; y++) for (let x = Math.floor(fx - r - s); x <= fx + r; x++) {
+        if (!this.world.canPlace(0, type, x, y)) continue;
+        const d = Math.hypot(x + s / 2 - fx, y + s / 2 - fy);
+        if (d >= r - 1 && d < bd) { bd = d; best = [x + s / 2, y + s / 2]; }
+      }
+      if (best) return best;
+    }
+    return [fx, fy];
   }
   moveGhost(sx, sy) { const t = this.view.pick(sx, sy); if (t) this.setGhostAt(t[0], t[1]); }
   setGhostAt(tx, ty) {
@@ -260,6 +431,8 @@ class Game {
     if (!p.ok) { this.hud.toast('You cannot build there. Pick open grass.', 'bad'); return; }
     const b = this.world.place(0, p.type, p.x, p.y, p.builders);
     if (!b) { this.hud.toast(`Not enough: ${this.missing(CONFIG.buildings[p.type].cost)}.`, 'bad'); return; }
+    audio.sfx('place');
+    if (p.builders.length) audio.say('build');
     this.events();
     this.cancelPlacement();
   }
@@ -286,9 +459,9 @@ class Game {
     }
     if (count > 1) this.hud.toast(`Queued ${n} ${plural(d.name, n)}.`);
     const t = w.teams[0], queued = list.reduce((s2, b) => s2 + b.queue.length, 0);
-    if (t.pop + queued > t.popCap) this.hud.toast('Build a House to raise your population limit.');
+    if (t.pop + queued > t.popCap) { this.hud.toast('Build a House to raise your population limit.'); audio.say('house'); }
   }
-  holdPosition() { this.world.orderHold(this.sel); this.hud.toast('Holding position.'); }
+  holdPosition() { this.world.orderHold(this.sel); this.hud.toast('Holding position.'); audio.sfx('order'); audio.say('hold'); }
   selectAllIdle() {
     const idle = this.idleWorkers();
     if (!idle.length) return;
@@ -328,6 +501,8 @@ class Game {
   end(won) {
     if (this.over) return;
     this.over = true;
+    store.del(SAVE_KEY);
+    audio.sfx(won ? 'victory' : 'defeat'); audio.say(won ? 'victory' : 'defeat', undefined, true);
     const t = this.world.teams[0], s = t.stats, r = this.world.teams[1].nation;
     $('#end-title').textContent = won ? 'Victory!' : 'Defeat';
     $('#end-sub').textContent = won ? `You destroyed the ${r.name} Town Center.` : `The ${r.name} army destroyed your Town Center.`;
@@ -359,22 +534,64 @@ function menu() {
   teams.querySelectorAll('.team').forEach(b => { b.onclick = () => { choice.team = b.dataset.id; store.set('genom.team', choice.team); paint(); }; });
   document.querySelectorAll('.pace').forEach(b => { b.onclick = () => { choice.pace = b.dataset.pace; store.set('genom.pace', choice.pace); paint(); }; });
   paint();
-  $('#start').onclick = start;
+  $('#start').onclick = () => start();
+  $('#continue').onclick = () => { const s2 = loadSave(); if (s2) start(s2); };
   $('#resume').onclick = () => game?.togglePause(false);
-  $('#restart').onclick = () => { $('#pause').classList.add('hidden'); start(); };
-  $('#quit').onclick = toMenu;
-  $('#again').onclick = start;
+  $('#restart').onclick = () => { $('#pause').classList.add('hidden'); store.del(SAVE_KEY); start(); };
+  $('#quit').onclick = () => { game?.save(); toMenu(); };
+  $('#again').onclick = () => start();
   $('#menu-btn').onclick = toMenu;
   $('#map-name').textContent = CONFIG.map.name;
+  for (const b of document.querySelectorAll('.open-settings')) b.onclick = openSettings;
+  $('#settings-done').onclick = () => $('#settings').classList.add('hidden');
+  settingsUi();
+  showContinue();
+  // Every button gives a soft click.
+  document.addEventListener('pointerdown', e => { if (e.target.closest?.('button, input')) audio.sfx('tap'); }, true);
 }
+
+// The Continue card, when a saved match is waiting.
+function showContinue() {
+  const s2 = loadSave(), el = $('#continue');
+  el.classList.toggle('hidden', !s2);
+  if (!s2) return;
+  const me = CONFIG.teams[s2.team], them = CONFIG.teams[s2.rivalKey], t = s2.world.time;
+  el.innerHTML = `<b>Continue</b><small>${me.name} vs ${them.name} · ${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')} played</small>`;
+  $('#start').textContent = 'New match';
+  $('#start').classList.toggle('big', false);
+}
+
+// ---------- settings: sound and graphics ----------
+function settingsUi() {
+  const sfx = $('#set-sfx'), voice = $('#set-voice'), mute = $('#set-mute');
+  sfx.value = audio.settings.sfx * 100; voice.value = audio.settings.voice * 100; mute.checked = audio.settings.muted;
+  sfx.oninput = () => { audio.set('sfx', sfx.value / 100); audio.sfx('select', 0.15); };
+  voice.oninput = () => audio.set('voice', voice.value / 100);
+  voice.onchange = () => audio.say('selectWorker', undefined, true);
+  mute.onchange = () => { audio.set('muted', mute.checked); paintMute(); };
+  const q = $('#set-quality');
+  q.querySelectorAll('button').forEach(b => {
+    b.onclick = () => {
+      store.set('genom.quality', b.dataset.q);
+      game?.setQuality(b.dataset.q);
+      q.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    };
+    b.classList.toggle('on', b.dataset.q === store.get('genom.quality', 'auto'));
+  });
+}
+function openSettings() { audio.unlock(); $('#settings').classList.remove('hidden'); }
+function paintMute() { $('#set-mute').checked = audio.settings.muted; game?.hud.paintMute(); }
+function toggleMute() { audio.set('muted', !audio.settings.muted); paintMute(); }
 
 function toMenu() {
   game?.dispose(); game = null;
   for (const id of ['#pause', '#end']) $(id).classList.add('hidden');
   $('#menu').classList.remove('hidden');
+  showContinue();
 }
 
-function start() {
+function start(saved = null) {
+  audio.unlock();
   $('#menu').classList.add('hidden');
   for (const id of ['#pause', '#end']) $(id).classList.add('hidden');
   $('#loading').classList.remove('hidden');
@@ -382,10 +599,13 @@ function start() {
   setTimeout(() => {
     try {
       game?.dispose();
-      game = new Game(choice);
+      if (!saved) store.del(SAVE_KEY);
+      game = new Game(saved ? { team: saved.team, pace: saved.pace } : choice, saved);
+      game.toggleMute = toggleMute;
       window.__genom = game;
     } catch (err) {
       console.error(err);
+      if (saved) store.del(SAVE_KEY);
       $('#loading').textContent = `Something went wrong: ${err.message}`;
       return;
     }

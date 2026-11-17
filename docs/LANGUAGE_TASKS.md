@@ -28,31 +28,33 @@ English is woven into the game's own jobs, as in Languini: **the gesture that do
 
 ## Required tasks
 
-These cannot be waited out, so every student practises English in every arena whatever else they choose. Each uses the task family of its job, so the required moments do not all feel the same.
+These cannot be waited out. **Each arena demands more than the last:** Arena 1 is the easiest, Arena 3 the toughest, both in how many required moments there are and in how big they are. Each moment uses the task family of its job, so they do not all feel the same.
 
-| Required moment | Task (family) | Size |
-|---|---|---|
-| **Gold mine claim**: staking the arena's first gold mine | Stamp the claim marker (spelling) | 1 item |
-| **Key building foundation**: the building the age-up needs (Barracks in Arena 1, Sanctum in Arena 2, Workshop in Arena 3) | That building's task | 3 items |
-| **First construction of each special building**: the Beast Pen, Sanctum and Workshop, the first time each is built in the arena | That building's task | 3 items |
-| **Key research**: one Sanctum scroll before the Age Ceremony (Arenas 2 and 3) | Read the scroll (reading) | 3 items |
-| **Hero summon**: the arena's first hero, at the Sanctum | A two-turn dialogue | 2 items |
-| **Age Ceremony**: the only way to reach the next age | One quick round per family the unit supports | 6–12 items |
-| **Creature's new form**: at the Beast Pen after the age-up | Feed the creature (clue → word) | 1 item |
-| **Battle cry**: launching the final assault on the rival's Town Center | A rallying reply (appropriate reply) | 2 items |
+| Required moment | Task (family) | Arena 1 | Arena 2 | Arena 3 |
+|---|---|---|---|---|
+| **Gold mine claim**: staking the arena's first gold mine | Stamp the claim marker (spelling) | 1 item | 1 item | 2 items |
+| **Key building foundation**: the building the age-up needs | That building's task | Barracks, 3 items | Sanctum, 3 items | Workshop, 3 items |
+| **Other special building foundations**: the first Beast Pen and Sanctum built in the arena | That building's task | wait or do it now | Beast Pen, 3 items | Beast Pen and Sanctum, 3 items each |
+| **Key research**: one Sanctum scroll before the Age Ceremony | Read the scroll (reading) | — | 3 items | 3 items |
+| **Hero summon**: the arena's first hero, at the Sanctum | A two-turn dialogue | wait or do it now | 2 items | 2 items |
+| **First squad drill**: the arena's first Barracks squad | Drill (sentence building) | wait or do it now | wait or do it now | 3 items |
+| **First siege engine**: the arena's first Workshop engine | Blueprint (grammar repair) | — | wait or do it now | 3 items |
+| **Age Ceremony**: the only way to reach the next age | One round per family | 3 rounds × 2 items | 4 rounds × 3 items | 6 rounds × 3 items, every family |
+| **Creature's new form**: at the Beast Pen after the age-up | Feed the creature (clue → word) | 1 item | 1 item | 2 items |
+| **Battle cry**: launching the final assault | A rallying reply (appropriate reply) | 1 item | 2 items | 3 items |
 
 ### Per arena
 
-Quick starts in Arenas 2 and 3 include the Town Center and the Dark-age buildings only. The Beast Pen, Sanctum and Workshop are never pre-built, because nothing carries over between arenas; their foundations are required again in each arena.
+| Arena | Required moments, in a typical order | Tasks | Items | English time (required only) |
+|---|---|---|---|---|
+| Arena 1 (Dark → Mythic) | Gold mine claim, Barracks foundation, Age Ceremony, creature's first form, battle cry | **5** | about 12 | about 2–3 min |
+| Arena 2 (starts Mythic → Arcane) | Gold mine claim, Sanctum foundation, key research, hero summon, Beast Pen foundation, Age Ceremony, creature's elder form, battle cry | **8** | about 27 | about 5 min |
+| Arena 3 (starts Arcane → Celestial) | Gold mine claim, Workshop foundation, Sanctum foundation, key research, hero summon, first squad drill, Beast Pen foundation, first siege engine, Age Ceremony, creature's final form, battle cry | **11** | about 42 | about 8 min |
 
-| Arena | Required moments, in a typical order | Count |
-|---|---|---|
-| Arena 1 (Dark → Mythic) | Gold mine claim, Barracks foundation, Age Ceremony, Beast Pen foundation, creature's first form, Sanctum foundation, hero summon, battle cry | 8 |
-| Arena 2 (starts Mythic → Arcane) | Gold mine claim, Sanctum foundation, key research, hero summon, Beast Pen foundation, Age Ceremony, creature's elder form, battle cry (+ Workshop foundation if built) | 8–9 |
-| Arena 3 (starts Arcane → Celestial) | Gold mine claim, Workshop foundation, Sanctum foundation, key research, hero summon, Beast Pen foundation, Age Ceremony, creature's final form, battle cry | 9 |
-
-- That is about 25–30 items, or roughly 5–7 minutes of English per arena, before any optional speed-ups.
-- The required tasks alone meet the 8-task minimum for the 60% rule, so the minimum is now a safeguard rather than a target. **[OPEN]** keep it, or replace it with "the Age Ceremony completed".
+- The task formats climb too (see "Difficulty by arena"): Arena 1 uses matching, pictures, sorting, clues and spelling with the first letter given; Arena 3 adds grammar repair, reading and dialogue.
+- **Quick starts** in Arenas 2 and 3 include the Town Center and the Dark-age buildings only. The Beast Pen, Sanctum and Workshop are never pre-built, because nothing carries over between arenas.
+- **The 8-task minimum** for the 60% rule: Arena 1's 5 required tasks fall short, so a student must do at least 3 optional speed-ups for Arena 1 to count. Arenas 2 and 3 meet it with the required tasks alone.
+- Arena 3 holds about 8 minutes of required English, so it should run toward the 20-minute end of the range; check this in testing.
 - **Required never means stuck.** A wrong answer brings a hint, then an explanation and the right answer, so every item eventually completes. First-try accuracy is still recorded.
 - Required tasks can be paused and resumed; accepted answers are kept.
 - The rival ages up on its own timer, so finishing the key building and the Ceremony promptly matters.

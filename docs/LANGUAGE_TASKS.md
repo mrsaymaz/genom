@@ -8,7 +8,7 @@ English is woven into the game's own jobs, as in Languini: **the gesture that do
 2. **English never interrupts a fight.** There are no pop-ups. Pending jobs wait on the **work-order rail** (like Languini's ticket rail) until the player taps one.
 3. **The gesture is the job.** The camera glides to the building; words sit on the 3D props; every accepted move visibly does part of the work.
 4. **One task, one whole batch.** One sentence musters the whole squad, one sort brings in the whole harvest, one fix repairs the whole building.
-5. **Protected time.** While a station is open, the match pauses on Relaxed (the rival AI too) and runs at a quarter speed on Challenge. A student is never punished for reading slowly. **[Proposed]**
+5. **Protected time.** While a station is open, the match pauses on Relaxed (the rival AI too) and runs at a quarter speed on Challenge. A student is never punished for reading slowly. (Confirmed.)
 6. **Nobody gets stuck.** A wrong answer brings a hint, then an explanation and the right answer (the bank's two-step feedback). It never costs units or resources.
 
 ## Wait or go Instant!

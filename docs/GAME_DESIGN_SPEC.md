@@ -145,7 +145,7 @@ Units use the same shape with `"type": "unit"`, plus `hp`, `attack`, `armor`, `s
 
 ## 7. Arenas and difficulty
 
-Three arenas, climbing in difficulty, each self-contained. **[OPEN]** Settings for the three maps (SnowPax uses real Istanbul places; this game may use invented ones).
+Three arenas, climbing in difficulty, each self-contained, on **invented landscapes** (confirmed), so their settings can be as imaginative as the nations.
 
 | Arena | AI behaviour | Rival draw weights (player-favoured / even / rival-favoured) |
 |---|---|---|
@@ -194,7 +194,7 @@ One panel that fits a phone without scrolling (as solMaxima's opening screen):
 - Two-finger drag to pan; pinch to zoom.
 - Command card and production panel: large icons, at least 44 px.
 - Placement: a lift-and-place ghost above the finger.
-- Stations: the match pauses on Relaxed and runs at a quarter speed on Challenge while a station is open **[proposed]**. Pending jobs wait on a work-order rail; nothing pops up.
+- Stations: the match pauses on Relaxed and runs at a quarter speed on Challenge while a station is open (confirmed). Pending jobs wait on a work-order rail; nothing pops up.
 
 ## 13. Open decisions
 
@@ -206,8 +206,8 @@ One panel that fits a phone without scrolling (as solMaxima's opening screen):
 6. ~~Unlock threshold~~: 60% first-try accuracy over all tasks done in the arena; no minimum task count.
 7. ~~Language tasks~~: wait or Instant! per job, with the age-up (Age Ceremony) required, as in `LANGUAGE_TASKS.md`.
 8. ~~Other required tasks~~: they climb by arena: 5 in Arena 1, 8 in Arena 2, 11 in Arena 3 (`LANGUAGE_TASKS.md`).
-9. Protected time: full pause on Relaxed and a quarter speed on Challenge (proposed).
-10. Arena settings and map themes.
+9. ~~Protected time~~: full pause on Relaxed and a quarter speed on Challenge while a task is open.
+10. ~~Map settings~~: the tutorial and all three arenas are invented landscapes; their themes are still to design.
 11. League game ID and the exact win rule.
 12. Rival draw weights (section 7) or uniform draws with AI skill only.
 13. Units roster per nation and age (next content task).

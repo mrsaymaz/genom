@@ -16,6 +16,7 @@ Companion documents:
 A browser-playable, touch-first real-time strategy game for Mr. Saymaz's Grades 5–8 English students (CEFR A1–A2+), part of the English League family alongside SnowPax, solMaxima, Languini and Wordramp.
 
 - **Look**: 2.5D isometric (three.js), inspired by Red Alert 2 for readability and by Warcraft 3, Age of Empires 2/3, Rise of Nations and Rise of Legends for aesthetics. Bright and readable at phone size.
+- **Where it's played**: at home, as homework practice, never in class. Students play alone on their own phone, tablet or computer, with no teacher on hand, so every rule and control must teach itself in the game.
 - **Platform**: web browser, installable as a PWA. Landscape. No accounts and no install needed to play.
 - **Deployment**: a static build hosted on Vercel for Mr. Saymaz's students, as SnowPax is (`vercel.json`: build with `npm run build`, publish `dist`; no environment variables).
 - **Match**: 1v1 against an AI rival, three arenas, each about 15–20 minutes.

@@ -11,7 +11,7 @@ Students lead their own League team (Hufflepuff, Ravenclaw, Gryffindor or Slythe
 | Path | Contents |
 |---|---|
 | `docs/GAME_DESIGN_SPEC.md` | The design spec: nations, ages and arenas, design languages, content rules, main screen, League, balance |
-| `docs/LANGUAGE_TASKS.md` | How English drives progress: wait or do it now, the jobs and their task gestures, scoring (60% rule), difficulty and item selection |
+| `docs/LANGUAGE_TASKS.md` | How English drives progress: wait or go Instant!, the jobs and their task gestures, scoring (60% rule), difficulty and item selection |
 | `docs/BUILDING_ROSTER.md` | Every building per nation and age, with base stats (generated from the concept pages) |
 | `docs/TOWN_CENTERS.md` | Every Town Center per nation and age, with abilities |
 | `docs/concepts/` | The approved 3D concept pages. Open any of them in a browser; each has New/Previous and Colour/Silhouette views |

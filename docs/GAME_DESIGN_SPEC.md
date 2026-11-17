@@ -20,7 +20,7 @@ A browser-playable, touch-first real-time strategy game for Mr. Saymaz's Grades 
 - **Deployment**: a static build hosted on Vercel for Mr. Saymaz's students, as SnowPax is (`vercel.json`: build with `npm run build`, publish `dist`; no environment variables).
 - **Match**: 1v1 against an AI rival, three arenas, each about 15–20 minutes.
 - **Core loop**: gather Food, Lumber and Gold; build, upgrade and train; reach the next age; build an army; destroy the rival's Town Center.
-- **Wait or do it now**: most timers (construction, upgrades, training, research) can be waited out or finished instantly with an English task. Key moments are required English with no waiting option, and **each arena demands more**: 5 required tasks in Arena 1, 8 in Arena 2 and 11 in Arena 3 (`LANGUAGE_TASKS.md`). Wrong answers only cost time, and nobody gets stuck (same rule as SnowPax).
+- **Wait or go Instant!**: most timers (construction, upgrades, training, research) can be waited out or finished instantly with an English task, using the **Instant!** button. Key moments are required English with no waiting option, and **each arena demands more**: 5 required tasks in Arena 1, 8 in Arena 2 and 11 in Arena 3 (`LANGUAGE_TASKS.md`). Wrong answers only cost time, and nobody gets stuck (same rule as SnowPax).
 
 ## 2. Players, teams and nations
 
@@ -81,7 +81,7 @@ Each nation owns its shapes and materials, and **each age changes the structural
 | Slytherin | Earth and sod mounds | Living wood: trees, woven branches | Megaliths and emerald: dolmens, obelisks, crystal hearts | Star blossoms: giant glowing buds, lilies, seed pods |
 
 Rules:
-- **Icons: no emoji anywhere in the game** (HUD, buttons, menus, main screen, notifications, unit and building cards) **except inside language tasks**, where the bank's licensed Fluent Emoji pictures are the picture prompts. Every other icon is drawn in the game's own style (resources, the Do it now lightning bolt, abilities, team emblems).
+- **Icons: no emoji anywhere in the game** (HUD, buttons, menus, main screen, notifications, unit and building cards) **except inside language tasks**, where the bank's licensed Fluent Emoji pictures are the picture prompts. Every other icon is drawn in the game's own style (resources, the Instant! lightning bolt, abilities, team emblems).
 - **Motif ownership**: hives and sails are Hufflepuff's; conches, glass and water Ravenclaw's; basalt, magma and lions Gryffindor's; trees and trilithons Slytherin's. **No trees outside Slytherin.**
 - Every building must read by **silhouette alone** (each concept page has a Silhouette view).
 - The concept pages in `docs/concepts/` are the reference. The ladders of names and descriptions are in `BUILDING_ROSTER.md` and `TOWN_CENTERS.md`.
@@ -92,7 +92,7 @@ Rules:
 
 Eight roles, the same for every nation (full table in `BUILDING_ROSTER.md`):
 
-| Role | Footprint | Unlocked | Do it now task (`LANGUAGE_TASKS.md`) |
+| Role | Footprint | Unlocked | Instant! task (`LANGUAGE_TASKS.md`) |
 |---|---|---|---|
 | Town Center | 4×4 | start | Age Ceremony (mixed) |
 | House | 2×2 | Dark | Move-in day: matching |
@@ -204,7 +204,7 @@ One panel that fits a phone without scrolling (as solMaxima's opening screen):
 4. ~~Icons~~: no emoji outside language tasks; all other icons are drawn.
 5. ~~Carry-over~~: none except the starting age.
 6. ~~Unlock threshold~~: 60% first-try accuracy over all tasks done in the arena; no minimum task count.
-7. ~~Language tasks~~: wait or do it now per job, with the age-up (Age Ceremony) required, as in `LANGUAGE_TASKS.md`.
+7. ~~Language tasks~~: wait or Instant! per job, with the age-up (Age Ceremony) required, as in `LANGUAGE_TASKS.md`.
 8. ~~Other required tasks~~: they climb by arena: 5 in Arena 1, 8 in Arena 2, 11 in Arena 3 (`LANGUAGE_TASKS.md`).
 9. Protected time: full pause on Relaxed and a quarter speed on Challenge (proposed).
 10. Arena settings and map themes.

@@ -4,16 +4,16 @@ English is woven into the game's own jobs, as in Languini: **the gesture that do
 
 ## The rules
 
-1. **Wait or do it now, except for a few required moments.** Most timers can be waited out or skipped with English: construction, upgrades, squad training and research. A few key moments are **required** English with no waiting option, starting with the age-up (see "Required tasks"). Each pending job shows its timer and a **Do it now** button (a drawn lightning-bolt icon, not an emoji) that opens its station. Completing the task finishes the job instantly.
+1. **Wait or go Instant!, except for a few required moments.** Most timers can be waited out or skipped with English: construction, upgrades, squad training and research. A few key moments are **required** English with no waiting option, starting with the age-up (see "Required tasks"). Each pending job shows its timer and an **Instant!** button (with a drawn lightning-bolt icon, not an emoji) that opens its station. Completing the task finishes the job instantly.
 2. **English never interrupts a fight.** There are no pop-ups. Pending jobs wait on the **work-order rail** (like Languini's ticket rail) until the player taps one.
 3. **The gesture is the job.** The camera glides to the building; words sit on the 3D props; every accepted move visibly does part of the work.
 4. **One task, one whole batch.** One sentence musters the whole squad, one sort brings in the whole harvest, one fix repairs the whole building.
 5. **Protected time.** While a station is open, the match pauses on Relaxed (the rival AI too) and runs at a quarter speed on Challenge. A student is never punished for reading slowly. **[Proposed]**
 6. **Nobody gets stuck.** A wrong answer brings a hint, then an explanation and the right answer (the bank's two-step feedback). It never costs units or resources.
 
-## Wait or do it now
+## Wait or go Instant!
 
-| Job | Waiting time (example) | Do it now |
+| Job | Waiting time (example) | Instant! |
 |---|---|---|
 | Construct a building | Its build time (20–60 s, see `BUILDING_ROSTER.md`) | The building's station, 3 items |
 | Upgrade a building to the current age | 60–120 s | The building's station, 3 items |
@@ -34,11 +34,11 @@ These cannot be waited out. **Each arena demands more than the last:** Arena 1 i
 |---|---|---|---|---|
 | **Gold mine claim**: staking the arena's first gold mine | Stamp the claim marker (spelling) | 1 item | 1 item | 2 items |
 | **Key building foundation**: the building the age-up needs | That building's task | Barracks, 3 items | Sanctum, 3 items | Workshop, 3 items |
-| **Other special building foundations**: the first Beast Pen and Sanctum built in the arena | That building's task | wait or do it now | Beast Pen, 3 items | Beast Pen and Sanctum, 3 items each |
+| **Other special building foundations**: the first Beast Pen and Sanctum built in the arena | That building's task | wait or Instant! | Beast Pen, 3 items | Beast Pen and Sanctum, 3 items each |
 | **Key research**: one Sanctum scroll before the Age Ceremony | Read the scroll (reading) | — | 3 items | 3 items |
-| **Hero summon**: the arena's first hero, at the Sanctum | A two-turn dialogue | wait or do it now | 2 items | 2 items |
-| **First squad drill**: the arena's first Barracks squad | Drill (sentence building) | wait or do it now | wait or do it now | 3 items |
-| **First siege engine**: the arena's first Workshop engine | Blueprint (grammar repair) | — | wait or do it now | 3 items |
+| **Hero summon**: the arena's first hero, at the Sanctum | A two-turn dialogue | wait or Instant! | 2 items | 2 items |
+| **First squad drill**: the arena's first Barracks squad | Drill (sentence building) | wait or Instant! | wait or Instant! | 3 items |
+| **First siege engine**: the arena's first Workshop engine | Blueprint (grammar repair) | — | wait or Instant! | 3 items |
 | **Age Ceremony**: the only way to reach the next age | One round per family | 3 rounds × 2 items | 4 rounds × 3 items | 6 rounds × 3 items, every family |
 | **Creature's new form**: at the Beast Pen after the age-up | Feed the creature (clue → word) | 1 item | 1 item | 2 items |
 | **Battle cry**: launching the final assault | A rallying reply (appropriate reply) | 1 item | 2 items | 3 items |

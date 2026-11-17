@@ -4,7 +4,7 @@ English is woven into the game's own jobs, as in Languini: **the gesture that do
 
 ## The rules
 
-1. **Wait or do it now.** Every timer in the game can be waited out or skipped with English: construction, upgrades, squad training, research and the age-up. Each pending job shows its timer and a **Do it now** button (a drawn lightning-bolt icon, not an emoji) that opens its station. Completing the task finishes the job instantly.
+1. **Wait or do it now, except for a few required moments.** Most timers can be waited out or skipped with English: construction, upgrades, squad training and research. A few key moments are **required** English with no waiting option, starting with the age-up (see "Required tasks"). Each pending job shows its timer and a **Do it now** button (a drawn lightning-bolt icon, not an emoji) that opens its station. Completing the task finishes the job instantly.
 2. **English never interrupts a fight.** There are no pop-ups. Pending jobs wait on the **work-order rail** (like Languini's ticket rail) until the player taps one.
 3. **The gesture is the job.** The camera glides to the building; words sit on the 3D props; every accepted move visibly does part of the work.
 4. **One task, one whole batch.** One sentence musters the whole squad, one sort brings in the whole harvest, one fix repairs the whole building.
@@ -19,12 +19,27 @@ English is woven into the game's own jobs, as in Languini: **the gesture that do
 | Upgrade a building to the current age | 60–120 s | The building's station, 3 items |
 | Train a squad (Barracks, Beast Pen, Workshop) | About 20 s per unit | One drill / feeding / blueprint task |
 | Research a tech (Sanctum) | 45–90 s | One scroll |
-| Age-up | Mythic 150 s, Arcane 180 s, Celestial 210 s | The Age Ceremony |
+| Age-up | **No waiting: required** | The Age Ceremony |
 
 - **Partial progress:** if the student steps out, each accepted item removes its share of the remaining time. Nothing is wasted.
 - **Perfect bonus:** all items right first time earns a small extra, for example a 20% resource refund or a veteran squad. Accuracy is worth more than speed alone.
 - **No farming:** a task only speeds up a job that is already paid for and queued.
 - **Tempo:** waits are about twice as long as the task, so a student who uses English clearly out-paces one who waits. The rival AI waits its own timers; its difficulty is tuned around a student who does about half the tasks.
+
+## Required tasks
+
+These cannot be waited out, so every student practises English in every arena whatever else they choose.
+
+| Moment | Task | Count per arena |
+|---|---|---|
+| **Age-up** | The Age Ceremony at the Town Center: one quick round per family the unit supports | 1 |
+| **First construction of a newly unlocked building type** **[proposed]** | Laying the foundation stone is that building's task (Beast Pen and Sanctum in the Mythic Age, Workshop in the Arcane Age). Later copies are wait or do it now. | 1–2 |
+| **Summoning the signature creature and each hero** **[proposed]** | One short task each (feeding for the creature, a dialogue for a hero) | 1–2 |
+
+- That is about 3–5 required tasks per arena; together they cover about half of the 8-task minimum for the 60% rule.
+- **Required never means stuck.** A wrong answer brings a hint, then an explanation and the right answer, so every item eventually completes. First-try accuracy is still recorded.
+- The Age Ceremony can be paused and resumed; accepted answers are kept.
+- The rival ages up on its own timer, so finishing the Ceremony promptly matters.
 
 ## Jobs and their tasks
 

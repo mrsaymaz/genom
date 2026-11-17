@@ -19,7 +19,7 @@ A browser-playable, touch-first real-time strategy game for Mr. Saymaz's Grades 
 - **Platform**: web browser, installable as a PWA. Landscape. No accounts and no install needed to play.
 - **Match**: 1v1 against an AI rival, three arenas, each about 15–20 minutes.
 - **Core loop**: gather Food, Lumber and Gold; build, upgrade and train; reach the next age; build an army; destroy the rival's Town Center.
-- **Wait or do it now**: every timer (construction, upgrades, training, research, age-up) can be waited out or finished instantly with an English task. English is how a student out-paces the rival, never a wall: wrong answers only cost time, and nobody gets stuck (same rule as SnowPax).
+- **Wait or do it now**: most timers (construction, upgrades, training, research) can be waited out or finished instantly with an English task. A few key moments are required English with no waiting option: the age-up (the Age Ceremony) and, as proposed, the first construction of each newly unlocked building type and summoning the signature creature and heroes. English is how a student out-paces the rival, never a wall: wrong answers only cost time, and nobody gets stuck (same rule as SnowPax).
 
 ## 2. Players, teams and nations
 
@@ -65,7 +65,7 @@ Four ages: **Dark, Mythic, Arcane, Celestial** (confirmed). Ages are reached **d
 - **Quick start**: Arenas 2 and 3 open with the Town Center and a few core buildings already standing in the starting age, so the early game is not replayed.
 - **Age-up timing**: around minute 6–9 of the arena, leaving time to use the new age before the finale.
 - **The rival ages up too**, on a timer set by its difficulty, so the race to the next age is part of the fight.
-- **Age-up requirements**: resources and one key building (Sanctum for Arcane, Workshop for Celestial). Then wait the age-up timer, or finish it instantly with the **Age Ceremony** at the Town Center (`LANGUAGE_TASKS.md`).
+- **Age-up requirements**: resources and one key building (Sanctum for Arcane, Workshop for Celestial). Then the **Age Ceremony** at the Town Center is **required**: there is no timer to wait out (`LANGUAGE_TASKS.md`). Wrong answers bring hints and the right answer, so nobody is stuck.
 - **The age-up moment**: every building transforms into its next-age form, one by one, with the nation's elemental choreography (as solMaxima's evolutions: air ribbons, rising embers, growing vines, water arches). Under 8 seconds, skippable. The signature creature takes its next form at the same time.
 
 ## 5. Visual design languages
@@ -203,10 +203,11 @@ One panel that fits a phone without scrolling (as solMaxima's opening screen):
 4. ~~Icons~~: no emoji outside language tasks; all other icons are drawn.
 5. ~~Carry-over~~: none except the starting age.
 6. ~~Unlock threshold~~: 60% first-try accuracy, minimum 8 tasks.
-7. ~~Language tasks~~: optional per job (wait or do it now), as in `LANGUAGE_TASKS.md`.
-8. Protected time: full pause on Relaxed and a quarter speed on Challenge (proposed).
-9. Arena settings and map themes.
-10. League game ID and the exact win rule.
-11. Rival draw weights (section 7) or uniform draws with AI skill only.
-12. Units roster per nation and age (next content task).
-13. Scope for v1: suggested all four nations, the tutorial and Arena 1 first.
+7. ~~Language tasks~~: wait or do it now per job, with the age-up (Age Ceremony) required, as in `LANGUAGE_TASKS.md`.
+8. Also required (proposed): the first construction of each newly unlocked building type, and summoning the signature creature and heroes.
+9. Protected time: full pause on Relaxed and a quarter speed on Challenge (proposed).
+10. Arena settings and map themes.
+11. League game ID and the exact win rule.
+12. Rival draw weights (section 7) or uniform draws with AI skill only.
+13. Units roster per nation and age (next content task).
+14. Scope for v1: suggested all four nations, the tutorial and Arena 1 first.

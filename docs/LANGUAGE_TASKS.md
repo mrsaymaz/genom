@@ -33,8 +33,8 @@ These cannot be waited out, so every student practises English in every arena wh
 | Moment | Task | Count per arena |
 |---|---|---|
 | **Age-up** | The Age Ceremony at the Town Center: one quick round per family the unit supports | 1 |
-| **First construction of a newly unlocked building type** **[proposed]** | Laying the foundation stone is that building's task (Beast Pen and Sanctum in the Mythic Age, Workshop in the Arcane Age). Later copies are wait or do it now. | 1–2 |
-| **Summoning the signature creature and each hero** **[proposed]** | One short task each (feeding for the creature, a dialogue for a hero) | 1–2 |
+| **First construction of a newly unlocked building type** | Laying the foundation stone is that building's task (Beast Pen and Sanctum in the Mythic Age, Workshop in the Arcane Age). Later copies are wait or do it now. | 1–2 |
+| **Summoning the signature creature and each hero** | One short task each (feeding for the creature, a dialogue for a hero) | 1–2 |
 
 - That is about 3–5 required tasks per arena; together they cover about half of the 8-task minimum for the 60% rule.
 - **Required never means stuck.** A wrong answer brings a hint, then an explanation and the right answer, so every item eventually completes. First-try accuracy is still recorded.

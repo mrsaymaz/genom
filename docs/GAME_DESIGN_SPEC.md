@@ -19,7 +19,7 @@ A browser-playable, touch-first real-time strategy game for Mr. Saymaz's Grades 
 - **Platform**: web browser, installable as a PWA. Landscape. No accounts and no install needed to play.
 - **Match**: 1v1 against an AI rival, three arenas, each about 15–20 minutes.
 - **Core loop**: gather Food, Lumber and Gold; build, upgrade and train; reach the next age; build an army; destroy the rival's Town Center.
-- **Wait or do it now**: most timers (construction, upgrades, training, research) can be waited out or finished instantly with an English task. A few key moments are required English with no waiting option: the age-up (the Age Ceremony) and, as proposed, the first construction of each newly unlocked building type and summoning the signature creature and heroes. English is how a student out-paces the rival, never a wall: wrong answers only cost time, and nobody gets stuck (same rule as SnowPax).
+- **Wait or do it now**: most timers (construction, upgrades, training, research) can be waited out or finished instantly with an English task. A few key moments are required English with no waiting option: the age-up (the Age Ceremony), the first construction of each newly unlocked building type, and summoning the signature creature and heroes. English is how a student out-paces the rival, never a wall: wrong answers only cost time, and nobody gets stuck (same rule as SnowPax).
 
 ## 2. Players, teams and nations
 
@@ -204,7 +204,7 @@ One panel that fits a phone without scrolling (as solMaxima's opening screen):
 5. ~~Carry-over~~: none except the starting age.
 6. ~~Unlock threshold~~: 60% first-try accuracy, minimum 8 tasks.
 7. ~~Language tasks~~: wait or do it now per job, with the age-up (Age Ceremony) required, as in `LANGUAGE_TASKS.md`.
-8. Also required (proposed): the first construction of each newly unlocked building type, and summoning the signature creature and heroes.
+8. ~~Other required tasks~~: the first construction of each newly unlocked building type, and summoning the signature creature and heroes.
 9. Protected time: full pause on Relaxed and a quarter speed on Challenge (proposed).
 10. Arena settings and map themes.
 11. League game ID and the exact win rule.

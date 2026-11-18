@@ -38,7 +38,7 @@ Unit twist: All units move 10% faster. Special line: **Scout**. The fastest unit
 | Worker | Beekeeper | Comb Keeper | Sky Tender | Cloud Tender |
 | Infantry | Hive Guard | Comb Warden | Gale Lancer | Sky Lancer |
 | Ranged | Wind Slinger | Gale Archer | Storm Archer | Comet Archer |
-| Scout | Kite Runner | Glider | Bee Rider | Wind Skiff |
+| Scout | Kite Runner | Glider | Bee Rider | Starwing Rider |
 | Hero | — | Wind Warden | Storm Warden | Sky Warden |
 | Signature creature | — | Galehide Bear | Elder form | Celestial form |
 | Siege | — | — | Gust Cannon | Storm Engine |
@@ -51,7 +51,7 @@ Hero: Leader. Ability **Updraft**: Lifts nearby allies: they move faster and dod
 |---|---|---|
 | Mythic | Wind Warden | A tall leader in a long honey cloak and a crown of amber hexes, holding a staff topped by a spinning wind rose with a floating amber crystal. |
 | Arcane | Storm Warden | A leader in a storm-grey and honey cloak, with a crown of floating amber hexes, holding a staff wrapped in a small storm cloud where lightning flickers in the amber. |
-| Celestial | Sky Warden | Rides the wind on canvas wings, crowned with a blazing amber star. |
+| Celestial | Sky Warden | A leader who stands on a cloud with great white wings, in a cloud-white robe banded with gold, crowned with gold hexes under a blazing amber star, while a constellation ring turns around them and a gold wind rose tops the staff. |
 
 ### Worker
 
@@ -60,7 +60,7 @@ Hero: Leader. Ability **Updraft**: Lifts nearby allies: they move faster and dod
 | Dark | Beekeeper | A villager in a wide straw hat and veil, with a smoker pot, a hand axe and a straw hive on their back. |
 | Mythic | Comb Keeper | A honey gatherer in a striped smock and a broad hat banded with honeycomb, with a glowing amber satchel, a long honey dipper and a small kite flying from a pole on the back. |
 | Arcane | Sky Tender | A gatherer in an amber-glass visor and a honeycomb-plated vest, with a floating amber crystal and a small honeycomb island that carry the load behind them. |
-| Celestial | Cloud Tender | Glides over the ground on a small puff of cloud. |
+| Celestial | Cloud Tender | A tender who glides on a small puff of cloud, in a cloud-white smock with gold hexes and a wide gold-banded hat with an amber star, holding a staff topped by a ringed star while a little cloud island carries the load. |
 
 ### Infantry
 
@@ -69,7 +69,7 @@ Hero: Leader. Ability **Updraft**: Lifts nearby allies: they move faster and dod
 | Dark | Hive Guard | A spear fighter in a striped honey-and-black tabard, a coiled straw helmet like a beehive, and a hexagonal wicker shield. |
 | Mythic | Comb Warden | A guard in plates of golden honeycomb over a striped tabard, with a tall hive helm and amber visor, a glowing amber hex shield and a stinger-tipped spear. |
 | Arcane | Gale Lancer | A lancer in winged honeycomb armour and a crested hive helm, with a long lance pennant and a round shield that holds a spinning amber wind rose. |
-| Celestial | Sky Lancer | Canvas wings on the back let them leap over the line. |
+| Celestial | Sky Lancer | A lancer in gilded honeycomb plate with great white wings tipped with amber, a gold hive helm crested with a star, a cloud-white shield bearing a great amber star and a long gold lance. |
 
 ### Ranged
 
@@ -78,7 +78,7 @@ Hero: Leader. Ability **Updraft**: Lifts nearby allies: they move faster and dod
 | Dark | Wind Slinger | A light fighter with a honey scarf, a striped cap and amber goggles, whirling a sling over their head. |
 | Mythic | Gale Archer | An archer in a striped sail-cloth cape that billows behind, with a timber bow, a hexagonal quiver and a ring of wind around the arrow. |
 | Arcane | Storm Archer | An archer in a sail-cloth mantle with floating amber hexes around the shoulders, drawing a great sail-winged bow whose arrow spins inside a ring of wind. |
-| Celestial | Comet Archer | Hovers above the field and shoots streaks of golden light. |
+| Celestial | Comet Archer | An archer who hovers on a cloud, in a gold circlet with a star and a cloud-white mantle sewn with a gold constellation, drawing a gold bow whose arrows fly like comets with tails of light. |
 
 ### Scout
 
@@ -87,7 +87,7 @@ Hero: Leader. Ability **Updraft**: Lifts nearby allies: they move faster and dod
 | Dark | Kite Runner | A quick runner in honey and cream, towing a striped diamond kite that catches the wind. |
 | Mythic | Glider | A scout who skims just above the ground under a striped canvas wing on a timber frame, goggles down, with a pennant streaming behind. |
 | Arcane | Bee Rider | A rider on a giant striped honeybee with glowing amber wings, flying over walls and rivers with a lance and goggles. |
-| Celestial | Wind Skiff | A tiny flying boat with a full sail. |
+| Celestial | Starwing Rider | A rider in gold armour and a winged helm on a royal honeybee with a gold crown and four starlit wings, trailing a puff of cloud, carrying a star-tipped lance. |
 
 ## Ravenclaw (Water)
 
@@ -95,11 +95,11 @@ Unit twist: Units slowly heal when they are out of combat. Special line: **Heale
 
 | Line | Dark | Mythic | Arcane | Celestial |
 |---|---|---|---|---|
-| Worker | Shell Gatherer | Pearl Gatherer | Tide Scholar | Star Scholar |
-| Infantry | Shell Guard | Conch Guard | Tidewall Guard | Pearl Sentinel |
+| Worker | Shell Gatherer | Pearl Gatherer | Tide Scholar | Moon Scholar |
+| Infantry | Shell Guard | Conch Guard | Tidewall Guard | Crescent Guard |
 | Ranged | Harpooner | Tide Archer | Glass Archer | Moon Archer |
-| Healer | Tide Mender | Wave Mender | Spring Sage | Star Sage |
-| Hero | — | Tide Navigator | Glass Navigator | Star Navigator |
+| Healer | Tide Mender | Wave Mender | Spring Sage | Moon Sage |
+| Hero | — | Tide Navigator | Glass Navigator | Moon Navigator |
 | Signature creature | — | Tide Raven | Elder form | Celestial form |
 | Siege | — | — | Tide Engine | Moon Engine |
 
@@ -111,7 +111,7 @@ Hero: Support leader. Ability **High Tide**: A wave heals allies and pushes enem
 |---|---|---|
 | Mythic | Tide Navigator | A captain in a long deep-blue coat with pearl buttons and a shell tricorn, holding a bronze spyglass, with two bronze rings turning behind them. |
 | Arcane | Glass Navigator | A captain in a long blue coat with a glass-and-bronze armillary sphere turning behind them and an orb of water at its heart, holding a bronze sextant. |
-| Celestial | Star Navigator | Water orbits them like the rings of a planet. |
+| Celestial | Moon Navigator | A captain in a night-blue coat and a crescent tricorn, with a silver spyglass and a moon staff, while a ring of water orbits them like a planet and a great silver orrery turns behind them with the moon at its heart. |
 
 ### Worker
 
@@ -120,7 +120,7 @@ Hero: Support leader. Ability **High Tide**: A wave heals allies and pushes enem
 | Dark | Shell Gatherer | A villager in a blue tunic and a spiral shell hat, with a net basket on their back and a bronze hand-pick. |
 | Mythic | Pearl Gatherer | A gatherer in a spiral shell hat topped with a glass bubble, with bronze goggles, a net of pearls and glass floats over one shoulder and a bronze rake. |
 | Arcane | Tide Scholar | A scholar in a long blue coat and bronze spectacles, with a satchel of scrolls, a bronze astrolabe tool and a floating orb of water in a bronze ring. |
-| Celestial | Star Scholar | Reads the stars from a small bronze armillary. |
+| Celestial | Moon Scholar | A scholar in a night-blue robe sewn with silver stars and a tall hat with a silver crescent, holding a moon lantern in a crescent cradle and a small silver orrery. |
 
 ### Infantry
 
@@ -129,7 +129,7 @@ Hero: Support leader. Ability **High Tide**: A wave heals allies and pushes enem
 | Dark | Shell Guard | A spear fighter in a pearl breastplate and a tall spiral conch helmet, with a scallop shield and a coral spear. |
 | Mythic | Conch Guard | A guard in layered mother-of-pearl armour with bronze trim, a conch-spiral helm, a round spiral shield and a bronze-headed trident. |
 | Arcane | Tidewall Guard | A guard in pearl and bronze plate with a domed glass helm, holding up a curved wall of moving water as a shield, with a bronze trident. |
-| Celestial | Pearl Sentinel | Armour of glass and pearl that shines like the moon. |
+| Celestial | Crescent Guard | A guard in silver plate with crescent pauldrons and a helm crowned by a tall crescent with a moon between its horns, holding a shield like a full moon of pearl in a silver crescent and a crescent-headed trident. |
 
 ### Ranged
 
@@ -138,7 +138,7 @@ Hero: Support leader. Ability **High Tide**: A wave heals allies and pushes enem
 | Dark | Harpooner | A sailor in a blue bandana who throws bronze harpoons, with a rope coil at the waist and spare harpoons on the back. |
 | Mythic | Tide Archer | An archer in a deep-blue cape with a wave-shaped hem, a bow of polished pearl shell and arrows tipped with glowing water. |
 | Arcane | Glass Archer | An archer in a bronze circlet and a flowing cape, with a bow of clear glass and arrows of glass and water; a small armillary ring turns at the hip. |
-| Celestial | Moon Archer | Silver arrows that glow like moonlight on water. |
+| Celestial | Moon Archer | An archer in a silver circlet with a small crescent and a night-blue cape sewn with silver stars, drawing a silver crescent bow with arrows of moonlight while a small moon floats over the shoulder. |
 
 ### Healer
 
@@ -147,7 +147,7 @@ Hero: Support leader. Ability **High Tide**: A wave heals allies and pushes enem
 | Dark | Tide Mender | A healer in a long deep-blue robe and a shell crown, carrying a glass bowl of glowing water. |
 | Mythic | Wave Mender | A healer in a tall shell crown and a flowing robe, holding a glass orb as ribbons of glowing water curl around them. |
 | Arcane | Spring Sage | A sage in a tall pearl mitre and a robe edged with bronze, with a floating spring of water pouring from a shell above their hands. |
-| Celestial | Star Sage | Heals a whole group with a shower of starlit rain. |
+| Celestial | Moon Sage | A sage in a tall pearl mitre with a great silver crescent behind the head, raising a full moon in a silver cradle that pours moonlit rain over the army. |
 
 ## Gryffindor (Fire)
 
@@ -159,7 +159,7 @@ Unit twist: Units train 15% faster. Special line: **Charger**. A rider who crash
 | Infantry | Ash Guard | Flame Guard | Magma Guard | Sun Guard |
 | Ranged | Ember Archer | Flame Archer | Blaze Archer | Sunfire Archer |
 | Charger | Boar Rider | Ember Rider | Lava Charger | Sun Charger |
-| Hero | — | Flame Captain | Blaze Captain | Sun Champion |
+| Hero | — | Flame Captain | Blaze Captain | Phoenix Captain |
 | Signature creature | — | Ember Lion | Elder form | Celestial form |
 | Siege | — | — | Magma Mortar | Sun Cannon |
 
@@ -171,7 +171,7 @@ Hero: Champion. Ability **Battle Roar**: Nearby allies deal more damage for a fe
 |---|---|---|
 | Mythic | Flame Captain | A champion in red iron plate with a mane of flame on the shoulders, a gold crown of fire, a scarlet cape and a great blade with a glowing magma edge. |
 | Arcane | Blaze Captain | A champion in basalt plate split by magma seams, with burning horns, a mane of fire and a great blade that burns white-hot. |
-| Celestial | Sun Champion | Golden armour under a crown of sunfire. |
+| Celestial | Phoenix Captain | A champion in golden plate with phoenix wings of fire, a sun disc blazing behind the head, a crown of rays and a great sun blade that burns white-hot. |
 
 ### Worker
 
@@ -180,7 +180,7 @@ Hero: Champion. Ability **Battle Roar**: Nearby allies deal more damage for a fe
 | Dark | Forge Hand | A strong villager in a leather apron and a scarlet bandana, with a big hammer on the shoulder. |
 | Mythic | Ember Smith | A smith in iron gauntlets and a scorched apron with gold rivets, carrying a glowing anvil-stone and a forge hammer, with a gold-banded bandana. |
 | Arcane | Magma Smith | A smith in a basalt-plated apron and glowing iron gauntlets, with a hammer whose head is a block of cooling magma and a small floating ember. |
-| Celestial | Sun Smith | Works gold and sunfire with a golden hammer. |
+| Celestial | Sun Smith | A smith in a gold-plated apron and gold gauntlets, with a sunburst on the headband, raising a hammer whose head is a small blazing sun, a little sun floating over the free hand. |
 
 ### Infantry
 
@@ -189,7 +189,7 @@ Hero: Champion. Ability **Battle Roar**: Nearby allies deal more damage for a fe
 | Dark | Ash Guard | A spear fighter in black basalt armour with red iron plates, a spiked crest that burns at the top, and a spiked shield. |
 | Mythic | Flame Guard | A guard in stepped basalt armour with glowing magma seams and spiked pauldrons, a flame-crested helm and a shield bearing a gold lion face with a fiery mane. |
 | Arcane | Magma Guard | A guard in heavy stepped basalt plates with rivers of magma between them, a horned helm with a crown of fire, and a tall ziggurat shield with a glowing core. |
-| Celestial | Sun Guard | Golden armour crowned with a ring of flame. |
+| Celestial | Sun Guard | A guard in stepped golden plate with white-hot seams and rayed pauldrons, a gold helm crowned with sun rays, a tall stepped shield rising into a half sun and a spear with a broad sun blade. |
 
 ### Ranged
 
@@ -198,7 +198,7 @@ Hero: Champion. Ability **Battle Roar**: Nearby allies deal more damage for a fe
 | Dark | Ember Archer | An archer in a red hood with iron cheek guards, shooting arrows with glowing ember tips. |
 | Mythic | Flame Archer | An archer in a scarlet hood with an iron half-mask, a forged black bow and a quiver of burning arrows, with a fire arrow nocked. |
 | Arcane | Blaze Archer | An archer in a horned iron hood and a cloak of smouldering scarlet, drawing a forged bow that burns along its edges, with an arrow of pure flame. |
-| Celestial | Sunfire Archer | Arrows of sunlight that burn through shields. |
+| Celestial | Sunfire Archer | An archer in a scarlet hood and gold mask framed by a sunburst crown, drawing a gold bow with a solar lens at the grip, shooting beams of sunlight that burn through shields. |
 
 ### Charger
 
@@ -207,7 +207,7 @@ Hero: Champion. Ability **Battle Roar**: Nearby allies deal more damage for a fe
 | Dark | Boar Rider | A rider on a black war boar with big tusks, an iron head plate and a scarlet saddle cloth. |
 | Mythic | Ember Rider | A rider on an armoured war boar whose tusks and bristles glow like coals, carrying a flame banner. |
 | Arcane | Lava Charger | A rider on an armoured salamander whose back splits with glowing magma, carrying a fire lance and a gold-rimmed shield. |
-| Celestial | Sun Charger | Rides a burning horse that leaves a trail of fire. |
+| Celestial | Sun Charger | A rider in gold armour with a sun crown and a sun shield, on a great scarlet horse with a mane and tail of fire, burning hooves and gold barding, leaving a trail of fire. |
 
 ## Slytherin (Earth)
 
@@ -231,7 +231,7 @@ Hero: Defender. Ability **Root Snare**: Roots grab enemies in an area and hold t
 |---|---|---|
 | Mythic | Root Seer | An elder in a long moss robe with an antler crown of leaves, leaning on a staff of twisted roots that holds a glowing green rune stone. |
 | Arcane | Rune Seer | An elder in a robe of living moss with a branching antler crown, leaning on a staff grown from the World Tree while rune stones orbit them. |
-| Celestial | Star Seer | Their antlers bloom with starlight and fireflies. |
+| Celestial | Star Seer | An elder in a moss robe with a hem of petals, whose antler crown blooms with glowing star blossoms among fireflies, holding a staff that opens into a star bud while glowing seed pods orbit them. |
 
 ### Worker
 
@@ -240,7 +240,7 @@ Hero: Defender. Ability **Root Snare**: Roots grab enemies in an area and hold t
 | Dark | Root Tender | A villager in a moss-green tunic and a wide leaf hat, with a wicker basket of mushrooms and a wooden hoe. |
 | Mythic | Moss Tender | A gatherer under a big spotted mushroom hat, with a moss cloak sprouting small flowers, a basket of glowing mushrooms and a rune-carved hoe. |
 | Arcane | Rune Gardener | A gardener in a bark-ringed hat sprouting a small sapling, with a rune-carved sickle and a glowing rune stone floating by their shoulder. |
-| Celestial | Grove Keeper | Little living saplings walk behind them. |
+| Celestial | Grove Keeper | A gardener in a hat like a great star lily, with a staff holding a glowing seed-pod lantern, followed by a little living sapling with glowing eyes and a star blossom on top. |
 
 ### Infantry
 
@@ -249,7 +249,7 @@ Hero: Defender. Ability **Root Snare**: Roots grab enemies in an area and hold t
 | Dark | Thorn Guard | A spear fighter in bark armour and a leaf cloak, with a branching wooden helmet, a mossy round shield and a thorn spear. |
 | Mythic | Bark Guard | A guard in thick, layered bark armour with moss in the joints, a leafy antler helm, a shield cut from a tree trunk with a glowing rune, and a thorn spear. |
 | Arcane | Rune Guard | A guard in moss-covered stone plate with an antler crown, holding a standing-stone shield carved with a glowing rune, while two small rune stones orbit them. |
-| Celestial | Grove Guard | Armour of living wood that blooms in battle. |
+| Celestial | Grove Guard | A guard in armour of living wood that blooms with star blossoms, an antler crown in flower, a seed-pod shield with glowing seams and a great blossom, and a thorn spear with an emerald tip. |
 
 ### Ranged
 
@@ -258,7 +258,7 @@ Hero: Defender. Ability **Root Snare**: Roots grab enemies in an area and hold t
 | Dark | Thornbow | A hooded archer in a pointed leaf cloak, with a longbow grown from a living branch. |
 | Mythic | Briar Archer | An archer in a leaf hood crowned with small flowers, with a longbow wrapped in thorny briars and arrows tipped with glowing seeds. |
 | Arcane | Rune Archer | An archer in a leaf mantle with glowing rune bands, drawing a rune-carved bow of living wood that shoots glowing seeds. |
-| Celestial | Starthorn Archer | Arrows of starlight wrapped in thorns. |
+| Celestial | Starthorn Archer | An archer in a hood like a closed flower bud with a collar of petals, drawing a thorny bow of living wood that blooms at both tips, shooting arrows of starlight wound with thorny vines. |
 
 ### Guardian
 
@@ -267,4 +267,4 @@ Hero: Defender. Ability **Root Snare**: Roots grab enemies in an area and hold t
 | Dark | Stonewarden | A huge warrior in rough stone armour with moss on the shoulders, a stone slab shield and green rune light. |
 | Mythic | Moss Golem | A walking figure of stacked stones covered in moss and ferns, with a glowing rune heart, glowing eyes and boulder fists. |
 | Arcane | Rune Golem | A giant of floating standing stones held together by glowing green runes instead of joints, with a heart-stone and a crown of moss. |
-| Celestial | Grove Colossus | A towering giant of stone and living trees. |
+| Celestial | Grove Colossus | A towering giant of mossy stone bound in roots, with an emerald heart, boulder fists and a small tree growing from its shoulders, hung with glowing star blossoms. |

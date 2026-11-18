@@ -80,6 +80,7 @@ npm test
 | `dark-age-units.html` | The four Dark Age units per nation, with a phone-size lineup and the age ladder (generated) |
 | `mythic-age-units.html` | The Mythic Age units and the first hero per nation, with a switch to compare with the Dark Age (generated) |
 | `arcane-age-units.html` | The Arcane Age units and heroes, with a switch to compare all three ages (generated) |
+| `celestial-age-units.html` | The Celestial Age units and heroes, the final forms, with a switch to compare all four ages (generated) |
 | `signature-creatures.html` | The four signature creatures |
 | `nation-design-languages.html` | The four nation design languages |
 

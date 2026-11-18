@@ -2,7 +2,7 @@
 // per type and team), plus the loads workers carry and the selection rings.
 import * as THREE from 'three';
 import { coloured } from './terrain.js';
-import { unitKit, DARK_UNITS, MYTHIC_UNITS, ARCANE_UNITS } from './unit-models.js';
+import { unitKit, DARK_UNITS, MYTHIC_UNITS, ARCANE_UNITS, CELESTIAL_UNITS } from './unit-models.js';
 import { UNIT_TYPES, TYPE_LINE } from '../sim/units.js';
 
 const box = (w, h, d, x, y, z) => { const g = new THREE.BoxGeometry(w, h, d); g.translate(x, y, z); return g; };
@@ -33,7 +33,7 @@ export class UnitMeshes {
   }
   // Builds a team's unit meshes for an age (once).
   prepare(team, age) {
-    const sets = { dark: DARK_UNITS, mythic: MYTHIC_UNITS, arcane: ARCANE_UNITS }, art = this.teams[team].nation.art;
+    const sets = { dark: DARK_UNITS, mythic: MYTHIC_UNITS, arcane: ARCANE_UNITS, celestial: CELESTIAL_UNITS }, art = this.teams[team].nation.art;
     for (const type of UNIT_TYPES) {
       const key = `${type}${team}${age}`;
       if (this.meshes.has(key)) continue;

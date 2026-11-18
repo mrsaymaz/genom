@@ -154,7 +154,7 @@ td.na { color: var(--muted); }
       <h1>${AGE} Age Units</h1>
       <button id="motion" type="button" aria-pressed="false">Pause turntable</button>
     </div>
-    <p class="lead">${ai ? `Each nation's units after the age-up to the ${AGE} Age: every line keeps its outline but gains the materials of the nation's ${AGE} buildings, ${ai === 1 ? 'and the first hero joins them' : 'and the hero takes a new form'}. Switch ages to compare. These are the game's own low-poly models.` : `Each nation's four Dark Age units: a worker, a spear fighter, a ranged fighter and one special unit that fits its element. Every line transforms in each new age, as the buildings do. These are the game's own low-poly models, so what you see here is what students will command.`}</p>
+    <p class="lead">${ai ? `Each nation's units after the age-up to the ${AGE} Age: every line keeps its outline but gains the materials of the nation's ${AGE} buildings, ${ai === 1 ? 'and the first hero joins them' : ai === 3 ? 'and the hero takes its final form. These are the strongest units in the game' : 'and the hero takes a new form'}. Switch ages to compare. These are the game's own low-poly models.` : `Each nation's four Dark Age units: a worker, a spear fighter, a ranged fighter and one special unit that fits its element. Every line transforms in each new age, as the buildings do. These are the game's own low-poly models, so what you see here is what students will command.`}</p>
     <div class="controls">
 ${ai ? `      <div><span class="clbl">Age</span><span class="seg" role="group" aria-label="Age">${AGES.slice(0, ai + 1).reverse().map((a, i) => `<button type="button" data-age="${a}" aria-pressed="${i === 0}">${AGE_NAMES[a]}</button>`).join('')}</span></div>
 ` : ''}      <div><span class="clbl">View</span><span class="seg" role="group" aria-label="View"><button type="button" data-view="color" aria-pressed="true">Colour</button><button type="button" data-view="sil" aria-pressed="false">Silhouette</button></span></div>
@@ -207,7 +207,7 @@ ${data}
 ${models}
   var T3 = THREE;
   var PAGE_AGE = "${age}", LINE_ORDER = ${JSON.stringify(lines)}, LADDER_LINES = ["worker", "infantry", "ranged", "special"];
-  var SETS = { dark: DARK_UNITS, mythic: MYTHIC_UNITS, arcane: ARCANE_UNITS };
+  var SETS = { dark: DARK_UNITS, mythic: MYTHIC_UNITS, arcane: ARCANE_UNITS, celestial: CELESTIAL_UNITS };
   var state = { n: "air", sil: false, paused: false, age: PAGE_AGE };
   var BY_HASH = {}; NATION_ORDER.forEach(function (n) { BY_HASH[NATION_INFO[n].hash] = n; });
   var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
@@ -424,4 +424,5 @@ writeFileSync('docs/UNIT_ROSTER.md', roster());
 writeFileSync('docs/concepts/dark-age-units.html', page('dark'));
 writeFileSync('docs/concepts/mythic-age-units.html', page('mythic'));
 writeFileSync('docs/concepts/arcane-age-units.html', page('arcane'));
-console.log('Wrote docs/UNIT_ROSTER.md and the dark, mythic and arcane unit pages');
+writeFileSync('docs/concepts/celestial-age-units.html', page('celestial'));
+console.log('Wrote docs/UNIT_ROSTER.md and the four unit pages');

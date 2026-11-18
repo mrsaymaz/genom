@@ -197,24 +197,33 @@ export class HUD {
     this.marker.classList.toggle('nudge', tut.nudge > 0);
     let x, y, angle = 0, edge = false;
     if (uiEl) {
+      // A button: the flat arrow points at it.
+      v.setPointer(null);
       uiEl.classList.add('pointed');
       const r = uiEl.getBoundingClientRect(), root = this.root.getBoundingClientRect();
       x = r.left + r.width / 2 - root.left; y = r.top - root.top - 6;
       if (y < 60) { y = r.bottom - root.top + 6; angle = 180; }
     } else if (guide.at && g.world.get(guide.at.id)) {
       const e = guide.at, [cx, cy] = g.world.center(e);
-      const hgt = e.cat === 'unit' ? 1.4 : e.cat === 'res' ? (e.kind === 'tree' ? 2.6 : 1.4) : Math.max(1.5, (v.blds.get(e.id)?.art.height || 2) * 0.9);
-      [x, y] = v.screen(cx, cy, hgt);
-      // Off screen: an arrow on the edge of the screen points the way.
+      const hgt = e.cat === 'unit' ? 1.35 : e.cat === 'res' ? (e.kind === 'tree' ? 2.5 : e.kind === 'gold' ? 1.3 : 0.8) : Math.max(1.4, (v.blds.get(e.id)?.art.height || 2) * 0.95);
+      [x, y] = v.screen(cx, cy, hgt + 0.8);
       const m = 34, top = 56;
       if (x < m || x > v.w - m || y < top || y > v.h - m) {
+        // Off screen: the flat arrow on the edge of the screen points the way.
+        v.setPointer(null);
         const ox = v.w / 2, oy = v.h / 2, dx = x - ox, dy = y - oy;
         const k = Math.min((v.w / 2 - m) / Math.abs(dx || 1e-6), (v.h / 2 - m) / Math.abs(dy || 1e-6));
         x = ox + dx * k; y = Math.max(top, oy + dy * k);
         angle = Math.atan2(dy, dx) * 180 / Math.PI - 90;
         edge = true;
+      } else {
+        // On screen: the spinning 3D arrow stands over the target itself.
+        v.setPointer(cx, cy, hgt, e.cat === 'bld' ? e.w * 0.9 : e.kind === 'gold' ? 1.5 : 1);
+        this.marker.classList.add('hidden');
+        this.showBubble(guide.say || (guide.hint || '').split(/(?<=[.!?])\s/)[0], x, y + 4, 0);
+        return;
       }
-    } else { this.marker.classList.add('hidden'); this.showBubble(null); return; }
+    } else { v.setPointer(null); this.marker.classList.add('hidden'); this.showBubble(null); return; }
     this.marker.classList.toggle('edge', edge);
     this.marker.classList.remove('hidden');
     this.marker.style.transform = `translate(${x - 18}px, ${y - 36}px) rotate(${angle}deg)`;

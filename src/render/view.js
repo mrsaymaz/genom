@@ -41,7 +41,41 @@ export class View {
     this.arrowMat = new THREE.MeshBasicMaterial({ color: lin('#3a2a1a') });
     this.arrowGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.7, 4).rotateZ(Math.PI / 2);
     this.dustMat = new THREE.MeshBasicMaterial({ color: lin('#d8ccb0'), transparent: true, opacity: 0.6, depthWrite: false });
+    this.makePointer();
     this.setQuality(quality);
+  }
+
+  // The tutorial pointer: a faceted purple arrow that spins and bobs over its target, with a
+  // pulsing ring on the ground. Purple belongs to no team, building or terrain.
+  makePointer() {
+    const g = new THREE.Group();
+    const gem = new THREE.MeshStandardMaterial({ color: lin('#9b5cff'), emissive: lin('#5a1fd1'), emissiveIntensity: 0.55, roughness: 0.35, metalness: 0.25, flatShading: true });
+    const rim = new THREE.MeshStandardMaterial({ color: lin('#e7d7ff'), emissive: lin('#b48cff'), emissiveIntensity: 0.4, roughness: 0.3, flatShading: true });
+    const head = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.62, 6), gem); head.rotation.x = Math.PI; head.position.y = 0.31;
+    const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.43, 0.43, 0.08, 6), rim); collar.position.y = 0.64;
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.17, 0.62, 6), gem); shaft.position.y = 0.99;
+    const cap = new THREE.Mesh(new THREE.OctahedronGeometry(0.2, 0), rim); cap.position.y = 1.38; cap.scale.y = 0.7;
+    const arrow = new THREE.Group(); arrow.add(head, collar, shaft, cap); arrow.scale.setScalar(1.35);
+    arrow.traverse(o => { if (o.isMesh) { o.castShadow = true; o.renderOrder = 5; } });
+    const ringMat = new THREE.MeshBasicMaterial({ color: lin('#a66bff'), transparent: true, opacity: 0.8, depthWrite: false });
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.7, 32).rotateX(-Math.PI / 2), ringMat); ring.renderOrder = 3;
+    g.add(arrow, ring); g.visible = false;
+    this.scene.add(g);
+    this.pointer = { g, arrow, ring, ringMat, h: 1, t: 0 };
+  }
+  // Points at tile (tx, ty), hovering at height h above the ground; null hides it.
+  setPointer(tx, ty, h = 1, size = 1) {
+    const p = this.pointer;
+    if (tx === null || tx === undefined) { p.g.visible = false; return; }
+    const [x, z] = this.toWorld(tx, ty);
+    p.g.position.set(x, 0, z); p.h = h; p.size = size; p.g.visible = true;
+  }
+  // Where the arrow's tip is on screen (for the guide's bubble).
+  pointerScreen() {
+    const p = this.pointer;
+    if (!p.g.visible) return null;
+    const v = new THREE.Vector3(p.g.position.x, p.arrow.position.y + 0.8, p.g.position.z).project(this.cam);
+    return [(v.x + 1) / 2 * this.w, (1 - v.y) / 2 * this.h];
   }
 
   // Graphics quality: high (sharp, soft shadows), medium (lighter shadows, lower resolution on
@@ -184,6 +218,13 @@ export class View {
     this.waterTex.offset.set(time * 0.02, time * 0.01);
     for (const v of this.blds.values()) for (const f of v.art.fx) f(time, dt);
     if (this.ghost) for (const f of this.ghost.art.fx) f(time, dt);
+    const pt = this.pointer;
+    if (pt.g.visible) {
+      pt.arrow.position.y = pt.h + 0.25 + Math.abs(Math.sin(time * 3.2)) * 0.35;
+      pt.arrow.rotation.y = time * 2.2;
+      const k = (time * 0.9) % 1;
+      pt.ring.scale.setScalar((pt.size || 1) * (0.8 + k * 0.6)); pt.ringMat.opacity = 0.85 * (1 - k);
+    }
     this.units.update(this.world, alpha, time, (x, y) => this.toWorld(x, y));
     this.units.rings(rings);
     this.fx = this.fx.filter(e => {

@@ -231,13 +231,13 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .dragbox { position: absolute; border: 2px solid #7dff9a; background: rgba(125, 255, 154, 0.12); border-radius: 4px; pointer-events: none !important; }
 
 /* The tutorial pointer: a bouncing gold arrow over the next thing to tap. */
-.marker { position: absolute; left: 0; top: 0; width: 36px; height: 36px; pointer-events: none !important; z-index: 3; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.45)); }
+.marker { position: absolute; left: 0; top: 0; width: 36px; height: 36px; pointer-events: none !important; z-index: 3; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 6px rgba(155, 92, 255, 0.6)); }
 .marker svg { width: 36px; height: 36px; animation: bob 0.9s ease-in-out infinite; }
 .marker.nudge svg { animation: bob-big 0.5s ease-in-out infinite; }
 .marker.edge svg { animation: none; opacity: 0.95; }
 @keyframes bob { 50% { transform: translateY(-8px); } }
 @keyframes bob-big { 50% { transform: translateY(-14px) scale(1.25); } }
-.pointed .face, .icon-btn.pointed { box-shadow: 0 0 0 4px rgba(242, 192, 64, 0.85), 0 0 18px rgba(242, 192, 64, 0.8) !important; }
+.pointed .face, .icon-btn.pointed { box-shadow: 0 0 0 4px rgba(166, 107, 255, 0.9), 0 0 18px rgba(155, 92, 255, 0.85) !important; }
 
 /* ---------- screens ---------- */
 .screen { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; overflow-y: auto; padding: calc(12px + var(--st)) calc(16px + var(--sr)) calc(12px + var(--sb)) calc(16px + var(--sl)); }

@@ -10,6 +10,7 @@ import { HUD } from './ui/hud.js';
 import { ICONS, EMBLEMS } from './ui/icons.js';
 import { Tutorial } from './tutorial.js';
 import { Audio } from './audio.js';
+import { installGate } from './ui/install.js';
 
 const STEP = 1 / 20;
 const plural = (name, n) => (n === 1 || name.endsWith('s') ? name : name.endsWith('man') ? `${name.slice(0, -3)}men` : `${name}s`);
@@ -63,9 +64,8 @@ class Game {
     window.visualViewport?.addEventListener('resize', this.onResize);
     addEventListener('resize', this.onResize); this.onResize();
     if (saved?.cam) { this.view.target.set(saved.cam.x, 0, saved.cam.z); this.view.zoom = saved.cam.zoom; this.view.updateCamera(); } else {
-      // Upright view: the Town Center in the lower part of the screen, the river and the rival above.
       const tc = this.home();
-      this.view.centerOn(tc.x - 3, tc.y - 3);
+      this.view.centerOn(tc.x + 3, tc.y - 1);
     }
     this.acc = 0; this.last = performance.now(); this.time = 0;
     this.frame = this.frame.bind(this);
@@ -487,7 +487,7 @@ class Game {
     this.sel = [u.id]; this.view.centerOn(u.x, u.y);
   }
   selectArmy() { const a = this.army(); if (a.length) { this.sel = a.map(u => u.id); const u = a[0]; this.view.centerOn(u.x, u.y); } }
-  goHome() { const tc = this.home(); if (tc) { this.view.centerOn(tc.x - 2, tc.y - 2); this.sel = [tc.id]; } } // base low on screen, land ahead
+  goHome() { const tc = this.home(); if (tc) { this.view.centerOn(tc.x + 3, tc.y); this.sel = [tc.id]; } }
   escape() {
     if (this.hud.wheelAt) this.hud.wheelAt = null;
     else if (this.amoveMode) this.amoveMode = false;
@@ -552,10 +552,6 @@ function menu() {
   $('#settings-done').onclick = () => $('#settings').classList.add('hidden');
   settingsUi();
   showContinue();
-  // On an iPhone in Safari, the browser's bars take part of the screen: suggest the Home Screen.
-  const ios = /iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && innerWidth < 600);
-  const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
-  $('#ios-tip').classList.toggle('hidden', !ios || standalone);
   // Every button gives a soft click.
   document.addEventListener('pointerdown', e => { if (e.target.closest?.('button, input')) audio.sfx('tap'); }, true);
 }
@@ -627,3 +623,7 @@ function start(saved = null) {
 
 try { artLibrary(); } catch (err) { console.error(err); }
 menu();
+// In a phone browser, show how to install the app first (or play full screen on Android).
+if (installGate(() => { if (!game) $('#menu').classList.remove('hidden'); })) $('#menu').classList.add('hidden');
+// The installed app works offline and starts fast.
+if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

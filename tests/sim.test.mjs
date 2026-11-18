@@ -16,8 +16,8 @@ test('the map is symmetric and both bases can reach each other', () => {
   const goals = w.goalsAround(tcB), start = w.goalsAround(tcA).values().next().value;
   const p = findPath(n, (x, y) => w.blocked(x, y), start % n, Math.floor(start / n), goals, 20000);
   assert.ok(p && p.length > 10, 'a path exists between the bases');
-  // Upright play: the player's base is lower on screen (larger x + y) than the rival's.
-  assert.ok(a.x + a.y > b.x + b.y + 30, `player base ${a.x},${a.y} rival ${b.x},${b.y}`);
+  // The player's base is on the south-west side of the river, the rival's on the north-east.
+  assert.ok(a.y - a.x > 20 && b.x - b.y > 20, `player base ${a.x},${a.y} rival ${b.x},${b.y}`);
   assert.ok(w.map.fords.length === 3);
   assert.equal(w.map.terrain[w.map.fords[1][1] * n + w.map.fords[1][0]], T.FORD);
 });
@@ -29,7 +29,7 @@ test('both teams start with a Town Center, three workers and equal resources', (
     assert.equal([...w.units()].filter(u => u.team === team && u.type === 'worker').length, 3);
     assert.equal(w.teams[team].popCap, 5);
   }
-  const count = (team, kind) => [...w.resources(kind)].filter(r => (team === 0) === (r.x + r.w / 2 + r.y + r.h / 2 > w.size)).length;
+  const count = (team, kind) => [...w.resources(kind)].filter(r => (team === 0) === (r.y + r.h / 2 > r.x + r.w / 2)).length;
   for (const kind of ['tree', 'gold', 'berries']) assert.equal(count(0, kind), count(1, kind), kind);
 });
 

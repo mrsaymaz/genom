@@ -7,21 +7,24 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="screen-orientation" content="portrait">
+  <meta name="apple-mobile-web-app-title" content="Genom">
   <title>Genom</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="icon" href="icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- The game is played upright: on computers and tablets it sits in an upright column. -->
   <div id="app">
     <canvas id="view"></canvas>
     <div id="hud"></div>
 
     <section id="menu" class="screen menu">
       <svg class="vista" viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <g id="vista-art">
         <path d="M0 150 C60 120 110 132 160 118 C220 100 270 128 330 112 C360 104 385 110 400 106 V300 H0Z" fill="#5d8fa8" opacity=".55"/>
         <path d="M0 178 C70 150 130 168 200 150 C270 132 330 160 400 146 V300 H0Z" fill="#5f9a3e"/>
         <path d="M0 205 C90 186 160 200 230 188 C300 176 350 194 400 186 V300 H0Z" fill="#7fb24f"/>
@@ -30,6 +33,7 @@
         <g fill="#2f6b36"><path d="M28 196l12-30 12 30z"/><path d="M44 200l10-24 10 24z"/><path d="M340 182l12-30 12 30z"/><path d="M356 188l10-22 10 22z"/><path d="M318 190l9-20 9 20z"/></g>
         <g fill="#244f2a"><path d="M60 300l20-52 20 52z"/><path d="M86 300l16-40 16 40z"/><path d="M300 300l20-56 20 56z"/><path d="M326 300l15-38 15 38z"/></g>
         <g transform="translate(176 176)"><path d="M0 24h48l-6-6H6z" fill="#7a5432"/><path d="M8 18c0-14 8-22 16-22s16 8 16 22z" fill="#e8b830"/><path d="M10 12h28M9 6h30" stroke="#b08a42" stroke-width="2"/><path d="M24 -4v-10l9 4-9 4" fill="#c22a26"/></g>
+        </g>
       </svg>
       <button class="open-settings corner icon-btn" type="button" aria-label="Sound and graphics"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10.3 2h3.4l.5 2.6 1.7.8 2.3-1.4 2.4 2.4-1.4 2.3.8 1.7 2.6.5v3.4l-2.6.5-.8 1.7 1.4 2.3-2.4 2.4-2.3-1.4-1.7.8-.5 2.6h-3.4l-.5-2.6-1.7-.8-2.3 1.4-2.4-2.4 1.4-2.3-.8-1.7L2 13.7v-3.4l2.6-.5.8-1.7L4 5.8l2.4-2.4 2.3 1.4 1.7-.8zM12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z"/></svg></button>
       <header class="brand">
@@ -50,7 +54,25 @@
       <div class="actions">
         <button id="continue" class="btn gold continue hidden" type="button"></button>
         <button id="start" class="btn gold big" type="button">Start</button>
-        <p id="ios-tip" class="tip hidden">To play full screen on iPhone: tap Share, then Add to Home Screen.</p>
+      </div>
+    </section>
+
+    <!-- On a phone browser: install the game as an app (full screen, sideways, no browser bars). -->
+    <section id="install" class="screen install hidden" lang="en">
+      <svg class="vista" viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><use href="#vista-art"/></svg>
+      <button id="lang" class="lang icon-btn" type="button" aria-label="Türkçe / English"><b data-lang="tr">Türkçe</b><b data-lang="en">English</b></button>
+      <header class="brand">
+        <h1 class="logo">Genom</h1>
+        <p class="sub" data-t="lead"></p>
+      </header>
+      <div class="card steps">
+        <h2 data-t="title"></h2>
+        <ol id="steps"></ol>
+        <div class="install-actions">
+          <button id="install-btn" class="btn gold big hidden" type="button" data-t="installBtn"></button>
+          <button id="fullscreen-btn" class="btn hidden" type="button" data-t="fullscreenBtn"></button>
+        </div>
+        <p class="note" data-t="note"></p>
       </div>
     </section>
 
@@ -59,7 +81,8 @@
     </section>
 
     <section id="pause" class="screen center dim hidden">
-      <div class="sheet">
+      <div class="sheet wide">
+        <div class="col">
         <h1>Paused</h1>
         <button id="resume" class="btn gold big" type="button">Resume</button>
         <div class="row2">
@@ -67,6 +90,8 @@
           <button id="restart" class="btn" type="button">Restart</button>
         </div>
         <button id="quit" class="btn" type="button">Save and quit to menu</button>
+        </div>
+        <div class="col">
         <h2>How to play</h2>
         <ul class="howto">
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".5"/></svg><span><b>Tap</b> a unit or building to select it.</span></li>
@@ -75,40 +100,48 @@
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="14" r="3" fill="currentColor"/><circle cx="16" cy="10" r="3" fill="currentColor"/><path d="M4 20l2-2M20 4l-2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span><b>Two fingers</b> move the map; pinch to zoom.</span></li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span><b>Hold</b> a building to select all of its kind, or a worker to build.</span></li>
         </ul>
+        </div>
       </div>
     </section>
 
     <section id="settings" class="screen center dim hidden">
-      <div class="sheet settings">
-        <h1>Settings</h1>
+      <div class="sheet wide settings">
+        <h1 class="span">Settings</h1>
+        <div class="col">
         <h2>Sound</h2>
         <label class="slider"><span>Effects</span><input id="set-sfx" type="range" min="0" max="100" step="5"></label>
         <label class="slider"><span>Voices</span><input id="set-voice" type="range" min="0" max="100" step="5"></label>
         <label class="check"><input id="set-mute" type="checkbox"><span>Mute everything</span></label>
+        </div>
+        <div class="col">
         <h2>Graphics</h2>
         <div id="set-quality" class="seg">
           <button type="button" data-q="auto">Auto</button><button type="button" data-q="high">High</button><button type="button" data-q="medium">Medium</button><button type="button" data-q="low">Low</button>
         </div>
         <p class="note">Auto lowers the graphics by itself if the game runs slowly on your device.</p>
-        <button id="settings-done" class="btn gold big" type="button">Done</button>
+        </div>
+        <button id="settings-done" class="btn gold big span" type="button">Done</button>
       </div>
     </section>
 
     <section id="end" class="screen center dim hidden">
-      <div class="sheet">
+      <div class="sheet wide">
+        <div class="col">
         <h1 id="end-title"></h1>
         <p class="sub" id="end-sub"></p>
-        <div id="end-stats" class="stats"></div>
         <button id="again" class="btn gold big" type="button">Play again</button>
         <button id="menu-btn" class="btn" type="button">Menu</button>
+        </div>
+        <div id="end-stats" class="stats col"></div>
       </div>
     </section>
   </div>
 
-  <!-- Phones held sideways: the game is played upright. -->
+  <!-- Phones held upright: the game is played sideways. -->
   <div id="rotate">
-    <svg viewBox="0 0 64 64" class="turn" aria-hidden="true"><rect x="22" y="8" width="20" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="3.5"/><circle cx="32" cy="38" r="2" fill="currentColor"/><path d="M10 50c8 8 36 8 44 0M50 44l4 6-7 2" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <p>Turn your phone upright to play.</p>
+    <svg viewBox="0 0 64 64" class="turn" aria-hidden="true"><rect x="8" y="20" width="36" height="22" rx="4" fill="none" stroke="currentColor" stroke-width="3.5"/><circle cx="38" cy="31" r="2" fill="currentColor"/><path d="M50 12c8 8 8 30 0 38M44 46l6 5 3-7" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <p>Turn your phone sideways to play.</p>
+    <p lang="tr" class="tr">Oynamak için telefonunuzu yan çevirin.</p>
   </div>
 
   <script src="art-buildings.js"></script>

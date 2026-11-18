@@ -235,7 +235,8 @@ export class HUD {
     // Rings stay below the top bar and above the info panel.
     const st = this.safeTop ?? (this.safeTop = parseFloat(getComputedStyle(this.top).top) - 6 || 0);
     const sb = this.safeBottom ?? (this.safeBottom = parseFloat(getComputedStyle(this.panel).bottom) - 8 || 0);
-    const bounds = { w: v.w, h: v.h, top: 54 + st, bottom: 8 + sb };
+    const sr = this.safeRight ?? (this.safeRight = parseFloat(getComputedStyle(this.top).right) - 8 || 0);
+    const bounds = { w: v.w, h: v.h, top: 52 + st, bottom: 8 + sb };
     const ppu = v.ppu;
     let ring = null, thumb = null;
 
@@ -318,7 +319,7 @@ export class HUD {
     if (thumb) {
       // The thumb zone: a column of buttons climbing the right edge from the bottom corner,
       // under the right thumb, beside the info panel.
-      this.thumb.show([v.w - 8 - 30, v.h - 8 - sb - 30], thumb.items, { stack: 72, bounds });
+      this.thumb.show([v.w - 8 - sr - 30, v.h - 8 - sb - 30], thumb.items, { stack: 72, bounds });
     } else this.thumb.hide();
   }
 

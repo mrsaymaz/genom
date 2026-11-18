@@ -16,6 +16,8 @@ export async function buildAll({ quiet = false } = {}) {
   rmSync(OUT, { recursive: true, force: true });
   mkdirSync(OUT, { recursive: true });
   for (const f of readdirSync('public')) copyFileSync(join('public', f), join(OUT, f));
+  // A new offline-cache name for every build, so installed apps pick up updates.
+  writeFileSync(join(OUT, 'sw.js'), readFileSync(join(OUT, 'sw.js'), 'utf8').replace('__BUILD__', Date.now().toString(36)));
   for (const [name, code] of Object.entries(generateArt())) {
     const min = await transform(code, { minify: true, target: 'es2019', loader: 'js' });
     writeFileSync(join(OUT, name), min.code);

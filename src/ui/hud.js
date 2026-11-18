@@ -126,6 +126,12 @@ export class HUD {
     this.commands();
     this.pointer();
     if (this.alertOn && this.alertT > 0 && (this.alertT -= dt) <= 0) this.closeAlert();
+    // The camera's gentle glide towards a ring that opened near the edge.
+    if (this.glide) {
+      const k = Math.min(1, dt * 7), x = this.glide.dx * k, y = this.glide.dy * k;
+      g.view.pan(x, y); this.glide.dx -= x; this.glide.dy -= y;
+      if (Math.hypot(this.glide.dx, this.glide.dy) < 1) this.glide = null;
+    }
     this.miniT -= dt;
     if (this.miniT <= 0) { this.miniT = 0.25; this.drawMini(); }
   }
@@ -252,6 +258,13 @@ export class HUD {
     let bx = x + 24 + bw > v.w - 8 ? x - 24 - bw : x + 24;
     let by = angle === 180 ? y + 6 : y - bh - 10;
     bx = Math.max(8, Math.min(v.w - bw - 8, bx)); by = Math.max(46, Math.min(v.h - bh - 70, by));
+    // Never on top of an open ring: move above it, or below it if there is no room above.
+    const r = this.ring.rect();
+    if (r && bx < r.r && bx + bw > r.l && by < r.b && by + bh > r.t) {
+      if (r.t - bh - 8 >= 46) by = r.t - bh - 8;
+      else if (r.b + 8 + bh <= v.h - 8) by = r.b + 8;
+      else bx = r.r + 8 + bw <= v.w - 8 ? r.r + 8 : Math.max(8, r.l - bw - 8);
+    }
     b.style.transform = `translate(${bx}px, ${by}px)`;
   }
 
@@ -442,7 +455,7 @@ export class HUD {
           return { id: 'b' + type, icon: ICONS[type], label: d.name, cost: d.cost, poor: !w.canAfford(0, d.cost), act: () => { this.wheelAt = null; g.startPlacement(type); } };
         });
         items.push({ id: 'back', icon: ICONS.cancel, label: 'Close', cls: 'stop', act: () => { this.wheelAt = null; } });
-        ring = { anchor: v.screen(this.wheelAt[0], this.wheelAt[1], 0.5), items, opts: { radius: (compact ? 96 : 110) + Math.max(0, items.length - 6) * (compact ? 9 : 11), center: -90, step: 360 / items.length } };
+        ring = { anchor: v.screen(this.wheelAt[0], this.wheelAt[1], 0.5), items, opts: { radius: compact ? 88 : 100, center: -90, full: true } };
       } else {
         const soldiers = ents.length > workers.length;
         // The hero's ability: a big button with its cooldown running round the ring.
@@ -463,6 +476,16 @@ export class HUD {
     if (!(ents.length && ents.every(e => e.cat === 'unit' ) && ents.some(e => e.type === 'worker'))) this.wheelAt = null;
 
     if (ring && (ring.anchor[0] < -40 || ring.anchor[0] > v.w + 40 || ring.anchor[1] < -40 || ring.anchor[1] > v.h + 40)) ring = null;
+    // Zoomed out, the ring's buttons are small and show only their pictures.
+    if (ring) ring.opts.compact = v.zoom >= 26;
+    // A ring that opens near the edge of the screen: the camera glides a little to give it room.
+    const rk = ring ? ring.items.map(i => i.id).join('|') : '';
+    if (ring && rk !== this.ringKey && !g.placing) {
+      const m = 120, [ax, ay] = ring.anchor;
+      const dx = ax < m ? m - ax : ax > v.w - m ? v.w - m - ax : 0, dy = ay < bounds.top + m ? bounds.top + m - ay : ay > v.h - bounds.bottom - m ? v.h - bounds.bottom - m - ay : 0;
+      if (dx || dy) this.glide = { dx, dy };
+    }
+    this.ringKey = rk;
     // Rings on the map stay clear of the info panel at the bottom of the screen.
     const low = Math.max(this.panel.classList.contains('hidden') ? 0 : v.h - this.panel.offsetTop, this.layout === 'side' || this.layout === 'corner' ? 0 : v.h - this.tray.offsetTop);
     if (ring) this.ring.show(ring.anchor, ring.items, { ...ring.opts, bounds: { ...bounds, bottom: Math.max(bounds.bottom, low + 8) } }); else this.ring.hide();

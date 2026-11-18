@@ -30,74 +30,156 @@ canvas#view { position: absolute; inset: 0; width: 100%; height: 100%; display: 
 body.installing #rotate { display: none !important; } /* the install guide is read upright too */
 
 /* ---------- HUD ---------- */
-#hud { position: absolute; inset: 0; pointer-events: none; }
+/* Each nation frames its HUD in its own material: woven straw and honey (Air), pearl shell and
+   bronze (Water), basalt and riveted iron (Fire), bark and moss (Earth). */
+#hud { position: absolute; inset: 0; pointer-events: none;
+  --fr-bg: linear-gradient(#2a3340f2, #1c232df2); --fr-pat: linear-gradient(transparent, transparent);
+  --fr-edge: rgba(255, 255, 255, 0.18); --fr-hi: rgba(255, 255, 255, 0.12); --acc: var(--gold); --moss: transparent; }
+#hud.nation-air { --fr-bg: linear-gradient(#3e3018f4, #2a2010f4); --fr-pat: repeating-linear-gradient(115deg, rgba(255, 214, 120, 0.07) 0 5px, transparent 5px 11px); --fr-edge: #c9952e; --fr-hi: rgba(255, 226, 150, 0.35); --acc: #ffd453; }
+#hud.nation-water { --fr-bg: linear-gradient(#17324ef4, #0e2136f4); --fr-pat: radial-gradient(120% 80% at 20% 0%, rgba(214, 208, 232, 0.18), transparent 60%); --fr-edge: #cfc7e2; --fr-hi: rgba(255, 255, 255, 0.4); --acc: #8fe9ff; }
+#hud.nation-fire { --fr-bg: linear-gradient(#2e2426f4, #1b1416f4); --fr-pat: radial-gradient(circle, #e2b23a 1.4px, transparent 2px) left 3px top 3px / 9px 9px no-repeat, radial-gradient(circle, #e2b23a 1.4px, transparent 2px) right 3px top 3px / 9px 9px no-repeat, radial-gradient(circle, #e2b23a 1.4px, transparent 2px) left 3px bottom 3px / 9px 9px no-repeat, radial-gradient(circle, #e2b23a 1.4px, transparent 2px) right 3px bottom 3px / 9px 9px no-repeat; --fr-edge: #b33a26; --fr-hi: rgba(255, 140, 60, 0.35); --acc: #ffb347; }
+#hud.nation-earth { --fr-bg: linear-gradient(#273220f4, #182014f4); --fr-pat: repeating-linear-gradient(90deg, rgba(140, 100, 55, 0.14) 0 2px, transparent 2px 9px); --fr-edge: #7a5a34; --fr-hi: rgba(160, 230, 120, 0.25); --acc: #a6f07e; --moss: #4f8a3a; }
 #hud > * { pointer-events: auto; }
+.frame { background: var(--fr-pat), var(--fr-bg); border: 2px solid var(--fr-edge); box-shadow: inset 0 1px 0 var(--fr-hi), inset 0 3px 0 -1px var(--moss), 0 3px 10px rgba(0, 0, 0, 0.35); }
 .icon-btn { position: relative; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 13px; background: var(--btn); color: var(--ink); }
-.icon-btn:active { background: var(--btn2); }
-.icon-btn i { position: absolute; right: -5px; top: -5px; min-width: 19px; padding: 0 5px; border-radius: 10px; background: var(--gold); color: #2a1a00; font: 800 12px/19px var(--text); font-style: normal; }
+.icon-btn:active { transform: scale(0.94); }
+.icon-btn i { position: absolute; right: -5px; top: -5px; min-width: 18px; padding: 0 4px; border-radius: 9px; background: var(--acc, var(--gold)); color: #2a1a00; font: 800 11px/18px var(--text); font-style: normal; }
 .icon-btn i:empty { display: none; }
-.icon-btn.dim { opacity: 0.45; }
+.icon-btn.dim { opacity: 0.5; }
 
-/* Top bar at the top right: resources, clock, sound and pause. */
-.hud-top { position: absolute; top: calc(6px + var(--st)); right: calc(8px + var(--sr)); height: 42px; display: flex; align-items: center; gap: 2px; padding: 0 4px 0 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
-.res { display: flex; align-items: center; gap: 3px; min-width: 62px; font-size: 15px; }
-.res svg { width: 18px; height: 18px; }
-.res b { font-variant-numeric: tabular-nums; }
-.res.warn b { color: var(--bad); }
-.clock { color: var(--mute); font-size: 13px; padding: 0 6px; font-variant-numeric: tabular-nums; }
-.hud-top .icon-btn { width: 34px; height: 34px; border-radius: 10px; background: transparent; }
-.hud-top .icon-btn svg { width: 20px; height: 20px; }
+/* Resources: a banner hanging from the top edge, with one token per resource. */
+.hud-top { position: absolute; top: 0; right: calc(10px + var(--sr)); display: flex; align-items: center; gap: 2px; padding: calc(4px + var(--st)) 4px 5px 6px; border-top: 0; border-radius: 0 0 16px 16px; }
+.tok { position: relative; display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 10px; background: rgba(0, 0, 0, 0.22); font: 700 15px var(--text); color: var(--ink); }
+.tok + .tok { margin-left: 3px; }
+.tok svg { width: 18px; height: 18px; }
+.tok b { min-width: 2.2ch; font-variant-numeric: tabular-nums; }
+.tok:active { transform: scale(0.95); }
+.tok.pop { flex-direction: row; padding-bottom: 7px; }
+.tok.pop svg { color: var(--acc); }
+.tok .fill { position: absolute; left: 8px; right: 8px; bottom: 3px; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.15); overflow: hidden; }
+.tok .fill s { display: block; height: 100%; background: var(--acc); }
+.tok.pop.warn b { color: var(--bad); }
+.tok.pop.warn .fill s { background: var(--bad); }
+.tok.short { animation: short 0.5s ease; }
+@keyframes short { 0%, 100% { transform: none; } 20% { transform: translateX(-4px); background: rgba(255, 90, 70, 0.55); } 40% { transform: translateX(4px); } 60% { transform: translateX(-3px); background: rgba(255, 90, 70, 0.45); } 80% { transform: translateX(2px); } }
+.gain { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); font: 800 13px var(--text); color: var(--good); text-shadow: 0 1px 2px #000; pointer-events: none; animation: gain 1.3s ease-out forwards; }
+@keyframes gain { from { opacity: 0; transform: translate(-50%, 4px); } 15% { opacity: 1; } to { opacity: 0; transform: translate(-50%, 22px); } }
+.hud-top .icon-btn { width: 32px; height: 32px; border-radius: 10px; background: transparent; }
+.hud-top .icon-btn svg { width: 19px; height: 19px; }
 
-/* The goal strip at the top left. */
-.objectives { position: absolute; top: calc(6px + var(--st)); left: calc(8px + var(--sl)); width: 240px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
-.obj-head { display: flex; gap: 7px; align-items: center; width: 100%; min-height: 40px; padding: 6px 10px; background: transparent; text-align: left; }
-.obj-head .n { color: var(--gold); font-size: 12px; font-variant-numeric: tabular-nums; flex: none; }
-.obj-head b { font: 600 15px/1.15 var(--display); min-width: 0; }
-.obj-head svg { width: 18px; height: 18px; color: var(--gold); }
-.obj-body { padding: 0 12px 10px; }
-.obj-body p { margin: 0; color: var(--ink2); font-size: 13px; }
-.objectives.closed .obj-body { display: none; }
-.objectives.pulse { animation: pulse 1.2s ease; }
+/* Goals: a quest scroll hanging from the top-left; tap it to unroll the full goal. */
+.quest { position: absolute; top: 0; left: calc(10px + var(--sl)); display: grid; justify-items: start; gap: 6px; }
+.scroll { position: relative; display: flex; align-items: center; gap: 7px; padding: calc(4px + var(--st)) 12px 5px 6px; border-top: 0; border-radius: 0 0 16px 16px; color: var(--ink); }
+.scroll .prog { --p: 0; position: relative; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--acc) calc(var(--p) * 1turn), rgba(255, 255, 255, 0.14) 0); }
+.scroll .prog::before { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: #1d222a; }
+.scroll .prog svg { position: relative; width: 18px; height: 18px; color: var(--acc); }
+.scroll .n { font: 800 11px var(--text); color: var(--acc); font-variant-numeric: tabular-nums; }
+.scroll b { font: 600 15px/1.1 var(--display); white-space: nowrap; }
+.quest-body { width: 250px; padding: 9px 12px; border-radius: 14px; }
+.quest-body b { display: block; font: 600 15px/1.2 var(--display); color: var(--acc); }
+.quest-body p { margin: 3px 0 0; font-size: 13px; color: var(--ink2); }
+.quest.closed .quest-body { display: none; }
+.quest.pulse .scroll { animation: pulse 1.2s ease; }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(242, 192, 64, 0.8); } 100% { box-shadow: 0 0 0 14px rgba(242, 192, 64, 0); } }
+.stamp { position: absolute; left: 8px; top: calc(4px + var(--st)); width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: var(--good); color: #0e2a14; animation: stamp 1.4s ease forwards; }
+.stamp svg { width: 20px; height: 20px; }
+@keyframes stamp { 0% { transform: scale(2.4) rotate(-20deg); opacity: 0; } 20% { transform: scale(1) rotate(-8deg); opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
 
-/* Bottom left: the minimap, with the quick buttons in a row above it. */
-.minimap { position: absolute; left: calc(8px + var(--sl)); bottom: calc(8px + var(--sb)); width: var(--mm); height: var(--mm); display: grid; place-items: center; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); touch-action: none; }
-.minimap canvas { width: calc(var(--mm) * 0.68); height: calc(var(--mm) * 0.68); transform: rotate(45deg); image-rendering: pixelated; border: 1px solid rgba(255, 255, 255, 0.25); }
-.quick { position: absolute; left: calc(8px + var(--sl)); bottom: calc(var(--mm) + 16px + var(--sb)); display: flex; gap: 8px; }
-.quick .icon-btn { width: 42px; height: 42px; background: var(--panel); border: 1px solid var(--line); }
+/* The guide's speech bubble on the map: a face, one short English line and a listen button. */
+.bubble { position: absolute; left: 0; top: 0; z-index: 3; display: flex; align-items: center; gap: 8px; max-width: 240px; padding: 5px 6px 5px 5px; border-radius: 18px; background: #fbf3dc; color: #2a1e10; border: 2px solid #c9a35a; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); pointer-events: none !important; }
+.bubble .face { width: 34px; height: 34px; flex: none; border-radius: 50%; background: #e7dcc0; display: grid; place-items: center; overflow: hidden; }
+.bubble .face svg { width: 34px; height: 34px; }
+.bubble .say { font: 700 15px/1.2 var(--display); }
+.bubble .speak { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: #2a6fb6; color: #fff; pointer-events: auto; }
+.bubble .speak svg { width: 17px; height: 17px; }
+.bubble.wiggle { animation: wiggle 0.6s ease; }
+@keyframes wiggle { 20% { rotate: -4deg; } 40% { rotate: 4deg; } 60% { rotate: -3deg; } 80% { rotate: 2deg; } }
 
-/* Alerts drop in under the top bar, on the right. */
-.alert { position: absolute; top: calc(54px + var(--st)); right: calc(8px + var(--sr)); width: min(420px, calc(100% - 290px - var(--sl) - var(--sr))); z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 6px 8px 12px; border-radius: 14px; background: var(--panel-solid); border: 2px solid var(--line); animation: drop 0.3s ease; }
-.alert > span { flex: 1 1 100%; font-size: 14px; padding-right: 30px; }
-.alert button { display: flex; align-items: center; gap: 5px; padding: 8px 11px; border-radius: 10px; background: var(--btn); white-space: nowrap; font-size: 13px; }
-.alert button svg { width: 17px; height: 17px; }
-.alert button.x { position: absolute; top: 4px; right: 4px; padding: 6px; background: transparent; color: var(--mute); }
-.alert.bad { border-color: var(--bad); }
-.alert.bad > span { color: #ffd4cf; }
-.alert.bell { border-color: var(--gold); }
-.alert.good { border-color: var(--good); }
+/* Bottom left: the minimap, the quick buttons in a column beside it, then the selection badge. */
+.minimap { position: absolute; left: calc(10px + var(--sl)); bottom: calc(8px + var(--sb)); width: var(--mm); height: var(--mm); display: grid; place-items: center; border-radius: 18px; touch-action: none; }
+.minimap canvas { width: calc(var(--mm) * 0.66); height: calc(var(--mm) * 0.66); transform: rotate(45deg); image-rendering: pixelated; border: 1px solid rgba(255, 255, 255, 0.3); }
+.quick { --qb: max(30px, calc((var(--mm) - 12px) / 3)); position: absolute; left: calc(var(--mm) + 16px + var(--sl)); bottom: calc(8px + var(--sb)); display: flex; flex-direction: column; gap: 6px; }
+.quick .icon-btn { width: var(--qb); height: var(--qb); border-radius: 50%; }
+.quick .icon-btn svg { width: 58%; height: 58%; }
+
+/* The selection badge: a round portrait with a health ring, a status icon, a short name. */
+.panel { position: absolute; left: calc(var(--mm) * 4 / 3 + 22px + var(--sl)); bottom: calc(8px + var(--sb)); display: flex; align-items: center; gap: 8px; max-width: min(320px, calc(100% - var(--mm) * 4 / 3 - 120px - var(--sl) - var(--sr))); padding: 5px 12px 5px 5px; border-radius: 40px; }
+.pic { --tc: #888; position: relative; width: 54px; height: 54px; flex: none; }
+.pic .hp { --p: 1; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(var(--good) calc(var(--p) * 1turn), rgba(255, 255, 255, 0.14) 0); }
+.pic .hp.low { background: conic-gradient(var(--bad) calc(var(--p) * 1turn), rgba(255, 255, 255, 0.14) 0); }
+.pic .hp.res, .pic .hp.build { background: conic-gradient(var(--gold) calc(var(--p) * 1turn), rgba(255, 255, 255, 0.14) 0); }
+.pic .face { position: absolute; inset: 4px; display: grid; place-items: center; border-radius: 50%; background: var(--tc); color: #fff; box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.22); }
+.pic .face svg { width: 58%; height: 58%; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4)); }
+.pic .st { position: absolute; right: -4px; bottom: -3px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: #1d222a; border: 2px solid var(--fr-edge); color: var(--acc); }
+.pic .st svg { width: 14px; height: 14px; }
+.pic .st.warn { color: var(--bad); border-color: var(--bad); }
+.badge .info { min-width: 0; }
+.badge .name { font: 600 14px/1.1 var(--display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+.badge .sub2 { font: 700 11px var(--text); color: var(--ink2); font-variant-numeric: tabular-nums; }
+.badge.enemy { border-color: var(--bad); }
+.queue { display: flex; gap: 3px; }
+.queue:empty { display: none; }
+.qitem { position: relative; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: rgba(0, 0, 0, 0.3); overflow: hidden; }
+.qitem svg { width: 18px; height: 18px; }
+.qitem s { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(0, 0, 0, 0.4); }
+.qitem s i { display: block; height: 100%; width: 0; background: var(--acc); }
+.multi { display: flex; flex-wrap: wrap; gap: 5px; padding-left: 4px; }
+.chip { --tc: #888; position: relative; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--tc); color: #fff; box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.22); }
+.chip svg { width: 24px; height: 24px; }
+.chip b { position: absolute; right: -4px; bottom: -4px; min-width: 20px; padding: 0 4px; border-radius: 10px; background: #1d222a; border: 2px solid var(--fr-edge); font: 800 11px/16px var(--text); }
+
+/* Alerts drop in as a ribbon at the top centre. */
+.alert { position: absolute; top: calc(48px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 2; display: flex; align-items: center; gap: 6px; max-width: calc(100% - 40px - var(--sl) - var(--sr)); padding: 4px 22px; clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%, 12px 50%); border-radius: 0; animation: drop 0.3s ease; }
+.alert .ai { width: 26px; height: 26px; flex: none; display: grid; place-items: center; border-radius: 50%; background: rgba(0, 0, 0, 0.3); color: var(--acc); }
+.alert .ai svg { width: 16px; height: 16px; }
+.alert.bad .ai { color: var(--bad); animation: throb 1s ease infinite; }
+@keyframes throb { 50% { transform: scale(1.18); } }
+.alert .at { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.alert.bad { --fr-edge: var(--bad); }
+.alert.good { --fr-edge: var(--good); }
+.alert button { display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 9px; background: rgba(0, 0, 0, 0.3); white-space: nowrap; font-size: 13px; flex: none; }
+.alert button svg { width: 16px; height: 16px; }
 .alert.good button:not(.x), .alert.bell button:not(.x) { background: #2f7d48; }
-@keyframes drop { from { transform: translateY(-12px); opacity: 0; } }
+.alert button.x { padding: 5px; background: transparent; color: var(--mute); }
+@keyframes drop { from { transform: translate(-50%, -12px); opacity: 0; } }
+.alert:not(.hidden) ~ .toasts { top: calc(92px + var(--st)); }
 
-/* Bottom: the selection panel, leaving the right edge for the thumb buttons. */
-.panel { position: absolute; left: calc(var(--mm) + 16px + var(--sl)); width: min(340px, calc(100% - var(--mm) - 110px - var(--sl) - var(--sr))); bottom: calc(8px + var(--sb)); min-height: 76px; display: flex; gap: 10px; align-items: center; padding: 8px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; }
-.portrait { width: 52px; height: 52px; flex: none; display: grid; place-items: center; border-radius: 12px; background: var(--tc); color: #fff; box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.25); }
-.portrait svg { width: 32px; height: 32px; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4)); }
-.info { flex: 1; min-width: 0; }
-.name { font: 600 17px/1.1 var(--display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.name small { color: var(--ink2); font: 700 12px var(--text); }
-.bar { height: 7px; margin: 5px 0 4px; border-radius: 4px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
-.bar i { display: block; height: 100%; background: var(--good); transition: width 0.2s; }
-.bar i.low { background: var(--bad); }
-.bar i.res { background: var(--gold); }
-.status { font-size: 12px; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.queue { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
-.qitem { position: relative; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; background: var(--btn); overflow: hidden; }
-.qitem svg { width: 20px; height: 20px; }
-.qitem s { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(0, 0, 0, 0.4); }
-.qitem s i { display: block; height: 100%; width: 0; background: var(--gold); }
-.multi { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { display: flex; gap: 4px; align-items: center; padding: 7px 10px; border-radius: 10px; background: var(--btn); }
+/* Tablets and computers: a larger HUD for a larger screen. */
+@media (min-height: 600px) {
+  :root { --mm: 150px; }
+  .tok { font-size: 18px; padding: 5px 10px; }
+  .tok svg { width: 22px; height: 22px; }
+  .hud-top .icon-btn { width: 38px; height: 38px; }
+  .hud-top .icon-btn svg { width: 22px; height: 22px; }
+  .scroll .prog { width: 40px; height: 40px; }
+  .scroll .prog svg { width: 22px; height: 22px; }
+  .scroll b { font-size: 18px; }
+  .scroll .n { font-size: 13px; }
+  .quest-body { width: 300px; }
+  .quest-body b { font-size: 17px; }
+  .quest-body p { font-size: 15px; }
+  .bubble { max-width: 300px; }
+  .bubble .face, .bubble .face svg { width: 42px; height: 42px; }
+  .bubble .say { font-size: 18px; }
+  .bubble .speak { width: 36px; height: 36px; }
+  .quick { --qb: 44px; }
+  .pic { width: 66px; height: 66px; }
+  .pic .st { width: 28px; height: 28px; }
+  .pic .st svg { width: 17px; height: 17px; }
+  .badge .name { font-size: 17px; max-width: 170px; }
+  .panel { max-width: min(440px, calc(100% - var(--mm) * 4 / 3 - 140px - var(--sl) - var(--sr))); }
+  .badge .sub2 { font-size: 13px; }
+  .qitem { width: 36px; height: 36px; }
+  .qitem svg { width: 22px; height: 22px; }
+  .chip { width: 54px; height: 54px; }
+  .chip svg { width: 30px; height: 30px; }
+  .alert { top: calc(60px + var(--st)); }
+  .alert .at { font-size: 16px; }
+  .alert button { font-size: 15px; padding: 8px 12px; }
+  .toast { font-size: 16px; }
+  #hud .toasts { top: calc(64px + var(--st)); }
+  #hud .alert:not(.hidden) ~ .toasts { top: calc(112px + var(--st)); }
+}
 
 /* Pop-up action rings on the map, and the thumb buttons stacked at the bottom right. */
 .ring { position: absolute; inset: 0; pointer-events: none !important; }
@@ -127,7 +209,7 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .thumb .rbtn { width: 64px; height: 64px; }
 @keyframes pop { from { transform: scale(0.2); opacity: 0; } }
 
-.toasts { position: absolute; bottom: calc(96px + var(--sb)); left: calc(var(--mm) + 16px + var(--sl)); right: calc(90px + var(--sr)); display: flex; flex-direction: column-reverse; align-items: center; gap: 6px; pointer-events: none !important; }
+.toasts { position: absolute; top: calc(50px + var(--st)); left: 50%; transform: translateX(-50%); width: min(460px, calc(100% - 40px)); display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none !important; }
 .toast { max-width: 100%; padding: 7px 14px; border-radius: 12px; background: var(--panel-solid); border: 1px solid var(--line); font-size: 14px; text-align: center; transition: opacity 0.5s, transform 0.5s; }
 .toast.bad { border-color: var(--bad); color: #ffd4cf; }
 .toast.hint { border-color: var(--gold); color: #fff3c8; }
@@ -236,47 +318,52 @@ h2 { margin: 0; font: 600 13px var(--display); color: var(--ink2); text-transfor
 
 /* Phones sideways: a compact HUD, so the map stays visible. */
 @media (max-height: 430px) {
-  :root { --mm: 84px; }
-  .hud-top { top: calc(4px + var(--st)); height: 34px; gap: 0; padding: 0 2px 0 8px; border-radius: 11px; }
-  .res { min-width: 46px; gap: 2px; font-size: 13px; }
-  .res svg { width: 15px; height: 15px; }
-  .clock { font-size: 11px; padding: 0 4px; }
-  .hud-top .icon-btn { width: 28px; height: 28px; }
-  .hud-top .icon-btn svg { width: 17px; height: 17px; }
-  .objectives { top: calc(4px + var(--st)); width: 196px; border-radius: 11px; }
-  .obj-head { min-height: 34px; padding: 4px 8px; gap: 6px; }
-  .obj-head b { font-size: 13px; }
-  .obj-head .n { font-size: 11px; }
-  .obj-head svg { width: 15px; height: 15px; }
-  .obj-body { padding: 0 10px 8px; }
-  .obj-body p { font-size: 11.5px; }
-  .minimap { bottom: calc(6px + var(--sb)); border-radius: 12px; }
-  .quick { bottom: calc(var(--mm) + 12px + var(--sb)); gap: 6px; }
-  .quick .icon-btn { width: 34px; height: 34px; border-radius: 10px; }
-  .quick .icon-btn svg { width: 18px; height: 18px; }
-  .icon-btn i { min-width: 16px; font-size: 10.5px; line-height: 16px; right: -4px; top: -4px; }
-  .panel { left: calc(var(--mm) + 12px + var(--sl)); bottom: calc(6px + var(--sb)); width: min(270px, calc(100% - var(--mm) - 96px - var(--sl) - var(--sr))); min-height: 50px; padding: 5px 8px; gap: 8px; border-radius: 12px; }
-  .portrait { width: 36px; height: 36px; border-radius: 9px; box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.25); }
-  .portrait svg { width: 22px; height: 22px; }
-  .name { font-size: 14px; }
-  .name small { font-size: 10.5px; }
-  .bar { height: 5px; margin: 3px 0 2px; }
-  .status { font-size: 11px; }
-  .queue { margin-top: 2px; gap: 3px; }
-  .qitem { width: 24px; height: 24px; border-radius: 6px; }
-  .qitem svg { width: 16px; height: 16px; }
-  .chip { padding: 4px 8px; font-size: 13px; }
-  .chip svg { width: 18px; height: 18px; }
+  :root { --mm: 86px; }
+  .hud-top { padding: calc(3px + var(--st)) 3px 4px 4px; border-radius: 0 0 13px 13px; }
+  .tok { padding: 3px 6px; gap: 3px; font-size: 13px; border-radius: 8px; }
+  .tok + .tok { margin-left: 2px; }
+  .tok svg { width: 15px; height: 15px; }
+  .tok.pop { padding-bottom: 6px; }
+  .tok .fill { left: 6px; right: 6px; bottom: 2px; height: 2px; }
+  .hud-top .icon-btn { width: 26px; height: 26px; }
+  .hud-top .icon-btn svg { width: 16px; height: 16px; }
+  .scroll { padding: calc(3px + var(--st)) 10px 4px 4px; gap: 5px; border-radius: 0 0 13px 13px; }
+  .scroll .prog { width: 26px; height: 26px; }
+  .scroll .prog svg { width: 15px; height: 15px; }
+  .scroll b { font-size: 13px; }
+  .scroll .n { font-size: 10px; }
+  .stamp { width: 26px; height: 26px; left: 6px; }
+  .quest-body { width: 210px; padding: 7px 10px; }
+  .quest-body b { font-size: 13px; }
+  .quest-body p { font-size: 11.5px; }
+  .bubble { max-width: 200px; gap: 6px; padding: 3px 4px 3px 3px; }
+  .bubble .face, .bubble .face svg { width: 28px; height: 28px; }
+  .bubble .say { font-size: 13px; }
+  .bubble .speak { width: 26px; height: 26px; }
+  .minimap { bottom: calc(6px + var(--sb)); border-radius: 14px; }
+  .quick { bottom: calc(6px + var(--sb)); gap: 6px; }
+  .icon-btn i { min-width: 15px; font-size: 10px; line-height: 15px; right: -4px; top: -4px; }
+  .panel { bottom: calc(6px + var(--sb)); padding: 4px 10px 4px 4px; gap: 6px; }
+  .pic { width: 44px; height: 44px; }
+  .pic .face { inset: 3px; }
+  .pic .st { width: 20px; height: 20px; }
+  .pic .st svg { width: 12px; height: 12px; }
+  .badge .name { font-size: 12.5px; max-width: 100px; }
+  .badge .sub2 { font-size: 10px; }
+  .qitem { width: 24px; height: 24px; }
+  .qitem svg { width: 15px; height: 15px; }
+  .chip { width: 36px; height: 36px; }
+  .chip svg { width: 20px; height: 20px; }
   .thumb .rbtn, .on-map .rbtn { width: 52px; height: 52px; }
   .rbtn .face svg { width: 22px; height: 22px; }
   .rbtn .lbl { font-size: 8.5px; }
   .rbtn .tag { font-size: 9.5px; padding: 1px 5px; }
-  .toasts { bottom: calc(64px + var(--sb)); }
   .toast { font-size: 12px; padding: 5px 10px; }
   .marker, .marker svg { width: 30px; height: 30px; }
-  .alert { top: calc(44px + var(--st)); padding: 6px 4px 6px 10px; }
-  .alert > span { font-size: 12.5px; }
-  .alert button { padding: 5px 8px; font-size: 12px; }
+  .alert { top: calc(40px + var(--st)); padding: 3px 18px; }
+  .alert .ai { width: 22px; height: 22px; }
+  .alert .at { font-size: 12.5px; }
+  .alert button { padding: 4px 8px; font-size: 12px; }
   .alert button:not(.x) svg { display: none; }
   .logo { font-size: 54px; }
   .kicker { display: none; }

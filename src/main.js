@@ -175,6 +175,7 @@ class Game {
       } else if (ev.type === 'deposit' && ev.team === 0) {
         const u = w.get(ev.id);
         if (u && this.onScreen1(u.x, u.y)) audio.sfx('deposit', 0.15);
+        this.hud.gain(ev.kind, ev.amt);
       } else if (ev.type === 'removed') {
         v.removeEntity(ev);
         if (ev.cat === 'bld') audio.sfx('crumble', 0.3);
@@ -446,7 +447,7 @@ class Game {
     this.cancelPlacement();
   }
   cancelPlacement() { this.placing = null; this.view.setGhost(null); }
-  missing(cost) { const r = this.world.teams[0].res; return Object.entries(cost).filter(([k, v]) => r[k] < v).map(([k, v]) => `${Math.ceil(v - r[k])} ${k}`).join(', '); }
+  missing(cost) { this.hud.missing(cost); const r = this.world.teams[0].res; return Object.entries(cost).filter(([k, v]) => r[k] < v).map(([k, v]) => `${Math.ceil(v - r[k])} ${k}`).join(', '); }
 
   // ---------- commands from the HUD ----------
   // Queues one unit, or up to `count` (hold a train button to queue five). With several
@@ -468,7 +469,17 @@ class Game {
     }
     if (count > 1) this.hud.toast(`Queued ${n} ${plural(d.name, n)}.`);
     const t = w.teams[0], queued = list.reduce((s2, b) => s2 + b.queue.length, 0);
-    if (t.pop + queued > t.popCap) { this.hud.toast('Build a House to raise your population limit.'); audio.say('house'); }
+    if (t.pop + queued > t.popCap) { this.hud.toast('Build a House to raise your population limit.'); this.hud.popFull(); audio.say('house'); }
+  }
+  // Tap a resource token: select the workers gathering it (tap again to look at the next one).
+  selectGatherers(kind) {
+    const w = this.world, KIND = { lumber: 'tree', gold: 'gold', food: 'berries' };
+    const list = [...w.units()].filter(u => u.team === 0 && u.type === 'worker' && (u.order?.type === 'gather' || u.order?.type === 'return') && (() => { const t = w.get(u.order.target ?? u.order.then); return t ? (t.cat === 'bld' ? kind === 'food' : t.kind === KIND[kind]) : u.carry?.type === kind; })());
+    if (!list.length) { this.hud.toast(`Nobody is gathering ${kind}.`); return; }
+    this.gatherI = this.gatherKind === kind ? (this.gatherI + 1) % list.length : 0; this.gatherKind = kind;
+    this.sel = list.map(u => u.id);
+    const u = list[this.gatherI]; this.view.centerOn(u.x, u.y);
+    this.hud.toast(`${list.length} worker${list.length > 1 ? 's' : ''} gathering ${kind}.`);
   }
   holdPosition() { this.world.orderHold(this.sel); this.hud.toast('Holding position.'); audio.sfx('order'); audio.say('hold'); }
   selectAllIdle() {
@@ -505,6 +516,7 @@ class Game {
   togglePause(force) {
     if (this.over) return;
     this.paused = force ?? !this.paused;
+    const t = this.world.time; $('#pause-time').textContent = `Time ${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')} · ${this.tutorial.step ? `Goal ${this.tutorial.i + 1} of ${this.tutorial.total}` : 'All goals done'}`;
     $('#pause').classList.toggle('hidden', !this.paused);
   }
   end(won) {

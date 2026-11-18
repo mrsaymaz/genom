@@ -35,6 +35,7 @@ export const ICONS = {
   sound: svg('<path d="M3 9h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 010 7M18 6a8.5 8.5 0 010 12" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>'),
   soundOff: svg('<path d="M3 9h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'),
   pointer: svg('<path d="M12 22L4 11h5V2h6v9h5z" fill="#f7d466" stroke="#3a2600" stroke-width="1.6" stroke-linejoin="round"/>'),
+  scroll: svg('<path d="M6 4h11a3 3 0 013 3v1h-3V7" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 4a3 3 0 00-3 3v1h3" fill="currentColor"/><path d="M6 4v13a3 3 0 003 3h9a3 3 0 003-3v-1H9v1a3 3 0 01-3 3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 9h6M9 12.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'),
   back: svg('<path d="M14 5l-7 7 7 7" stroke="currentColor" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
   rally: svg('<path d="M6 21V3" stroke="currentColor" stroke-width="2"/><path d="M6 3h12l-3 4 3 4H6z" fill="currentColor"/>'),
 };

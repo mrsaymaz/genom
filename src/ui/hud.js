@@ -1,5 +1,6 @@
-// The heads-up display: resource bar, objectives, minimap, selection panel, command card,
-// quick-select buttons, toasts and the drag box. Plain DOM over the 3D canvas.
+// The heads-up display, framed in the student's nation material: a banner of resource tokens,
+// the quest scroll, the guide's speech bubble, the minimap with its quick buttons, the selection
+// badge, action rings, alert ribbons, toasts and the drag box. Plain DOM over the 3D canvas.
 import { CONFIG } from '../config.js';
 import { ICONS, unitIcon } from './icons.js';
 import { T } from '../sim/map.js';
@@ -17,56 +18,83 @@ const holdable = (el, tap, hold) => {
   el.addEventListener('contextmenu', e => e.preventDefault());
 };
 const costHtml = cost => Object.entries(cost || {}).map(([k, v]) => `<span class="cost">${ICONS[k]}${v}</span>`).join('');
-const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+// The village guide who speaks the tutorial lines: a small face in each nation's hat.
+const GUIDE = {
+  air: '<path d="M6 21c0-9 5-14 14-14s14 5 14 14" fill="#d9b66a"/><ellipse cx="20" cy="21" rx="18" ry="4" fill="#e8c878"/><path d="M14 9h12" stroke="#b08a42" stroke-width="2"/>',
+  water: '<path d="M10 21L20 2l10 19z" fill="#efe9e0"/><path d="M13 15h14M15.5 10h9M18 6h4" stroke="#c9c0d8" stroke-width="1.6"/><ellipse cx="20" cy="21" rx="14" ry="3" fill="#efe9e0"/>',
+  fire: '<path d="M7 22c0-8 6-13 13-13s13 5 13 13z" fill="#c22a26"/><path d="M31 18l6 3-5 3" fill="#c22a26"/><path d="M8 21h24" stroke="#8a1a16" stroke-width="2"/>',
+  earth: '<ellipse cx="20" cy="17" rx="19" ry="5" fill="#7fb24f"/><path d="M1 17h38" stroke="#4f8a3a" stroke-width="1.2"/><path d="M20 12v-6" stroke="#4f8a3a" stroke-width="2"/>',
+};
+const guideFace = art => `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="26" r="12" fill="#e9b994"/><circle cx="15.5" cy="25" r="1.6" fill="#2a1e18"/><circle cx="24.5" cy="25" r="1.6" fill="#2a1e18"/><path d="M16 30q4 3 8 0" stroke="#9a5a48" stroke-width="1.6" fill="none" stroke-linecap="round"/>${GUIDE[art]}</svg>`;
+// What a unit is doing, as a small icon on its badge.
+const STATUS = { gather: null, return: null, build: 'build', move: 'rally', amove: 'amove', attack: 'amove', hold: 'hold', shelter: 'bell' };
+const RES_OF = { tree: 'lumber', gold: 'gold', berries: 'food' };
 
 export class HUD {
   constructor(root, game) {
     this.g = game; this.root = root;
     root.innerHTML = '';
-    // Top bar.
-    this.top = h('div', 'hud-top');
-    this.res = {};
-    for (const k of [...RES, 'pop']) { const s = h('div', 'res', `${ICONS[k]}<b>0</b>`); s.title = k === 'pop' ? 'Population' : k[0].toUpperCase() + k.slice(1); this.res[k] = s.querySelector('b'); this.top.append(s); }
-    this.clock = h('div', 'clock', '0:00');
+    // Every frame takes the student's nation material (straw, pearl, basalt or bark).
+    const art = game.world.teams[0].nation.art;
+    root.className = `nation-${art}`;
+    this.art = art;
+
+    // Resources: a hanging banner of tokens (tap a token to find its gatherers).
+    this.top = h('div', 'hud-top frame');
+    this.res = {}; this.tok = {};
+    for (const k of RES) {
+      const t = h('button', 'tok', `${ICONS[k]}<b>0</b>`); t.title = `${k[0].toUpperCase() + k.slice(1)}: tap to find the workers gathering it`;
+      t.onclick = () => game.selectGatherers?.(k);
+      this.res[k] = t.querySelector('b'); this.tok[k] = t; this.top.append(t);
+    }
+    const pop = h('div', 'tok pop', `${ICONS.house}<b>0</b><i class="fill"><s></s></i>`); pop.title = 'Population: build Houses for more';
+    this.res.pop = pop.querySelector('b'); this.popFill = pop.querySelector('.fill s'); this.tok.pop = pop;
     this.muteBtn = h('button', 'icon-btn'); this.muteBtn.onclick = () => game.toggleMute?.();
     this.pauseBtn = h('button', 'icon-btn', ICONS.pause); this.pauseBtn.title = 'Pause'; this.pauseBtn.onclick = () => game.togglePause();
-    this.top.append(this.clock, this.muteBtn, this.pauseBtn);
+    this.top.append(pop, this.muteBtn, this.pauseBtn);
     this.paintMute();
-    // Objectives.
-    this.obj = h('div', 'objectives');
-    this.objHead = h('button', 'obj-head');
-    this.objBody = h('div', 'obj-body');
-    this.objHead.onclick = () => { this.obj.classList.toggle('closed'); this.objOpenT = this.obj.classList.contains('closed') ? 0 : 8; };
+
+    // Goals: a quest scroll with a progress ring; tap to unroll the full goal.
+    this.obj = h('div', 'quest closed');
+    this.objHead = h('button', 'scroll frame');
+    this.objBody = h('div', 'quest-body frame');
+    this.objHead.onclick = () => { this.obj.classList.toggle('closed'); this.objOpenT = this.obj.classList.contains('closed') ? 0 : 6; };
     this.obj.append(this.objHead, this.objBody);
-    // Quick-select buttons.
+
+    // The guide's speech bubble, beside the pointer arrow on the map.
+    this.bubble = h('div', 'bubble hidden', `<span class="face">${guideFace(art)}</span><span class="say"></span><button class="speak" type="button" title="Listen">${ICONS.sound}</button>`);
+    this.bubble.querySelector('.speak').onclick = e => { e.stopPropagation(); game.audio?.speak(this.sayText, true); };
+
+    // Quick buttons in a column beside the minimap.
     this.quick = h('div', 'quick');
-    this.idleBtn = h('button', 'icon-btn', `${ICONS.idle}<i></i>`); this.idleBtn.title = 'Next idle worker (hold: all idle workers)'; holdable(this.idleBtn, () => game.selectIdleWorker(), () => game.selectAllIdle());
-    this.armyBtn = h('button', 'icon-btn', `${ICONS.army}<i></i>`); this.armyBtn.title = 'Select all soldiers'; this.armyBtn.onclick = () => game.selectArmy();
-    this.homeBtn = h('button', 'icon-btn', ICONS.towncenter); this.homeBtn.title = 'Go to Town Center'; this.homeBtn.onclick = () => game.goHome();
+    this.idleBtn = h('button', 'icon-btn frame', `${ICONS.idle}<i></i>`); this.idleBtn.title = 'Next idle worker (hold: all idle workers)'; holdable(this.idleBtn, () => game.selectIdleWorker(), () => game.selectAllIdle());
+    this.armyBtn = h('button', 'icon-btn frame', `${ICONS.army}<i></i>`); this.armyBtn.title = 'Select all soldiers'; this.armyBtn.onclick = () => game.selectArmy();
+    this.homeBtn = h('button', 'icon-btn frame', ICONS.towncenter); this.homeBtn.title = 'Go to Town Center'; this.homeBtn.onclick = () => game.goHome();
     this.quick.append(this.idleBtn, this.armyBtn, this.homeBtn);
     // Minimap (a diamond, turned to match the camera).
-    this.mini = h('div', 'minimap');
+    this.mini = h('div', 'minimap frame');
     this.miniCanvas = h('canvas'); this.miniCanvas.width = this.miniCanvas.height = 96;
     this.mini.append(this.miniCanvas);
     this.mini.addEventListener('pointerdown', e => { this.miniDrag = true; this.miniPoint(e); });
     this.mini.addEventListener('pointermove', e => { if (this.miniDrag) this.miniPoint(e); });
     addEventListener('pointerup', () => { this.miniDrag = false; });
-    // Bottom: selection panel and command card.
-    this.panel = h('div', 'panel hidden');
+    // The selection badge: a round portrait with a health ring, a status icon and a short name.
+    this.panel = h('div', 'panel badge frame hidden');
     this.wheelAt = null; // tile point the build wheel is drawn around, while it is open
     this.toasts = h('div', 'toasts');
     this.boxEl = h('div', 'dragbox hidden');
-    // Alerts (raids, the bell) sit under the top bar, with buttons to act on them.
+    // Alerts drop in as a ribbon at the top centre.
     this.alertEl = h('div', 'alert hidden'); this.alertOn = false; this.alertT = 0;
     // The tutorial pointer: a bouncing arrow over what to tap next.
     this.marker = h('div', 'marker hidden', ICONS.pointer);
-    root.append(this.top, this.obj, this.quick, this.mini, this.panel, this.toasts, this.boxEl, this.alertEl);
+    root.append(this.top, this.obj, this.quick, this.mini, this.panel, this.boxEl, this.alertEl, this.toasts);
     // Rings go last so their buttons sit above toasts and panels.
     this.ring = new ActionRing(root, 'on-map');
     this.thumb = new ActionRing(root, 'thumb');
-    root.append(this.marker);
+    root.append(this.bubble, this.marker);
     this.terrainImg = this.drawTerrain();
-    this.panelKey = ''; this.miniT = 0;
+    this.panelKey = ''; this.miniT = 0; this.gains = {};
   }
 
   // ---------- per-frame refresh ----------
@@ -74,8 +102,8 @@ export class HUD {
     const g = this.g, w = g.world, t = w.teams[0];
     for (const k of RES) this.res[k].textContent = Math.floor(t.res[k]);
     this.res.pop.textContent = `${t.pop}/${t.popCap}`;
-    this.res.pop.parentElement.classList.toggle('warn', t.pop >= t.popCap);
-    this.clock.textContent = fmtTime(w.time);
+    this.popFill.style.width = `${Math.min(100, (100 * t.pop) / Math.max(1, t.popCap))}%`;
+    this.tok.pop.classList.toggle('warn', t.pop >= t.popCap);
     const idle = g.idleWorkers().length, army = g.army().length;
     this.idleBtn.querySelector('i').textContent = idle || '';
     this.idleBtn.classList.toggle('dim', !idle);
@@ -90,21 +118,54 @@ export class HUD {
     if (this.miniT <= 0) { this.miniT = 0.25; this.drawMini(); }
   }
 
-  // The goal panel opens on each new goal, then folds down to a one-line strip so it covers
-  // less of the map. Tap the strip to open it again.
+  // ---------- resource tokens ----------
+  // A "+10" floats up from a token when resources arrive (deposits and goal rewards).
+  gain(kind, amt) {
+    const tok = this.tok[kind];
+    if (!tok || amt <= 0) return;
+    const now = performance.now(), last = this.gains[kind];
+    if (last && now - last.t < 700 && last.el.isConnected) { last.amt += amt; last.el.textContent = `+${Math.round(last.amt)}`; return; }
+    const el = h('span', 'gain', `+${Math.round(amt)}`);
+    tok.append(el);
+    this.gains[kind] = { t: now, amt, el };
+    setTimeout(() => el.remove(), 1300);
+  }
+  // A token shakes and flashes red when it is what you are missing.
+  missing(cost) {
+    const r = this.g.world.teams[0].res;
+    for (const [k, v] of Object.entries(cost || {})) if (r[k] < v && this.tok[k]) { const t = this.tok[k]; t.classList.remove('short'); void t.offsetWidth; t.classList.add('short'); }
+  }
+  popFull() { const t = this.tok.pop; t.classList.remove('short'); void t.offsetWidth; t.classList.add('short'); }
+
+  // ---------- the quest scroll ----------
   objectives(dt) {
     const tut = this.g.tutorial, step = tut.step, n = tut.i;
     if (this.objOpenT > 0 && (this.objOpenT -= dt) <= 0) this.obj.classList.add('closed');
     const key = step ? n : 'done';
     if (key === this.objKey) return;
     this.objKey = key;
-    this.objHead.innerHTML = `${ICONS.objectives}<span class="n">${step ? `${n + 1}/${tut.total}` : ''}</span><b>${step ? step.title : 'All goals done!'}</b>`;
-    this.objBody.innerHTML = step ? `<p>${step.hint}</p>` : '<p>Well played! Now win the match.</p>';
-    this.obj.classList.remove('closed'); this.objOpenT = innerHeight < 430 ? 5 : 8; // folds sooner on phones
+    const p = step ? n / tut.total : 1;
+    this.objHead.innerHTML = `<span class="prog" style="--p:${p}">${ICONS.scroll}</span><span class="n">${step ? `${n + 1}/${tut.total}` : `${tut.total}/${tut.total}`}</span><b>${step ? step.short : 'All done!'}</b>`;
+    this.objBody.innerHTML = step ? `<b>${step.title}</b><p>${step.hint}</p>` : '<b>All goals done!</b><p>Well played! Now win the match.</p>';
+    this.obj.classList.remove('closed'); this.objOpenT = innerHeight < 430 ? 4 : 6;
     this.obj.classList.remove('pulse'); void this.obj.offsetWidth; this.obj.classList.add('pulse');
   }
+  // A finished goal: a stamped tick, a fanfare and the reward floating onto the tokens.
+  goalDone(step, reward) {
+    const stamp = h('span', 'stamp', ICONS.check);
+    this.objHead.append(stamp);
+    setTimeout(() => stamp.remove(), 1400);
+    this.g.audio?.sfx('built');
+    if (reward) for (const [k, v] of Object.entries(reward)) this.gain(k, v);
+  }
+  // Stuck for a while: the guide wiggles and says the line again.
+  guideNudge(hint) {
+    this.bubble.classList.remove('wiggle'); void this.bubble.offsetWidth; this.bubble.classList.add('wiggle');
+    if (this.sayText) this.g.audio?.speak(this.sayText, true);
+    if (this.bubble.classList.contains('hidden')) this.toast(hint, 'hint');
+  }
 
-  // ---------- the tutorial pointer ----------
+  // ---------- the tutorial pointer and the guide's bubble ----------
   pointer() {
     const g = this.g, v = g.view, tut = g.tutorial;
     const guide = !g.paused && !g.over ? tut.guide() : {};
@@ -112,7 +173,7 @@ export class HUD {
     if (this.pointed && this.pointed !== uiEl) this.pointed.classList.remove('pointed');
     this.pointed = uiEl;
     this.marker.classList.toggle('nudge', tut.nudge > 0);
-    let x, y, angle = 0;
+    let x, y, angle = 0, edge = false;
     if (uiEl) {
       uiEl.classList.add('pointed');
       const r = uiEl.getBoundingClientRect(), root = this.root.getBoundingClientRect();
@@ -129,18 +190,38 @@ export class HUD {
         const k = Math.min((v.w / 2 - m) / Math.abs(dx || 1e-6), (v.h / 2 - m) / Math.abs(dy || 1e-6));
         x = ox + dx * k; y = Math.max(top, oy + dy * k);
         angle = Math.atan2(dy, dx) * 180 / Math.PI - 90;
-        this.marker.classList.add('edge');
-      } else this.marker.classList.remove('edge');
-    } else { this.marker.classList.add('hidden'); return; }
+        edge = true;
+      }
+    } else { this.marker.classList.add('hidden'); this.showBubble(null); return; }
+    this.marker.classList.toggle('edge', edge);
     this.marker.classList.remove('hidden');
     this.marker.style.transform = `translate(${x - 18}px, ${y - 36}px) rotate(${angle}deg)`;
     this.marker.style.transformOrigin = '18px 36px';
+    this.showBubble(guide.say || (guide.hint || '').split(/(?<=[.!?])\s/)[0], x, y, angle);
+  }
+  // The guide says the line in a bubble beside the arrow, and reads it aloud once.
+  showBubble(text, x, y, angle = 0) {
+    const b = this.bubble;
+    if (!text) { b.classList.add('hidden'); return; }
+    if (text !== this.sayText) {
+      this.sayText = text;
+      b.querySelector('.say').textContent = text;
+      this.g.audio?.speak(text);
+    }
+    b.classList.remove('hidden');
+    const v = this.g.view, bw = b.offsetWidth || 160, bh = b.offsetHeight || 40;
+    // Beside the arrow, on the side with more room; above it when the arrow points up.
+    let bx = x + 24 + bw > v.w - 8 ? x - 24 - bw : x + 24;
+    let by = angle === 180 ? y + 6 : y - bh - 10;
+    bx = Math.max(8, Math.min(v.w - bw - 8, bx)); by = Math.max(46, Math.min(v.h - bh - 70, by));
+    b.style.transform = `translate(${bx}px, ${by}px)`;
   }
 
   // ---------- alerts ----------
   alert(text, actions = [], kind = '', ttl = 0) {
-    this.alertEl.className = `alert ${kind}`;
-    this.alertEl.innerHTML = `<span>${text}</span>`;
+    this.alertEl.className = `alert frame ${kind}`;
+    const icon = kind === 'bad' ? ICONS.amove : kind === 'bell' ? ICONS.bell : kind === 'good' ? ICONS.clear : ICONS.objectives;
+    this.alertEl.innerHTML = `<span class="ai">${icon}</span><span class="at">${text}</span>`;
     for (const a of actions) {
       const b = h('button', '', `${a.icon || ''}<span>${a.label}</span>`);
       b.onclick = e => { e.stopPropagation(); a.act(); if (!a.keep) this.closeAlert(); };
@@ -151,10 +232,10 @@ export class HUD {
     this.alertOn = true; this.alertT = ttl;
   }
   closeAlert() { this.alertEl.className = 'alert hidden'; this.alertOn = false; this.bellShown = false; }
-  // While workers shelter, a lasting banner offers the all-clear.
+  // While workers shelter, a lasting ribbon offers the all-clear.
   bellAlert(safe = false) {
     const n = this.g.world.allUnits ? [...this.g.world.allUnits()].filter(u => u.team === 0 && (u.inside || u.order?.type === 'shelter')).length : 0;
-    this.alert(safe ? 'It looks safe now.' : `Bell! ${n} workers are hiding. The Town Center shoots harder.`,
+    this.alert(safe ? 'It looks safe now.' : `Bell! ${n} workers are hiding.`,
       [{ label: 'All clear', icon: ICONS.clear, act: () => this.g.allClear() }], safe ? 'good' : 'bell', 0);
     this.bellShown = true;
   }
@@ -166,49 +247,53 @@ export class HUD {
     this.muteBtn.classList.toggle('dim', !!m);
   }
 
-  // ---------- selection panel ----------
+  // ---------- the selection badge ----------
   selection() {
     const g = this.g, w = g.world, ents = g.sel.map(id => w.get(id)).filter(Boolean);
     if (!ents.length) { this.panel.classList.add('hidden'); this.panelKey = ''; return; }
     this.panel.classList.remove('hidden');
     if (ents.length > 1) {
+      // A group: one stacked portrait per kind, with a count. Tap one to keep only that kind.
       const counts = {};
       for (const e of ents) counts[e.type] = (counts[e.type] || 0) + 1;
       const key = 'multi' + JSON.stringify(counts);
       if (key !== this.panelKey) {
         this.panelKey = key;
         const iconOf = k => { const e = ents.find(x => x.type === k); return e.cat === 'unit' ? unitIcon(w.def(e.team, k)) : ICONS[k]; };
-        this.panel.innerHTML = `<div class="multi">${Object.entries(counts).map(([k, v]) => `<button class="chip" data-type="${k}" title="${ents.find(x => x.type === k).cat === 'unit' ? w.def(0, k).name : ''}">${iconOf(k)}<b>${v}</b></button>`).join('')}</div>`;
+        const col = w.teams[ents[0].team ?? 0].nation.color;
+        this.panel.innerHTML = `<div class="multi">${Object.entries(counts).map(([k, v]) => `<button class="chip" data-type="${k}" style="--tc:${col}" title="${ents.find(x => x.type === k).cat === 'unit' ? w.def(0, k).name : CONFIG.buildings[k]?.name || ''}">${iconOf(k)}<b>${v}</b></button>`).join('')}</div>`;
         this.panel.querySelectorAll('.chip').forEach(b => { b.onclick = () => g.narrowTo(b.dataset.type); });
       }
       return;
     }
-    const e = ents[0];
-    const own = e.team === 0;
+    const e = ents[0], own = e.team === 0;
     const name = e.cat === 'res' ? { tree: 'Tree', gold: 'Gold Mine', berries: 'Berry Bush' }[e.kind] : (e.cat === 'bld' ? CONFIG.buildings[e.type].name : w.def(e.team, e.type).name);
-    const icon = e.cat === 'res' ? ICONS[{ tree: 'lumber', gold: 'gold', berries: 'food' }[e.kind]] : e.cat === 'unit' ? unitIcon(w.def(e.team, e.type)) : ICONS[e.type];
+    const icon = e.cat === 'res' ? ICONS[RES_OF[e.kind]] : e.cat === 'unit' ? unitIcon(w.def(e.team, e.type)) : ICONS[e.type];
     const key = `one${e.id}`;
     if (key !== this.panelKey) {
       this.panelKey = key;
       const team = e.team !== undefined ? w.teams[e.team].nation : null;
-      this.panel.innerHTML = `<div class="portrait" style="--tc:${team ? team.color : '#c8b890'}">${icon}</div>
-        <div class="info"><div class="name">${name}${team && !own ? ` <small>${team.name}</small>` : ''}</div>
-        <div class="bar"><i></i></div><div class="status"></div><div class="queue"></div></div>`;
-      this.pBar = this.panel.querySelector('.bar i'); this.pStatus = this.panel.querySelector('.status'); this.pQueue = this.panel.querySelector('.queue');
-      this.queueKey = '';
+      this.panel.innerHTML = `<div class="pic" style="--tc:${team ? team.color : '#c8b890'}"><span class="hp"></span><span class="face">${icon}</span><span class="st"></span></div>
+        <div class="info"><div class="name">${name}</div><div class="sub2"></div></div><div class="queue"></div>`;
+      this.panel.title = name + (team && !own ? ` (${team.name})` : '');
+      this.panel.classList.toggle('enemy', !!team && !own);
+      this.pHp = this.panel.querySelector('.hp'); this.pSt = this.panel.querySelector('.st'); this.pSub = this.panel.querySelector('.sub2'); this.pQueue = this.panel.querySelector('.queue');
+      this.queueKey = ''; this.stKey = '';
     }
-    if (e.cat === 'res') { this.pBar.style.width = `${100 * e.amount / e.max}%`; this.pBar.className = 'res'; this.pStatus.textContent = `${Math.ceil(e.amount)} left`; this.pQueue.innerHTML = ''; return; }
-    this.pBar.className = e.hp / e.maxHp < 0.35 ? 'low' : '';
-    this.pBar.style.width = `${100 * Math.max(0, e.hp) / e.maxHp}%`;
-    let status = `${Math.ceil(e.hp)} / ${e.maxHp}`;
-    if (e.cat === 'bld' && !e.built) status = `Building ${Math.floor(e.progress * 100)}%`;
-    else if (e.cat === 'unit' && own) {
-      const o = e.order, tgt = o && w.get(o.target);
-      const what = o ? ({ gather: tgt ? `Gathering ${tgt.cat === 'bld' ? 'food' : { tree: 'lumber', gold: 'gold', berries: 'food' }[tgt.kind]}` : 'Gathering', return: 'Carrying back', build: 'Building', move: 'Moving', amove: 'Attacking', attack: 'Attacking' }[o.type] || '') : 'Idle';
-      status += ` · ${what}${e.carry && e.carry.amt >= 1 ? ` (${Math.floor(e.carry.amt)} ${e.carry.type})` : ''}`;
-    }
-    this.pStatus.textContent = status;
-    // Training queue (tap an item to cancel it).
+    // The health ring (gold for what is left in a resource).
+    const frac = e.cat === 'res' ? e.amount / e.max : e.cat === 'bld' && !e.built ? e.progress : Math.max(0, e.hp) / e.maxHp;
+    this.pHp.style.setProperty('--p', frac.toFixed(3));
+    this.pHp.className = `hp ${e.cat === 'res' ? 'res' : e.cat === 'bld' && !e.built ? 'build' : frac < 0.35 ? 'low' : ''}`;
+    // A short line: HP, "Building 40%", or what is left.
+    this.pSub.textContent = e.cat === 'res' ? `${Math.ceil(e.amount)} left` : e.cat === 'bld' && !e.built ? `${Math.floor(e.progress * 100)}%` : `${Math.ceil(e.hp)}/${e.maxHp}`;
+    // What the unit is doing, as an icon: the resource it gathers, a hammer, a flag, swords, zzz.
+    let st = null;
+    if (e.cat === 'unit' && own) {
+      const o = e.order, tgt = o && w.get(o.target ?? o.then);
+      st = !o ? 'idle' : (o.type === 'gather' || o.type === 'return') ? (tgt ? (tgt.cat === 'bld' ? 'food' : RES_OF[tgt.kind]) : e.carry?.type || 'lumber') : STATUS[o.type];
+    } else if (e.cat === 'bld' && own && e.queue.length && e.queue[0].blocked && w.teams[0].pop >= w.teams[0].popCap) st = 'house';
+    if (st !== this.stKey) { this.stKey = st; this.pSt.innerHTML = st ? ICONS[st] || '' : ''; this.pSt.classList.toggle('hidden', !st); this.pSt.classList.toggle('warn', st === 'house'); }
+    // Training queue: small icons; the first shows its progress. Tap one to cancel it.
     const q = e.cat === 'bld' && own ? e.queue : [];
     const qk = q.map(x => x.type).join(',');
     if (qk !== this.queueKey) {
@@ -219,8 +304,6 @@ export class HUD {
     if (q.length) {
       const first = q[0], p = Math.min(1, first.t / w.def(e.team, first.type).time);
       const bar = this.pQueue.querySelector('s i'); if (bar) bar.style.width = `${p * 100}%`;
-      const t = w.teams[0];
-      this.pStatus.textContent = first.blocked && t.pop >= t.popCap ? 'Need more houses for population' : status;
     }
   }
 

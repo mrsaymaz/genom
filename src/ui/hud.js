@@ -94,7 +94,7 @@ export class HUD {
     // The tutorial pointer: a bouncing arrow over what to tap next.
     this.marker = h('div', 'marker hidden', ICONS.pointer);
     root.append(this.top, this.obj, this.quick, this.mini, this.tray, this.panel, this.boxEl, this.alertEl, this.toasts);
-    this.setLayout(game.hudLayout || 'beside');
+    this.setLayout(game.hudLayout || 'corner');
     // Rings go last so their buttons sit above toasts and panels.
     this.ring = new ActionRing(root, 'on-map');
     this.thumb = new ActionRing(root, 'thumb');
@@ -125,9 +125,10 @@ export class HUD {
   }
 
   // ---------- layout: where the tray and the selection card go ----------
-  // beside: the card slides out to the right of the tray; above: the card sits above the tray;
-  // side: resources are a tab down the left edge and the card sits at the bottom.
-  setLayout(name) { this.layout = name; this.root.classList.remove('layout-beside', 'layout-above', 'layout-side'); this.root.classList.add(`layout-${name}`); this.placeKey = ''; }
+  // corner: resources at the top left, the goal ring beside sound and pause at the top right,
+  // the card at the bottom; beside: the card slides out to the right of a bottom tray; above:
+  // the card sits above the tray; side: resources are a tab down the left edge.
+  setLayout(name) { this.layout = name; this.root.classList.remove('layout-beside', 'layout-above', 'layout-side', 'layout-corner'); this.root.classList.add(`layout-${name}`); this.placeKey = ''; }
   place() {
     const q = this.quick, b = parseFloat(getComputedStyle(this.mini).bottom) || 8;
     const x0 = q.offsetLeft + q.offsetWidth + 8;
@@ -135,7 +136,7 @@ export class HUD {
     if (key === this.placeKey) return;
     this.placeKey = key;
     const set = (el, left, bottom) => { el.style.left = `${left}px`; el.style.bottom = `${bottom}px`; };
-    if (this.layout === 'side') { this.tray.style.left = this.tray.style.bottom = ''; set(this.panel, x0, b); }
+    if (this.layout === 'side' || this.layout === 'corner') { this.tray.style.left = this.tray.style.bottom = ''; set(this.panel, x0, b); }
     else if (this.layout === 'above') { set(this.tray, x0, b); set(this.panel, x0, b + this.tray.offsetHeight + 6); }
     else { set(this.tray, x0, b); set(this.panel, x0 + this.tray.offsetWidth + 8, b); }
   }
@@ -420,7 +421,7 @@ export class HUD {
 
     if (ring && (ring.anchor[0] < -40 || ring.anchor[0] > v.w + 40 || ring.anchor[1] < -40 || ring.anchor[1] > v.h + 40)) ring = null;
     // Rings on the map stay clear of the info panel at the bottom of the screen.
-    const low = Math.max(this.panel.classList.contains('hidden') ? 0 : v.h - this.panel.offsetTop, this.layout === 'side' ? 0 : v.h - this.tray.offsetTop);
+    const low = Math.max(this.panel.classList.contains('hidden') ? 0 : v.h - this.panel.offsetTop, this.layout === 'side' || this.layout === 'corner' ? 0 : v.h - this.tray.offsetTop);
     if (ring) this.ring.show(ring.anchor, ring.items, { ...ring.opts, bounds: { ...bounds, bottom: Math.max(bounds.bottom, low + 8) } }); else this.ring.hide();
     if (thumb) {
       // The thumb zone: a column of buttons climbing the right edge from the bottom corner,

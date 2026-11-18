@@ -68,7 +68,19 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .layout-side .gain { left: 100%; bottom: auto; top: 50%; transform: translateY(-50%); animation-name: gain-side; }
 @keyframes gain-side { from { opacity: 0; transform: translate(2px, -50%); } 15% { opacity: 1; } to { opacity: 0; transform: translate(18px, -50%); } }
 
+/* Corner: resources at the top left; the goal ring joins sound and pause at the top right. */
+.layout-corner .tray { left: calc(10px + var(--sl)); top: calc(6px + var(--st)); }
+.layout-corner .gain { bottom: auto; top: 100%; animation-name: gain-down; }
+@keyframes gain-down { from { opacity: 0; transform: translate(-50%, -4px); } 15% { opacity: 1; } to { opacity: 0; transform: translate(-50%, 18px); } }
+.layout-corner .quest { top: calc(6px + var(--st)); left: auto; right: calc(var(--sysw) + 16px + var(--sr)); justify-items: end; }
+.layout-corner .scroll { padding: 1px 12px 1px 1px; border: 2px solid var(--fr-edge); border-radius: 20px; flex-direction: row-reverse; padding: 1px 1px 1px 12px; }
+.layout-corner .quest.closed .scroll { padding: 1px; }
+.layout-corner .stamp { left: auto; right: 3px; top: 3px; }
+.layout-corner .alert, .layout-corner .toasts { top: calc(48px + var(--st)); }
+.layout-corner .alert:not(.hidden) ~ .toasts { top: calc(92px + var(--st)); }
+
 /* Sound and pause: two small round buttons at the top right. */
+#hud { --sysw: 74px; }
 .sys { position: absolute; top: calc(6px + var(--st)); right: calc(8px + var(--sr)); display: flex; gap: 6px; }
 .sys .icon-btn { width: 34px; height: 34px; border-radius: 50%; }
 .sys .icon-btn svg { width: 18px; height: 18px; }
@@ -158,6 +170,7 @@ body.installing #rotate { display: none !important; } /* the install guide is re
   .tok { font-size: 19px; padding: 0 9px; gap: 4px; }
   .tok svg { width: 22px; height: 22px; }
   .layout-side .tok { height: 40px; }
+  #hud { --sysw: 90px; }
   .sys .icon-btn { width: 42px; height: 42px; }
   .sys .icon-btn svg { width: 22px; height: 22px; }
   .scroll .prog { width: 40px; height: 40px; }
@@ -332,7 +345,11 @@ h2 { margin: 0; font: 600 13px var(--display); color: var(--ink2); text-transfor
   .tok svg { width: 14px; height: 14px; }
   .layout-side .tray { bottom: calc(var(--mm) + 12px + var(--sb)); padding: 4px 1px; border-radius: 11px; }
   .layout-side .tok { height: 25px; }
+  #hud { --sysw: 61px; }
   .sys { top: calc(4px + var(--st)); gap: 5px; }
+  .layout-corner .tray, .layout-corner .quest { top: calc(4px + var(--st)); }
+  .layout-corner .alert, .layout-corner .toasts { top: calc(38px + var(--st)); }
+  .layout-corner .alert:not(.hidden) ~ .toasts { top: calc(74px + var(--st)); }
   .sys .icon-btn { width: 28px; height: 28px; }
   .sys .icon-btn svg { width: 15px; height: 15px; }
   .scroll { padding: calc(3px + var(--st)) 10px 4px 4px; gap: 5px; border-radius: 0 0 13px 13px; }

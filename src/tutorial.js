@@ -119,10 +119,19 @@ export const STEPS = [
   },
 ];
 
+// Arena 1 (Wildmere Valley): no step-by-step coaching, just the match's goals. The pointer only
+// shows the required English jobs.
+export const ARENA_STEPS = [
+  { title: 'Build a Barracks', short: 'Build a Barracks', reward: { gold: 30 }, hint: 'Your army and the Mythic Age both need a Barracks.', done: g => has(g.world, 0, 'barracks'), guide: () => ({}) },
+  { title: 'Clear a wild lair', short: 'Clear a lair', reward: { gold: 50 }, hint: 'Wolves, boars, a cave bear and a stone troll guard the richest places. Send a group of soldiers to clear one: tap your soldiers, then tap the creature.', done: g => (g.world.teams[0].stats.lairs || 0) > 0, guide: () => ({}) },
+  { title: 'Reach the Mythic Age', short: 'Reach the Mythic Age', reward: null, hint: 'Build a Barracks, gather 400 food and 150 gold, then tap your Town Center and the age button.', done: g => g.world.teams[0].age !== 'dark', guide: () => ({}) },
+  { title: "Destroy the rival's Town Center", short: 'Destroy their Town Center', reward: null, hint: 'Gather an army, cross a ford and attack the rival Town Center.', done: g => g.world.winner === 0, guide: () => ({}) },
+];
+
 export class Tutorial {
-  constructor(game) { this.g = game; this.i = 0; this.stepT = 0; this.hintT = 0; this.nudge = 0; }
-  get step() { return STEPS[this.i]; }
-  get total() { return STEPS.length; }
+  constructor(game, steps = STEPS) { this.g = game; this.steps = steps; this.i = 0; this.stepT = 0; this.hintT = 0; this.nudge = 0; }
+  get step() { return this.steps[this.i]; }
+  get total() { return this.steps.length; }
   // What the pointer should show right now: { at: entity } or { ui: selector }, plus a hint.
   guide() {
     // A required English job comes first: it is what holds up the game (the gold, the Barracks,
@@ -135,11 +144,11 @@ export class Tutorial {
     return this.step ? this.step.guide(this.g) || {} : {};
   }
   update(dt = 0) {
-    while (this.i < STEPS.length && STEPS[this.i].done(this.g)) {
+    while (this.i < this.steps.length && this.steps[this.i].done(this.g)) {
       // A finished goal gives a small reward, shown on the resource tokens.
-      const reward = STEPS[this.i].reward;
+      const reward = this.steps[this.i].reward;
       if (reward) { const r = this.g.world.teams[0].res; for (const [k, v] of Object.entries(reward)) r[k] += v; }
-      this.g.hud.goalDone?.(STEPS[this.i], reward);
+      this.g.hud.goalDone?.(this.steps[this.i], reward);
       this.i++; this.stepT = 0; this.hintT = 0;
     }
     if (!this.step) return;

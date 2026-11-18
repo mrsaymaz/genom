@@ -1,6 +1,7 @@
 // The rival. It plays by the same rules as the player (no resource cheats); the pace setting
 // only changes its timings and the size of its attack waves.
 import { CONFIG } from '../config.js';
+import { wilds } from './wild.js';
 
 // What the rival researches first: its economy, then its army, then its towers and specials.
 const TECH_ORDER = ['farming', 'baskets', 'axes', 'weapons', 'picks', 'armour', 'townguard', 'forgefury', 'swarm', 'springs', 'ironbark', 'herocraft', 'fletching', 'beastcraft', 'walls', 'lionheart', 'tidehealers', 'hivestore', 'roots', 'quickfeet', 'signals', 'siegecraft'];
@@ -13,7 +14,7 @@ export class RivalAI {
     this.home = [...world.buildings(team)].find(b => b.type === 'towncenter');
   }
 
-  save() { return { tick: this.tick, wave: this.wave, nextWave: this.nextWave, nextTrain: this.nextTrain, rebalT: this.rebalT || 0, nextTech: this.nextTech }; }
+  save() { return { tick: this.tick, wave: this.wave, nextWave: this.nextWave, nextTrain: this.nextTrain, rebalT: this.rebalT || 0, nextTech: this.nextTech, huntT: this.huntT || 0 }; }
   load(d) { Object.assign(this, d); }
 
   get t() { return this.w.teams[this.team]; }
@@ -179,7 +180,7 @@ export class RivalAI {
     // Defend: enemies near home draw every idle soldier.
     const [cx, cy] = w.center(this.home);
     const intruder = [...w.units()].find(u => u.team !== this.team && Math.hypot(u.x - cx, u.y - cy) < 11);
-    if (intruder) for (const s of soldiers) if (!s.order || s.order.type === 'move') w.orderAttack([s.id], intruder.id);
+    if (intruder) { for (const s of soldiers) if (!s.order || s.order.type === 'move') w.orderAttack([s.id], intruder.id); } else this.hunt(soldiers);
     // Attack waves.
     if (w.time >= this.nextWave) {
       const idle = soldiers.filter(s => !s.order || s.order.auto);
@@ -195,6 +196,24 @@ export class RivalAI {
         this.nextWave = w.time + this.p.waveEvery;
       } else this.nextWave = w.time + 15;
     }
+  }
+
+  // Clearing the wild lairs on its own half (arena maps), for the bounty and the treasure they
+  // guard: a group big enough for the beast, never the troll until the army is large.
+  hunt(soldiers) {
+    const w = this.w;
+    if (w.time < 240 || !w.zones?.length || w.time < (this.huntT || 0)) return;
+    const idle = soldiers.filter(s => !s.order || s.order.auto);
+    const [cx, cy] = w.center(this.home), foe = [...w.buildings(1 - this.team)].find(b => b.type === 'towncenter');
+    const [fx, fy] = foe ? w.center(foe) : [cx, cy];
+    const need = { wolf: 5, boar: 4, bear: 6, troll: 11 };
+    const zone = w.zones.filter(z => Math.hypot(z.x - cx, z.y - cy) < Math.hypot(z.x - fx, z.y - fy) && idle.length >= need[z.kind])
+      .sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy))[0];
+    if (!zone) return;
+    const prey = [...wilds(w)].find(e => e.lair === zone.lair);
+    if (!prey) return;
+    w.orderAttack(idle.slice(0, need[zone.kind] + 2).map(s => s.id), prey.id);
+    this.huntT = w.time + 45;
   }
 
   // The hero uses its ability when it counts: when enemies crowd around it, or (High Tide) when

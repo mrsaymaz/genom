@@ -45,7 +45,14 @@ export function buildTerrain(world) {
     for (const [dx, dy] of [[-1, -1], [0, -1], [-1, 0], [0, 0]]) { const t = at(cx + dx, cy + dy); if (t === T.WATER) water++; if (t === T.FORD) fords++; }
     let h = 0, col = grassA.clone();
     if (water + fords >= 1) { h = water >= 2 ? -0.45 : -0.18; col = water ? bed.clone() : ford.clone(); }
-    else { let near = false; for (let dy = -2; dy <= 1; dy++) for (let dx = -2; dx <= 1; dx++) { const t = at(cx + dx, cy + dy); if (t === T.WATER || t === T.FORD) near = true; } if (near) col.lerp(sand, 0.45); }
+    else {
+      let near = false, lawn = 0, foot = 0;
+      for (let dy = -2; dy <= 1; dy++) for (let dx = -2; dx <= 1; dx++) { const t = at(cx + dx, cy + dy); if (t === T.WATER || t === T.FORD) near = true; }
+      for (const [dx, dy] of [[-1, -1], [0, -1], [-1, 0], [0, 0]]) { const t = at(cx + dx, cy + dy); if (t === T.GARDEN) lawn++; if (t === T.MOUNT) foot++; }
+      if (near) col.lerp(sand, 0.45);
+      if (lawn) col.lerp(lin('#7fd060'), 0.3 * lawn / 4).offsetHSL(0, 0.05, -0.04 * lawn / 4);
+      if (foot) col.lerp(lin('#a49a80'), 0.35 * foot / 4);
+    }
     const n = (r() - 0.5) * 0.06; col.offsetHSL(0, 0, n);
     pos.setY(i, h + (h === 0 ? (r() - 0.5) * 0.04 : 0));
     cols[i * 3] = col.r; cols[i * 3 + 1] = col.g; cols[i * 3 + 2] = col.b;
@@ -78,12 +85,110 @@ export function buildTerrain(world) {
   const stoneMat = new THREE.MeshStandardMaterial({ color: lin('#9a968c'), roughness: 0.9, flatShading: true });
   for (const list of [stones, rocks]) if (list.length) { const m = new THREE.Mesh(mergeBufferGeometries(list.map(g => (g.index ? g.toNonIndexed() : g))), stoneMat); m.castShadow = m.receiveShadow = true; group.add(m); }
 
+  // Sand (the oasis) and old paving (the ruins): flat tiles laid over the grass.
+  const sandG = [], paveG = [];
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+    const t = terrain[y * size + x];
+    if (t !== T.SAND && t !== T.PAVE) continue;
+    const [wx, wz] = toWorld(size, x + 0.5, y + 0.5), q = new THREE.PlaneGeometry(TILE * 1.02, TILE * 1.02); q.rotateX(-Math.PI / 2); q.translate(wx, 0.025, wz);
+    const n = q.attributes.position.count, a = new Float32Array(n * 3);
+    const base = t === T.SAND ? lin(['#e8d6a2', '#e2cd94', '#eddcae'][(r() * 3) | 0]) : lin(['#c9bfa8', '#bdb39b', '#d2c9b3'][(r() * 3) | 0]);
+    for (let i = 0; i < n; i++) { const c = base.clone().offsetHSL(0, 0, (r() - 0.5) * 0.04); a[i * 3] = c.r; a[i * 3 + 1] = c.g; a[i * 3 + 2] = c.b; }
+    q.setAttribute('color', new THREE.BufferAttribute(a, 3));
+    (t === T.SAND ? sandG : paveG).push(q.toNonIndexed());
+  }
+  if (sandG.length) { const m = new THREE.Mesh(mergeBufferGeometries(sandG), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })); m.receiveShadow = true; group.add(m); }
+  if (paveG.length) { const m = new THREE.Mesh(mergeBufferGeometries(paveG), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, map: paveTexture() })); m.receiveShadow = true; group.add(m); }
+
+  // Mountains: each corner rises with its distance into the range, with snow on the high peaks.
+  const mountain = buildMountains(world, r);
+  if (mountain) group.add(mountain);
+
   // Wild flowers for texture.
   const fl = [];
   for (let i = 0; i < Math.round(260 * size * size / 2304); i++) { const x = Math.floor(r() * size), y = Math.floor(r() * size); if (terrain[y * size + x] !== T.GRASS || world.occ[y * size + x]) continue; const [wx, wz] = toWorld(size, x + r(), y + r()); const g = new THREE.SphereGeometry(0.05, 4, 3); g.translate(wx, 0.05, wz); const c = lin(['#fff4c0', '#f2a0c0', '#c8b0ff', '#ffffff'][(r() * 4) | 0]); const n = g.attributes.position.count, a = new Float32Array(n * 3); for (let k = 0; k < n; k++) { a[k * 3] = c.r; a[k * 3 + 1] = c.g; a[k * 3 + 2] = c.b; } g.setAttribute('color', new THREE.BufferAttribute(a, 3)); fl.push(g.toNonIndexed()); }
   if (fl.length) group.add(new THREE.Mesh(mergeBufferGeometries(fl), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8 })));
 
   return { group, water: wt, ground };
+}
+
+// Old paving stones, for the ruins.
+function paveTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d');
+  g.fillStyle = '#ffffff'; g.fillRect(0, 0, 64, 64);
+  g.strokeStyle = 'rgba(90,80,60,.55)'; g.lineWidth = 2;
+  for (const [x, y, w, h] of [[1, 1, 30, 30], [33, 1, 30, 20], [33, 23, 30, 40], [1, 33, 30, 30]]) g.strokeRect(x, y, w, h);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+  return t;
+}
+
+function buildMountains(world, r) {
+  const { size, terrain } = world.map;
+  const isM = (x, y) => x >= 0 && y >= 0 && x < size && y < size && terrain[y * size + x] === T.MOUNT;
+  // Depth: how many tiles in from the range's edge (breadth-first from the open ground).
+  const depth = new Float32Array(size * size).fill(0), q = [];
+  let any = false;
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (isM(x, y)) { any = true; depth[y * size + x] = 1e9; } else q.push([x, y]);
+  if (!any) return null;
+  for (let i = 0; i < q.length; i++) {
+    const [x, y] = q[i], d = depth[y * size + x];
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = x + dx, b = y + dy; if (isM(a, b) && depth[b * size + a] > d + 1) { depth[b * size + a] = d + 1; q.push([a, b]); } }
+  }
+  // Tiles beyond the map's edge count as deep inside, so ranges rise to the border.
+  const dAt = (x, y) => (x < 0 || y < 0 || x >= size || y >= size ? 3 : depth[y * size + x]);
+  const H = new Map(), J = new Map();
+  const corner = (cx, cy) => {
+    const key = cy * (size + 1) + cx;
+    if (!H.has(key)) {
+      const m = Math.min(dAt(cx - 1, cy - 1), dAt(cx, cy - 1), dAt(cx - 1, cy), dAt(cx, cy));
+      const h = m <= 0 ? 0 : Math.pow(m, 0.8) * 1.45 + (r() - 0.35) * 1.1;
+      H.set(key, Math.max(0, h));
+      J.set(key, m > 0 ? [(r() - 0.5) * 0.5, (r() - 0.5) * 0.5] : [0, 0]);
+    }
+    const [jx, jz] = J.get(key), [wx, wz] = toWorld(size, cx, cy);
+    return [wx + jx, H.get(key), wz + jz];
+  };
+  const pos = [], col = [], extra = [];
+  // Grassy foothills, brown earth, banded grey rock, and snow only on the highest faces.
+  const foot = lin('#5f8a3c'), earth = lin('#7a6248'), rockA = lin('#5e5850'), rockB = lin('#736a5e'), rockC = lin('#8a8276'), snow = lin('#eef3f8');
+  const shade = (h, flat) => {
+    let c;
+    if (h < 0.6) c = foot.clone().lerp(earth, h / 0.6);
+    else if (h < 1.4) c = earth.clone().lerp(rockA, (h - 0.6) / 0.8);
+    else if (h > 5.6 || (h > 4.6 && flat > 0.55)) c = snow.clone();
+    else c = (Math.floor(h * 1.6) % 2 ? rockA : rockB).clone().lerp(rockC, Math.min(1, (h - 1.4) / 4) * 0.6);
+    return c.offsetHSL(0, 0, (r() - 0.5) * 0.06);
+  };
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+    if (!isM(x, y)) continue;
+    const a = corner(x, y), b = corner(x + 1, y), c = corner(x + 1, y + 1), d = corner(x, y + 1);
+    for (const tri of [[a, d, b], [b, d, c]]) {
+      // How flat the face is (snow settles on gentle slopes).
+      const u = [tri[1][0] - tri[0][0], tri[1][1] - tri[0][1], tri[1][2] - tri[0][2]], v = [tri[2][0] - tri[0][0], tri[2][1] - tri[0][1], tri[2][2] - tri[0][2]];
+      const nx = u[1] * v[2] - u[2] * v[1], ny = u[2] * v[0] - u[0] * v[2], nz = u[0] * v[1] - u[1] * v[0], flat = Math.abs(ny) / (Math.hypot(nx, ny, nz) || 1);
+      const top = tri.reduce((s2, p) => s2 + p[1], 0) / 3, cl = shade(top, flat);
+      for (const p of tri) { pos.push(...p); col.push(cl.r, cl.g, cl.b); }
+    }
+    // Pines and boulders on the lower slopes.
+    const dd = depth[y * size + x];
+    if (dd <= 2 && r() < 0.45) {
+      const [wx, wz] = toWorld(size, x + 0.2 + r() * 0.6, y + 0.2 + r() * 0.6), hy = Math.max(a[1], b[1], c[1], d[1]) * 0.45;
+      if (r() < 0.6) { const s2 = 0.6 + r() * 0.5; for (const [rr, hh, yy, cc] of [[0.55, 1.1, 0.9, '#2f6236'], [0.4, 0.9, 1.45, '#3a7440']]) { const g2 = new THREE.ConeGeometry(rr * s2, hh * s2, 6).toNonIndexed(); g2.translate(wx, hy + yy * s2, wz); extra.push([g2, cc]); } }
+      else { const g2 = new THREE.DodecahedronGeometry(0.35 + r() * 0.35, 0).toNonIndexed(); g2.scale(1, 0.7, 1); g2.translate(wx, hy + 0.1, wz); extra.push([g2, '#6a6458']); }
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.95 }));
+  m.castShadow = m.receiveShadow = true; m.name = 'mountains';
+  if (!extra.length) return m;
+  const grp = new THREE.Group(); grp.add(m);
+  const e = new THREE.Mesh(coloured(extra), new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.9 }));
+  e.castShadow = e.receiveShadow = true; grp.add(e);
+  return grp;
 }
 
 // Merges coloured parts into one geometry with vertex colours, for instancing.

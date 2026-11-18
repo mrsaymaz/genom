@@ -1,7 +1,9 @@
 // The match simulation: map, teams, resources, buildings, units, orders and combat.
 // Pure logic with no rendering, so it runs headless in the tests.
 import { CONFIG } from '../config.js';
-import { generateMap, T } from './map.js';
+import { generateMap, T, SOLID } from './map.js';
+import { generateArena1 } from './arena1.js';
+import { spawnWild, updateWild, hurtWild, dangerZones } from './wild.js';
 import { findPath } from './path.js';
 import { unitDefs, roleOf, COUNTER, BLD_DAMAGE, ELEMENT_BEATS } from './units.js';
 import { techsFor, LEVEL_COST, LEVEL_TIME } from '../data/tech.js';
@@ -11,11 +13,16 @@ const AGE_I = { dark: 0, mythic: 1, arcane: 2, celestial: 3 };
 const UNIT_R = 0.32;
 
 export class World {
-  constructor({ teams = ['hufflepuff', 'gryffindor'], pace = 'relaxed', seed = CONFIG.map.seed, size = CONFIG.map.size, language = false } = {}) {
+  constructor({ teams = ['hufflepuff', 'gryffindor'], pace = 'relaxed', mapId = 'vale', seed, size, language = false } = {}) {
     this.cfg = CONFIG;
+    // The map: the tutorial's Sunmeadow Vale, or an arena (CONFIG.maps).
+    this.mapId = CONFIG.maps[mapId] ? mapId : 'vale';
+    const M = CONFIG.maps[this.mapId];
+    seed ??= M.seed; size ??= M.size;
+    this.maxAge = M.maxAge;
     this.pace = CONFIG.pace[pace] ? pace : 'relaxed';
     this.seed = seed;
-    this.map = generateMap(size, seed);
+    this.map = M.gen === 'arena1' ? generateArena1(size, seed) : generateMap(size, seed);
     this.size = this.map.size;
     this.time = 0;
     this.ents = new Map();
@@ -43,6 +50,7 @@ export class World {
       const tc = this.addBuilding(i, 'towncenter', b.x, b.y, true);
       for (let k = 0; k < CONFIG.start.workers; k++) this.spawnUnit(i, 'worker', tc);
     });
+    spawnWild(this);
     this.recount();
   }
 
@@ -94,7 +102,7 @@ export class World {
   remove(e) {
     if (!this.ents.has(e.id)) return;
     this.ents.delete(e.id);
-    if (e.cat !== 'unit') this.mark(e, 0);
+    if (e.cat !== 'unit' && e.cat !== 'wild') this.mark(e, 0);
     if (e.cat === 'unit') this.teams[e.team].pop -= this.def(e.team, e.type).pop;
     this.events.push({ type: 'removed', id: e.id, cat: e.cat, kind: e.kind || e.type, team: e.team });
     if (e.cat === 'bld') {
@@ -120,7 +128,7 @@ export class World {
   blocked(x, y) {
     if (!this.inside(x, y)) return true;
     const t = this.terrainAt(x, y);
-    if (t === T.WATER || t === T.ROCK) return true;
+    if (SOLID.has(t)) return true;
     const o = this.occ[y * this.size + x];
     if (!o) return false;
     const e = this.ents.get(o);
@@ -199,11 +207,11 @@ export class World {
   }
 
   // ---------- ages ----------
-  nextAge(team) { const a = CONFIG.ages, i = a.indexOf(this.teams[team].age); return a[i + 1] || null; }
+  nextAge(team) { const a = CONFIG.ages, i = a.indexOf(this.teams[team].age); return i < a.indexOf(this.maxAge) ? a[i + 1] || null : null; }
   // Can this team start researching its next age? Returns { ok, why }.
   canAgeUp(team) {
     const next = this.nextAge(team), d = next && CONFIG.ageUp[next];
-    if (!d) return { ok: false, why: 'max' };
+    if (!d || CONFIG.ages.indexOf(next) > CONFIG.ages.indexOf(this.maxAge)) return { ok: false, why: 'max' };
     const tcs = [...this.buildings(team)].filter(b => b.type === 'towncenter' && b.built);
     if (tcs.some(b => b.ageUp)) return { ok: false, why: 'busy' };
     if (!tcs.length) return { ok: false, why: 'tc' };
@@ -370,7 +378,7 @@ export class World {
     const units = ids.map(id => this.get(id)).filter(u => u && u.cat === 'unit');
     if (!units.length) return null;
     const team = units[0].team;
-    if (target && target.team !== undefined && target.team !== team) { this.orderAttack(ids, target.id); return 'attack'; }
+    if (target && ((target.team !== undefined && target.team !== team) || target.cat === 'wild')) { this.orderAttack(ids, target.id); return 'attack'; }
     const workers = units.filter(u => u.type === 'worker').map(u => u.id), others = units.filter(u => u.type !== 'worker').map(u => u.id);
     if (target && target.cat === 'res' && workers.length) { this.orderGather(workers, target.id); if (others.length) this.orderMove(others, tx, ty); return 'gather'; }
     if (target && target.cat === 'bld' && target.team === team && workers.length) {
@@ -419,7 +427,7 @@ export class World {
   // A match saves as plain data. The map itself is rebuilt from its seed.
   save() {
     return {
-      v: 1, seed: this.seed, size: this.size, pace: this.pace, time: this.time, nextId: this.nextId, winner: this.winner,
+      v: 1, mapId: this.mapId, seed: this.seed, size: this.size, pace: this.pace, time: this.time, nextId: this.nextId, winner: this.winner,
       language: this.language,
       teams: this.teams.map(t => ({ key: t.key, res: t.res, stats: t.stats, bell: !!t.bell, age: t.age, tech: t.tech, goldLocked: t.goldLocked, drilled: t.drilled, fed: t.fed, ward: t.ward })),
       ents: [...this.ents.values()], shots: this.shots, burns: this.burns,
@@ -427,9 +435,9 @@ export class World {
   }
   static load(data) {
     // Saves from before the large map have no size: they were made on the 48-tile map.
-    const w = new World({ teams: data.teams.map(t => t.key), pace: data.pace, seed: data.seed, size: data.size || 48 });
+    const w = new World({ teams: data.teams.map(t => t.key), pace: data.pace, mapId: data.mapId || 'vale', seed: data.seed, size: data.size || 48 });
     w.ents = new Map(); w.occ.fill(0);
-    for (const e of data.ents) { w.ents.set(e.id, e); if (e.cat !== 'unit') w.mark(e, e.id); }
+    for (const e of data.ents) { w.ents.set(e.id, e); if (e.cat !== 'unit' && e.cat !== 'wild') w.mark(e, e.id); }
     Object.assign(w, { time: data.time, nextId: data.nextId, winner: data.winner, events: [], shots: data.shots || [], burns: data.burns || [], language: !!data.language });
     data.teams.forEach((t, i) => { Object.assign(w.teams[i], { res: t.res, stats: t.stats, bell: t.bell, age: t.age || 'dark' }); w.teams[i].tech = t.tech || {}; Object.assign(w.teams[i], { goldLocked: t.goldLocked, drilled: t.drilled, fed: t.fed, ward: t.ward }); w.teams[i].units = w.withTech(i, unitDefs(w.teams[i].nation.art, w.teams[i].age)); });
     for (const t of w.teams) t.pop = 0;
@@ -440,15 +448,15 @@ export class World {
 
   // ---------- geometry helpers ----------
   distTo(u, e) {
-    if (e.cat === 'unit') return Math.hypot(u.x - e.x, u.y - e.y) - UNIT_R;
+    if (e.cat === 'unit' || e.cat === 'wild') return Math.hypot(u.x - e.x, u.y - e.y) - UNIT_R;
     const dx = Math.max(e.x - u.x, 0, u.x - (e.x + e.w)), dy = Math.max(e.y - u.y, 0, u.y - (e.y + e.h));
     return Math.hypot(dx, dy);
   }
-  center(e) { return e.cat === 'unit' ? [e.x, e.y] : [e.x + e.w / 2, e.y + e.h / 2]; }
+  center(e) { return e.cat === 'unit' || e.cat === 'wild' ? [e.x, e.y] : [e.x + e.w / 2, e.y + e.h / 2]; }
 
   goalsAround(e) {
     const goals = new Set();
-    if (e.cat === 'unit') { goals.add(Math.floor(e.y) * this.size + Math.floor(e.x)); return goals; }
+    if (e.cat === 'unit' || e.cat === 'wild') { goals.add(Math.floor(e.y) * this.size + Math.floor(e.x)); return goals; }
     if (e.walkable) { for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) goals.add(y * this.size + x); return goals; }
     for (let y = e.y - 1; y <= e.y + e.h; y++) for (let x = e.x - 1; x <= e.x + e.w; x++) {
       if ((x >= e.x && x < e.x + e.w && y >= e.y && y < e.y + e.h) || this.blocked(x, y)) continue;
@@ -531,6 +539,8 @@ export class World {
     for (const r of this.ents.values()) {
       const ok = (r.cat === 'res' && r.kind === kind) || (kind === 'farm' && r.cat === 'bld' && r.team === team && r.built && CONFIG.buildings[r.type].farm && !this.farmTaken(r));
       if (!ok) continue;
+      // Resources a wild creature guards are left alone (they are taken only on purpose).
+      if (r.cat === 'res' && (this.zones ||= dangerZones(this)).some(z => Math.hypot(r.x + r.w / 2 - z.x, r.y + r.h / 2 - z.y) < z.r)) continue;
       const d = Math.hypot(r.x + r.w / 2 - x, r.y + r.h / 2 - y);
       if (d < bd) { bd = d; best = r; }
     }
@@ -542,6 +552,7 @@ export class World {
   // Counters, the element cycle and a few abilities shape the damage of every hit.
   damage(attacker, target, amount) {
     if (!this.ents.has(target.id)) return;
+    if (target.cat === 'wild') { hurtWild(this, attacker, target, amount); return; }
     // The ward on the rival's Town Center holds until the battle cry.
     if (target.cat === 'bld' && target.type === 'towncenter' && this.teams[target.team].ward && attacker.team !== target.team) {
       if (this.time - (this.wardT || -9) > 2) { this.wardT = this.time; this.events.push({ type: 'warded', id: target.id }); }
@@ -594,6 +605,8 @@ export class World {
     for (const u of this.units()) if (u.order?.type === 'build' && this.ents.has(u.order.target) && this.distTo(u, this.get(u.order.target)) <= 0.85) builders.set(u.order.target, (builders.get(u.order.target) || 0) + 1);
     for (const u of [...this.units()]) { u.px = u.x; u.py = u.y; this.updateUnit(u, dt, builders); }
     this.separate();
+    updateWild(this, dt);
+    this.zones = dangerZones(this);
     for (const b of [...this.buildings()]) this.updateBuilding(b, dt);
     this.updateShots(dt);
   }

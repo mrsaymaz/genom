@@ -5,6 +5,8 @@ import { TILE, makeBuilding } from './art.js';
 import { buildTerrain, Resources } from './terrain.js';
 import { UnitMeshes } from './units.js';
 import { Effects } from './effects.js';
+import { buildDecor } from './decor.js';
+import { Wildlife } from './wild.js';
 
 const DIR = new THREE.Vector3(1, 0.816, 1).normalize();
 const lin = c => new THREE.Color(c).convertSRGBToLinear();
@@ -34,6 +36,8 @@ export class View {
     const t = buildTerrain(world);
     this.scene.add(t.group); this.waterTex = t.water; this.ground = t.ground;
     this.res = new Resources(world, this.scene);
+    this.scene.add(buildDecor(world));
+    this.wild = new Wildlife(world, this.scene, (x, y) => this.toWorld(x, y));
     this.units = new UnitMeshes(this.scene, world.teams);
     this.magic = new Effects(this.scene);
     this.unitLook = null; // during an age-up: which units still wear their old form
@@ -196,6 +200,7 @@ export class View {
 
   removeEntity(ev) {
     if (ev.cat === 'res') { this.res.remove(ev.id); return; }
+    if (ev.cat === 'wild') { const p = this.wild.remove(ev.id); if (p) this.dust(p, 6, 0.8); return; }
     if (ev.cat === 'bld') {
       const v = this.blds.get(ev.id);
       if (v) { this.scene.remove(v.art.group); this.blds.delete(ev.id); this.dust(v.art.group.position, 14, 2.5); }
@@ -264,6 +269,7 @@ export class View {
       pt.ring.scale.setScalar((pt.size || 1) * (0.8 + k * 0.6)); pt.ringMat.opacity = 0.85 * (1 - k);
     }
     this.units.update(this.world, alpha, time, (x, y) => this.toWorld(x, y), this.unitLook);
+    this.wild.update(alpha, time, dt, this.cam);
     this.magic.update(dt);
     this.units.rings(rings);
     this.fx = this.fx.filter(e => {

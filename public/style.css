@@ -275,7 +275,7 @@ h2 { margin: 0; font: 600 13px var(--display); color: var(--ink2); text-transfor
 .btn small { font: 700 13px var(--text); color: #5a3a00; }
 
 /* The start screen: a meadow behind; the name and the buttons on the left, the choices on the right. */
-.menu, .install { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-areas: "brand card" "actions card"; align-content: center; align-items: center; gap: 12px 24px; background: linear-gradient(#6fa8cf 0%, var(--sky) 40%, #cfe6c0 68%); }
+.menu, .install { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-areas: "brand card" "actions card"; align-content: center; align-content: safe center; align-items: center; gap: 12px 24px; background: linear-gradient(#6fa8cf 0%, var(--sky) 40%, #cfe6c0 68%); }
 .menu > *, .install > * { position: relative; z-index: 1; }
 .vista { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 60%; z-index: 0; pointer-events: none; }
 .corner { position: absolute; top: calc(12px + var(--st)); right: calc(12px + var(--sr)); z-index: 2; background: rgba(20, 30, 40, 0.55); }
@@ -296,6 +296,9 @@ h2 { margin: 0; font: 600 13px var(--display); color: var(--ink2); text-transfor
 .paces { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; gap: 4px; border-radius: 14px; background: var(--btn); }
 .pace { min-height: 40px; border-radius: 11px; background: transparent; font: 600 16px var(--display); color: var(--ink2); }
 .pace small { display: none; }
+.mapb { min-height: 40px; border-radius: 11px; background: transparent; font: 600 16px var(--display); color: var(--ink2); }
+.mapb small { display: none; }
+.mapb.on { background: linear-gradient(#f9d86a, var(--gold2)); color: #2a1a00; }
 .pace.on { background: linear-gradient(#f9d86a, var(--gold2)); color: #2a1a00; }
 .pace-desc { margin: 0; color: var(--ink2); font-size: 13px; text-align: center; }
 .actions { grid-area: actions; display: grid; gap: 10px; align-self: start; width: 100%; max-width: 340px; justify-self: center; }
@@ -407,7 +410,7 @@ h2 { margin: 0; font: 600 13px var(--display); color: var(--ink2); text-transfor
   .team .emblem { width: 32px; height: 32px; }
   .team .emblem svg { width: 19px; height: 19px; }
   .team .tn b { font-size: 15px; }
-  .pace { min-height: 36px; }
+  .pace, .mapb { min-height: 36px; }
   .pace-desc { font-size: 12px; }
   .btn { min-height: 44px; padding: 8px 14px; }
   .btn.big { min-height: 50px; font-size: 21px; }

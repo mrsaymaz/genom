@@ -17,7 +17,7 @@ export function jobs(g) {
   if (t.goldLocked) {
     // Shown once gold matters: a worker sent to a mine, or the tutorial's research goal.
     const sent = [...w.units()].find(u => u.team === 0 && w.get(u.order?.target)?.kind === 'gold');
-    if (sent || g.tutorial.i >= 7 || w.time > 300) {
+    if (sent || (w.mapId === 'vale' && g.tutorial.i >= 7) || w.time > 300) {
       const mine = sent ? w.get(sent.order.target) : tc && w.nearestResource(...w.center(tc), 'gold', 40);
       if (mine) out.push({ id: 'gold', label: 'Claim the gold', say: 'Claim the gold mine: tap the sign!', icon: ICONS.gold, at: mine });
     }

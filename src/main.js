@@ -9,7 +9,8 @@ import { TILE, artLibrary } from './render/art.js';
 import { Input } from './input.js';
 import { HUD } from './ui/hud.js';
 import { ICONS, EMBLEMS } from './ui/icons.js';
-import { Tutorial } from './tutorial.js';
+import { Tutorial, ARENA_STEPS } from './tutorial.js';
+import { WILD, WILD_INFO } from './sim/wild.js';
 import { Audio } from './audio.js';
 import { installGate } from './ui/install.js';
 import { Ascension, prepareArts } from './ageup.js';
@@ -39,7 +40,7 @@ function autoQuality() {
 function loadSave() { try { const d = JSON.parse(store.get(SAVE_KEY, 'null')); return d && d.v === 1 ? d : null; } catch { return null; } }
 
 class Game {
-  constructor({ team, pace, unit = null }, saved = null) {
+  constructor({ team, pace, map = 'vale', unit = null }, saved = null) {
     this.audio = audio;
     // The student's English for this match: the theme they picked (null when the bank is offline).
     this.lang = unit ? new Language(unit) : null;
@@ -52,7 +53,7 @@ class Game {
     } else {
       const rivals = TEAM_IDS.filter(t => t !== team);
       this.rivalKey = rivals[Math.floor(Math.random() * rivals.length)];
-      this.world = new World({ teams: [team, this.rivalKey], pace, language: !!this.lang });
+      this.world = new World({ teams: [team, this.rivalKey], pace, mapId: map, language: !!this.lang });
       this.ai = new RivalAI(this.world, 1);
     }
     const old = $('#view'), fresh = old.cloneNode(false); old.replaceWith(fresh); // a clean WebGL context each match
@@ -65,7 +66,7 @@ class Game {
     this.calmFor = 0; this.raided = false; this.alertT = 0; this.saveT = 0; this.workT = 0;
     this.hudLayout = store.get('genom.hudLayout', 'corner');
     this.hud = new HUD($('#hud'), this);
-    this.tutorial = new Tutorial(this);
+    this.tutorial = new Tutorial(this, CONFIG.maps[this.world.mapId].arena ? ARENA_STEPS : undefined);
     if (saved) { this.tutorial.i = saved.tutorial; this.raided = saved.raided; this.calmFor = saved.calmFor; }
     this.input = new Input(this.canvas, this);
     // Size the view to the canvas as it is actually shown. On iPhone, Safari's bars make the
@@ -247,14 +248,29 @@ class Game {
           this.alertT = this.world.time;
           this.pings.push({ x: bx, y: by, t: 1 });
           if (!this.onScreen1(bx, by) || !this.hud.alertOn) {
-            audio.sfx('alarm'); audio.say('underAttack', undefined, true);
+            audio.sfx('alarm'); if (!ev.wild) audio.say('underAttack', undefined, true);
             const workersHit = t.cat === 'unit' && t.type === 'worker';
-            this.hud.alert('We are under attack!', [
+            const beast = ev.wild && w.get(ev.from);
+            this.hud.alert(beast ? `A wild ${WILD[beast.kind].name.toLowerCase()} is attacking!` : 'We are under attack!', [
               { label: 'Go there', icon: ICONS.army, act: () => this.view.centerOn(bx, by) },
               ...(workersHit || t.type === 'towncenter' ? [{ label: 'Ring the bell', icon: ICONS.bell, act: () => this.ringBell() }] : []),
             ], 'bad', 10);
           }
         }
+      } else if (ev.type === 'wildDown') {
+        const [x, z] = v.toWorld(ev.x, ev.y);
+        if (this.onScreen1(ev.x, ev.y)) { v.magic.emit('earth', x, z, { n: 16, radius: 0.5, speed: 1, life: 1, size: 0.9 }); audio.sfx('roar', 0.2); }
+        if (ev.team === 0) { for (const [k, amt] of Object.entries(ev.bounty)) this.hud.gain(k, amt); this.hud.toast(`${WILD[ev.kind].name} defeated: ${Object.entries(ev.bounty).map(([k, a]) => `+${a} ${k}`).join(', ')}`, 'good'); }
+      } else if (ev.type === 'lairCleared') {
+        if (ev.team === 0) {
+          const what = { wolf: 'The wolf den is clear. The forest gold is safe to mine!', boar: 'The boars are gone. The oasis is yours!', bear: 'The cave bear is beaten. Its gold mine is open!', troll: "The stone troll has fallen! Its hoard of gold is yours to mine." }[ev.kind];
+          this.hud.toast(what, 'good'); audio.sfx('fanfare', 0.5); audio.speak('Well done!', true);
+          const [x, z] = v.toWorld(ev.x, ev.y); v.magic.emit(w.teams[0].nation.art, x, z, { n: 40, radius: 1.5, speed: 1.4, life: 1.4, size: 1.1, shape: 'star' });
+        } else this.hud.toast('The rival cleared a wild lair.', 'bad');
+      } else if (ev.type === 'fled' && ev.team === 0) {
+        if (this.world.time - (this.fledT || -99) > 15) { this.fledT = this.world.time; this.hud.toast(`Your worker ran from a ${WILD[ev.kind].name.toLowerCase()}! Send soldiers to clear the lair.`, 'bad'); }
+      } else if (ev.type === 'smash') {
+        if (this.onScreen1(ev.x, ev.y)) { const [x, z] = v.toWorld(ev.x, ev.y); v.dust({ x, z }, 5, 1.2); v.magic.ring(x, z, { color: '#c8b89a', from: 0.2, to: ev.r * TILE, time: 0.5, width: 0.1, solid: true }); audio.sfx('boom', 0.2); }
       } else if (ev.type === 'wave' && ev.team !== 0) {
         // The rival's army has set off: warn early, while there is still time to get ready.
         const units = ev.ids.map(id => w.get(id)).filter(Boolean);
@@ -425,6 +441,7 @@ class Game {
     };
     const touch = Math.max(1, 22 / ppu);
     for (const u of w.units()) test(u, u.x, u.y, 0.55, Math.max(0.55, touch), 0.7);
+    for (const e of w.ents.values()) if (e.cat === 'wild') test(e, e.x, e.y, e.kind === 'troll' ? 1.4 : 0.6, Math.max(e.kind === 'troll' ? 1 : 0.6, touch), 0.8);
     for (const b of w.buildings()) { const [cx, cy] = w.center(b); test(b, cx, cy, 0.9, b.w * TILE * 0.55, 1); }
     for (const r of w.resources()) { const [cx, cy] = w.center(r); test(r, cx, cy, r.kind === 'tree' ? 1.1 : 0.4, r.kind === 'gold' ? 1.4 : 0.7, 1.05); }
     return best;
@@ -460,6 +477,8 @@ class Game {
       return;
     }
     const mine = this.sel.map(id => w.get(id)).filter(e => e && e.team === 0 && e.cat === 'unit');
+    // A wild creature, with nothing selected: say what it is (it cannot be selected).
+    if (target?.cat === 'wild' && !mine.length) { this.hud.toast(`${WILD[target.kind].name}: ${WILD_INFO[target.kind]}`, 'bad'); audio.sfx('roar', 0.25); return; }
     if (target && target.team === 0) {
       // Workers tapping their own unfinished building or a farm get to work instead of selecting it.
       const workers = mine.filter(u => u.type === 'worker');
@@ -767,7 +786,7 @@ class Game {
 
 // ---------- menus ----------
 let game = null;
-const choice = { team: store.get('genom.team', 'hufflepuff'), pace: store.get('genom.pace', 'relaxed'), grade: +store.get('genom.grade', 5), unit: store.get('genom.unit', 'g5u1') };
+const choice = { team: store.get('genom.team', 'hufflepuff'), pace: store.get('genom.pace', 'relaxed'), map: CONFIG.maps[store.get('genom.map', 'vale')] ? store.get('genom.map', 'vale') : 'vale', grade: +store.get('genom.grade', 5), unit: store.get('genom.unit', 'g5u1') };
 let bankIndex = null;
 
 // Your English: the grade, then the theme (unit) whose words and sentences the tasks use.
@@ -798,9 +817,13 @@ function menu() {
     teams.querySelectorAll('.team').forEach(b => b.classList.toggle('on', b.dataset.id === choice.team));
     document.querySelectorAll('.pace').forEach(b => b.classList.toggle('on', b.dataset.pace === choice.pace));
     $('#pace-desc').textContent = document.querySelector('.pace.on small')?.textContent || '';
+    document.querySelectorAll('.mapb').forEach(b => b.classList.toggle('on', b.dataset.map === choice.map));
+    $('#map-desc').textContent = document.querySelector('.mapb.on small')?.textContent || '';
+    const M = CONFIG.maps[choice.map]; $('#map-name').textContent = `${M.label} · ${M.name}`;
   };
   teams.querySelectorAll('.team').forEach(b => { b.onclick = () => { choice.team = b.dataset.id; store.set('genom.team', choice.team); paint(); }; });
   document.querySelectorAll('.pace').forEach(b => { b.onclick = () => { choice.pace = b.dataset.pace; store.set('genom.pace', choice.pace); paint(); }; });
+  document.querySelectorAll('.mapb').forEach(b => { b.onclick = () => { choice.map = b.dataset.map; store.set('genom.map', choice.map); paint(); }; });
   paint();
   englishUi();
   $('#start').onclick = () => start();
@@ -810,7 +833,6 @@ function menu() {
   $('#quit').onclick = () => { game?.save(); toMenu(); };
   $('#again').onclick = () => start();
   $('#menu-btn').onclick = toMenu;
-  $('#map-name').textContent = CONFIG.map.name;
   for (const b of document.querySelectorAll('.open-settings')) b.onclick = openSettings;
   $('#settings-done').onclick = () => $('#settings').classList.add('hidden');
   settingsUi();
@@ -827,7 +849,7 @@ function showContinue() {
   $('#start').classList.toggle('big', !s2);
   if (!s2) return;
   const me = CONFIG.teams[s2.team], them = CONFIG.teams[s2.rivalKey], t = s2.world.time;
-  el.innerHTML = `<b>Continue</b><small>${me.name} vs ${them.name} · ${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')} played</small>`;
+  el.innerHTML = `<b>Continue</b><small>${CONFIG.maps[s2.world.mapId || 'vale'].label} · ${me.name} vs ${them.name} · ${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')} played</small>`;
   $('#start').textContent = 'New match';
   $('#start').classList.toggle('big', false);
 }

@@ -18,6 +18,12 @@ export const CONFIG = {
     challenge: { aiWorkers: 13, aiBarracksAt: 140, firstWaveAt: 330, waveEvery: 165, firstWave: 5, waveGrowth: 2, aiTrainEvery: 18, aiTechEvery: 30, aiAges: { mythic: 520, arcane: 880, celestial: 1240 } },
   },
 
+  // Maps. The tutorial skirmish lets every age be tried (a test setup until the arenas are all
+  // built); each arena has one age-up, as designed: Arena 1 runs from the Dark to the Mythic Age.
+  maps: {
+    vale: { name: 'Sunmeadow Vale', label: 'Tutorial', size: 72, seed: 7, gen: 'vale', maxAge: 'celestial', tutorial: true },
+    wildmere: { name: 'Wildmere Valley', label: 'Arena 1', size: 96, seed: 11, gen: 'arena1', maxAge: 'mythic', arena: 1 },
+  },
   map: { size: 72, seed: 7, name: 'Sunmeadow Vale' },
 
   start: { food: 200, lumber: 200, gold: 100, workers: 3 },

@@ -272,8 +272,9 @@ class Game {
   castFx(ev) {
     const v = this.view, [x, z] = v.toWorld(ev.x, ev.y), R = ev.r * TILE, w = this.world;
     const el = { updraft: 'air', hightide: 'water', roar: 'fire', snare: 'earth' }[ev.ability], E = ELEMENTS[el];
-    v.magic.ring(x, z, { color: E.b, from: 0.4, to: R, time: 0.9, width: 0.06 });
-    v.magic.ring(x, z, { color: E.a, from: 0.3, to: R * 0.8, time: 1.2, width: 0.14 });
+    const RING = { updraft: '#f2c040', hightide: '#2f8fe0', roar: '#ff5a1f', snare: '#3fb85a' }[ev.ability];
+    v.magic.ring(x, z, { color: RING, from: 0.4, to: R, time: 0.9, width: 0.07, solid: true });
+    v.magic.ring(x, z, { color: E.b, from: 0.3, to: R * 0.8, time: 1.2, width: 0.12 });
     if (ev.ability === 'updraft') v.magic.emit('air', x, z, { n: 70, radius: R * 0.55, speed: 1.6, life: 1.6, size: 1.1, up: 1.4 });
     if (ev.ability === 'hightide') { v.magic.emit('water', x, z, { n: 90, radius: R * 0.25, speed: 2.6, life: 1.4, size: 1.2 }); v.magic.emit('water', x, z, { n: 40, radius: R * 0.8, speed: 0.6, life: 1.1, size: 1 }); }
     if (ev.ability === 'roar') v.magic.emit('fire', x, z, { n: 80, radius: R * 0.4, speed: 1.6, life: 1.4, size: 1.2 });
@@ -287,7 +288,7 @@ class Game {
   traitFx(ev) {
     const v = this.view, [x, z] = v.toWorld(ev.x, ev.y);
     if (!this.onScreen1(ev.x, ev.y)) return;
-    if (ev.trait === 'galeSlam') { v.magic.ring(x, z, { color: '#fff6cf', from: 0.3, to: ev.r * TILE, time: 0.7, width: 0.12 }); v.magic.emit('air', x, z, { n: 40, radius: 0.8, speed: 2, life: 1, size: 1 }); audio.sfx('gust', 0.3); }
+    if (ev.trait === 'galeSlam') { v.magic.ring(x, z, { color: '#e8b830', from: 0.3, to: ev.r * TILE, time: 0.7, width: 0.12, solid: true }); v.magic.emit('air', x, z, { n: 40, radius: 0.8, speed: 2, life: 1, size: 1 }); audio.sfx('gust', 0.3); }
     else if (ev.trait === 'healingRain') v.magic.emit('water', x, z, { n: 6, y: 1.5, radius: ev.r * TILE * 0.4, speed: 0.2, life: 1.1, size: 0.8, up: -0.2 });
     else if (ev.trait === 'fireRoar') {
       // A cone of fire in the direction it faces.

@@ -72,8 +72,9 @@ export class Effects {
   }
 
   // A shockwave ring on the ground.
-  ring(x, z, { color = '#ffffff', from = 0.5, to = 30, time = 2.2, width = 0.08 } = {}) {
-    const m = new THREE.Mesh(new THREE.RingGeometry(1 - width, 1, 64).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: lin(color), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+  // solid: a coloured ring that keeps its colour over bright grass (additive glow turns white there).
+  ring(x, z, { color = '#ffffff', from = 0.5, to = 30, time = 2.2, width = 0.08, solid = false } = {}) {
+    const m = new THREE.Mesh(new THREE.RingGeometry(1 - width, 1, 64).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: lin(color), transparent: true, blending: solid ? THREE.NormalBlending : THREE.AdditiveBlending, depthWrite: false }));
     m.position.set(x, 0.08, z); m.renderOrder = 4;
     this.scene.add(m);
     const h = { mesh: m, t: 0, time, from, to, auto: true };

@@ -238,3 +238,17 @@ test('the rival ages up on its own', () => {
   run(w, 760, [ai]);
   assert.equal(w.teams[1].age, 'mythic', `rival age at ${Math.round(w.time)} s`);
 });
+
+test('the Beast Pen and the Sanctum can only be built in the Mythic Age', () => {
+  const w = new World();
+  const tc = [...w.buildings(0)].find(b => b.type === 'towncenter');
+  w.teams[0].res = { food: 1000, lumber: 1000, gold: 1000 };
+  const spot = type => { for (let y = tc.y - 12; y < tc.y + 8; y++) for (let x = tc.x - 4; x < tc.x + 14; x++) { w.teams[0].age = 'mythic'; const ok = w.canPlace(0, type, x, y); w.teams[0].age = 'dark'; if (ok) return [x, y]; } };
+  const [px, py] = spot('pen');
+  assert.equal(w.canPlace(0, 'pen', px, py), false, 'not in the Dark Age');
+  assert.equal(w.place(0, 'sanctum', px, py), null);
+  w.enterAge(0, 'mythic');
+  const pen = w.place(0, 'pen', px, py);
+  assert.ok(pen, 'built in the Mythic Age');
+  assert.equal(w.teams[0].res.gold, 950);
+});

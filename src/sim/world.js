@@ -145,7 +145,10 @@ export class World {
   pay(team, cost) { const r = this.teams[team].res; for (const [k, v] of Object.entries(cost || {})) r[k] -= v; }
   refund(team, cost) { const r = this.teams[team].res; for (const [k, v] of Object.entries(cost || {})) r[k] += v; }
 
+  // A building is available from its age on (the Beast Pen and Sanctum from the Mythic Age).
+  hasAge(team, type) { const need = CONFIG.buildings[type].age; return !need || CONFIG.ages.indexOf(this.teams[team].age) >= CONFIG.ages.indexOf(need); }
   canPlace(team, type, x, y) {
+    if (!this.hasAge(team, type)) return false;
     const s = CONFIG.buildings[type].size;
     for (let yy = y; yy < y + s; yy++) for (let xx = x; xx < x + s; xx++) {
       if (!this.inside(xx, yy) || this.terrainAt(xx, yy) !== T.GRASS || this.occ[yy * this.size + xx]) return false;

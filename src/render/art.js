@@ -21,7 +21,7 @@ export function artLibrary() {
 }
 
 // Concept-page table index for each building role.
-const ROLE_INDEX = { house: 0, farm: 1, storehouse: 2, barracks: 3, watchtower: 4 };
+const ROLE_INDEX = { house: 0, farm: 1, storehouse: 2, barracks: 3, watchtower: 4, pen: 5, sanctum: 6 };
 // The concept dioramas are drawn on slabs of these sizes; scale them to the game footprint.
 const SLAB = { 2: 3.2, 3: 4.2, 4: 6.0 };
 

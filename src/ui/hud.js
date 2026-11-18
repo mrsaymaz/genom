@@ -396,6 +396,8 @@ export class HUD {
             act: () => g.trainUnit(ids, type), hold: () => g.trainUnit(ids, type, 5),
           };
         });
+        // The Beast Pen and the Sanctum: what they will train, shown honestly as coming soon.
+        if (d.soon) items.push({ id: 'soon', icon: ICONS[b.type === 'pen' ? 'creature' : 'hero'], label: 'Soon', poor: true, hint: d.soon, act: () => this.toast(d.soon) });
         if (d.trains) items.push({ id: 'rally', icon: ICONS.rally, label: 'Rally', hint: 'Set where new units go', act: () => { g.rallyMode = true; this.toast('Tap where new units should go.'); } });
         if (b.type === 'towncenter') {
           // The next age: a button with the research progress on its ring.
@@ -419,12 +421,12 @@ export class HUD {
       if (!workers.length) this.wheelAt = null;
       if (this.wheelAt) {
         // The build wheel: a full ring of buildings around where the worker stood.
-        const items = CONFIG.buildOrder.map(type => {
+        const items = CONFIG.buildOrder.filter(type => w.hasAge(0, type)).map(type => {
           const d = CONFIG.buildings[type];
           return { id: 'b' + type, icon: ICONS[type], label: d.name, cost: d.cost, poor: !w.canAfford(0, d.cost), act: () => { this.wheelAt = null; g.startPlacement(type); } };
         });
         items.push({ id: 'back', icon: ICONS.cancel, label: 'Close', cls: 'stop', act: () => { this.wheelAt = null; } });
-        ring = { anchor: v.screen(this.wheelAt[0], this.wheelAt[1], 0.5), items, opts: { radius: compact ? 96 : 110, center: -90, step: 360 / items.length } };
+        ring = { anchor: v.screen(this.wheelAt[0], this.wheelAt[1], 0.5), items, opts: { radius: (compact ? 96 : 110) + Math.max(0, items.length - 6) * (compact ? 9 : 11), center: -90, step: 360 / items.length } };
       } else {
         const soldiers = ents.length > workers.length;
         thumb = { items: [

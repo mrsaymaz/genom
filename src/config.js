@@ -31,8 +31,12 @@ export const CONFIG = {
     storehouse: { name: 'Storehouse', role: 'store', size: 2, hp: 600, bt: 30, cost: { lumber: 80 }, drop: ['lumber', 'gold', 'food'] },
     barracks: { name: 'Barracks', role: 'barracks', size: 3, hp: 1200, bt: 45, cost: { lumber: 150 }, trains: ['spearman', 'archer', 'special'] },
     watchtower: { name: 'Watchtower', role: 'tower', size: 2, hp: 800, bt: 40, cost: { lumber: 100, gold: 50 }, attack: { range: 7, damage: 7, cooldown: 1.5 } },
+    // Mythic Age buildings. The Beast Pen will train the nation's signature creature and the
+    // Sanctum its heroes; for now they can be built and stand in the village.
+    pen: { name: 'Beast Pen', role: 'pen', size: 3, hp: 1300, bt: 50, cost: { lumber: 175, gold: 50 }, age: 'mythic', soon: 'Trains your signature creature (coming soon).' },
+    sanctum: { name: 'Sanctum', role: 'sanctum', size: 3, hp: 1000, bt: 60, cost: { lumber: 150, gold: 150 }, age: 'mythic', soon: 'Trains your hero (coming soon).' },
   },
-  buildOrder: ['house', 'farm', 'storehouse', 'barracks', 'watchtower'],
+  buildOrder: ['house', 'farm', 'storehouse', 'barracks', 'watchtower', 'pen', 'sanctum'],
 
   // Ages. Research the next age at the Town Center once a Barracks stands. (The Age Ceremony
   // language task will join this step; for now the research timer runs.) Buildings gain 20% HP

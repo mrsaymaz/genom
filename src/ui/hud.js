@@ -97,7 +97,9 @@ export class HUD {
     this.alertEl = h('div', 'alert hidden'); this.alertOn = false; this.alertT = 0;
     // The tutorial pointer: a bouncing arrow over what to tap next.
     this.marker = h('div', 'marker hidden', ICONS.pointer);
-    root.append(this.top, this.obj, this.quick, this.mini, this.tray, this.panel, this.boxEl, this.alertEl, this.toasts);
+    // English jobs: tickets pinned over the place, and the work-order rail down the left edge.
+    this.rail = h('div', 'rail'); this.tickets = h('div', 'tickets'); this.jobKey = '';
+    root.append(this.top, this.obj, this.quick, this.mini, this.tray, this.panel, this.boxEl, this.alertEl, this.toasts, this.rail, this.tickets);
     this.setLayout(game.hudLayout || 'corner');
     // Rings go last so their buttons sit above toasts and panels.
     this.ring = new ActionRing(root, 'on-map');
@@ -106,6 +108,8 @@ export class HUD {
     this.terrainImg = this.drawTerrain();
     this.panelKey = ''; this.miniT = 0; this.gains = {};
   }
+
+  guideFaceHtml() { return guideFace(this.art); }
 
   // ---------- per-frame refresh ----------
   update(dt) {
@@ -121,12 +125,14 @@ export class HUD {
     this.armyBtn.querySelector('i').textContent = army || '';
     this.armyBtn.classList.toggle('dim', !army);
     this.objectives(dt);
+    this.jobs();
     this.selection();
     this.place();
     this.commands();
     this.pointer();
     if (this.alertOn && this.alertT > 0 && (this.alertT -= dt) <= 0) this.closeAlert();
     // The camera's gentle glide towards a ring that opened near the edge.
+    if (this.glide && g.station) this.glide = null; // a station holds the camera
     if (this.glide) {
       const k = Math.min(1, dt * 7), x = this.glide.dx * k, y = this.glide.dy * k;
       g.view.pan(x, y); this.glide.dx -= x; this.glide.dy -= y;
@@ -134,6 +140,36 @@ export class HUD {
     }
     this.miniT -= dt;
     if (this.miniT <= 0) { this.miniT = 0.25; this.drawMini(); }
+  }
+
+  // ---------- English jobs ----------
+  // Each job waiting for an English task: a ticket with the Instant! bolt over its place, and a
+  // chip on the rail. Tapping either opens the station.
+  jobs() {
+    const g = this.g, list = g.station ? [] : (g.jobs?.() || []), v = g.view;
+    const key = list.map(j => j.id).join('|');
+    if (key !== this.jobKey) {
+      this.jobKey = key;
+      this.rail.innerHTML = ''; this.tickets.innerHTML = '';
+      for (const j of list) {
+        const chip = h('button', 'job frame', `<span class="bolt">${ICONS.instant}</span>${j.icon}<b>${j.label}</b>`); chip.dataset.jobChip = j.id;
+        chip.onclick = () => { const [cx, cy] = g.world.center(j.at); g.view.centerOn(cx, cy); g.openJob(j.id); };
+        this.rail.append(chip);
+        const t = h('button', 'ticket', `${ICONS.instant}<span>${j.label}</span>`); t.dataset.job = j.id;
+        t.onclick = e => { e.stopPropagation(); g.openJob(j.id); };
+        this.tickets.append(t);
+      }
+      if (list.length && !this.jobSeen?.[key]) { (this.jobSeen ||= {})[key] = 1; g.audio?.sfx('ready'); }
+    }
+    // Tickets float over their place; off screen they hide (the rail still shows the job).
+    list.forEach((j, i) => {
+      const t = this.tickets.children[i];
+      if (!t) return;
+      const [cx, cy] = g.world.center(j.at), hgt = j.at.cat === 'bld' ? Math.max(2, (v.blds.get(j.at.id)?.art.height || 2) * 0.9) : 2.2;
+      const [x, y] = v.screen(cx, cy, hgt + 0.6), on = x > 20 && y > 50 && x < v.w - 20 && y < v.h - 20;
+      t.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
+      t.classList.toggle('hidden', !on);
+    });
   }
 
   // ---------- layout: where the tray and the selection card go ----------
@@ -202,7 +238,7 @@ export class HUD {
   // ---------- the tutorial pointer and the guide's bubble ----------
   pointer() {
     const g = this.g, v = g.view, tut = g.tutorial;
-    const guide = !g.paused && !g.over ? tut.guide() : {};
+    const guide = !g.paused && !g.over && !g.station ? tut.guide() : {};
     const uiEl = guide.ui ? this.root.querySelector(guide.ui) : null;
     if (this.pointed && this.pointed !== uiEl) this.pointed.classList.remove('pointed');
     this.pointed = uiEl;
@@ -397,7 +433,9 @@ export class HUD {
       // the building that was tapped, and training goes to whichever has the shortest queue.
       const b = ents.find(e => e.id === g.focus) || ents[0], d = CONFIG.buildings[b.type], ids = ents.map(e => e.id);
       let items = [];
-      if (!b.built) items = [{ id: 'cc', icon: ICONS.cancel, label: 'Cancel', cls: 'stop', hint: 'Cancel construction (refund)', act: () => g.cancelConstruction(b.id) }];
+      if (!b.built) items = [
+        ...(b.sealed ? [{ id: 'found', icon: ICONS.instant, label: 'Foundation', cls: 'main cast', hint: 'Lay the foundation with an English task', act: () => g.openJob('drill') }] : []),
+        { id: 'cc', icon: ICONS.cancel, label: 'Cancel', cls: 'stop', hint: 'Cancel construction (refund)', act: () => g.cancelConstruction(b.id) }];
       else {
         items = (d.trains || []).map(type => {
           const u = w.def(0, type);
@@ -432,7 +470,7 @@ export class HUD {
           const next = w.nextAge(0), ad = next && CONFIG.ageUp[next];
           if (ad) {
             const c = w.canAgeUp(0), r = b.ageUp;
-            items.push({ id: 'age', icon: ICONS.age, label: r ? `${Math.floor(100 * r.t / r.time)}%` : ad.name.split(' ')[0], cls: r ? 'on' : 'main', cost: r ? null : ad.cost,
+            items.push({ id: 'age', icon: r?.ceremony ? ICONS.instant : ICONS.age, label: r?.ceremony ? 'Ceremony' : r ? `${Math.floor(100 * r.t / r.time)}%` : ad.name.split(' ')[0], cls: r?.ceremony ? 'main cast' : r ? 'on' : 'main', cost: r ? null : ad.cost,
               hint: `Reach the ${ad.name}: every building and unit takes a new form`, poor: !r && !c.ok, progress: r ? r.t / r.time : 0, act: () => g.ageUp() });
           }
           items.push(w.teams[0].bell

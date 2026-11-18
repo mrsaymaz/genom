@@ -43,6 +43,17 @@ export class UnitMeshes {
       this.meshes.set(key, { lit: this.inst(lit, 80), glow: glow ? this.inst(glow, 80, this.glowMat, false) : null });
     }
   }
+  // One unit as a standalone model (for the language stations' props), at full detail.
+  model(team, type, age) {
+    const sets = { dark: DARK_UNITS, mythic: MYTHIC_UNITS, arcane: ARCANE_UNITS, celestial: CELESTIAL_UNITS }, make = sets[age]?.[this.teams[team].nation.art]?.[TYPE_LINE[type]];
+    const g = new THREE.Group();
+    if (!make) return g;
+    const k = unitKit(THREE, { detail: 0.8 }); make(k);
+    const { lit, glow } = k.build();
+    const m = new THREE.Mesh(lit, this.mat); m.castShadow = true; g.add(m);
+    if (glow) g.add(new THREE.Mesh(glow, this.glowMat));
+    return g;
+  }
   inst(geo, n, mat = this.mat, shadow = true) { const m = new THREE.InstancedMesh(geo, mat, n); m.castShadow = shadow; m.count = 0; m.frustumCulled = false; this.scene.add(m); return m; }
 
   // Places every unit: interpolated position, facing, a walking bob and a working swing.

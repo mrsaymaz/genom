@@ -56,6 +56,11 @@
           <button class="pace" type="button" data-pace="challenge"><b>Challenge</b><small>A faster rival with bigger attacks.</small></button>
         </div>
         <p id="pace-desc" class="pace-desc"></p>
+        <div id="english" class="english hidden">
+          <h2>Your English</h2>
+          <div class="grades" role="group" aria-label="Grade"></div>
+          <label class="theme"><span>Theme</span><select id="theme" aria-label="Theme"></select></label>
+        </div>
       </div>
       <div class="actions">
         <button id="continue" class="btn gold continue hidden" type="button"></button>
@@ -139,6 +144,7 @@
       <div class="sheet wide">
         <div class="col">
         <h1 id="end-title"></h1>
+        <p id="end-stars" class="end-stars" aria-label="Stars"></p>
         <p class="sub" id="end-sub"></p>
         <button id="again" class="btn gold big" type="button">Play again</button>
         <button id="menu-btn" class="btn" type="button">Menu</button>

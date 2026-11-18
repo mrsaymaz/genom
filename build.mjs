@@ -8,6 +8,7 @@ import { mkdirSync, rmSync, writeFileSync, readdirSync, copyFileSync, statSync, 
 import { createServer } from 'node:http';
 import { join, extname } from 'node:path';
 import { generateArt } from './tools/gen-art.mjs';
+import { generateBank } from './tools/gen-bank.mjs';
 
 const OUT = 'dist';
 const BUDGET_KB = 2000; // everything a player downloads, before gzip
@@ -26,17 +27,20 @@ export async function buildAll({ quiet = false } = {}) {
     entryPoints: ['src/main.js'], bundle: true, minify: true, format: 'iife', target: 'es2020',
     outfile: join(OUT, 'game.js'), sourcemap: false, legalComments: 'none', logLevel: 'warning',
   });
-  const sizes = readdirSync(OUT).map(f => [f, statSync(join(OUT, f)).size]);
+  // The language bank and its pictures: fetched when a match starts, so outside the budget.
+  const bank = generateBank(OUT);
+  const sizes = readdirSync(OUT).filter(f => statSync(join(OUT, f)).isFile()).map(f => [f, statSync(join(OUT, f)).size]);
   const total = sizes.reduce((s, [, n]) => s + n, 0);
   if (!quiet) {
     for (const [f, n] of sizes) console.log(`  ${f.padEnd(22)} ${(n / 1024).toFixed(0).padStart(5)} KB`);
     console.log(`  ${'total'.padEnd(22)} ${(total / 1024).toFixed(0).padStart(5)} KB`);
+    console.log(`  ${'bank + pictures'.padEnd(22)} ${(bank.bytes / 1024).toFixed(0).padStart(5)} KB (${bank.pictures} pictures, loaded per match)`);
   }
   if (total / 1024 > BUDGET_KB) throw new Error(`Build is ${(total / 1024).toFixed(0)} KB, over the ${BUDGET_KB} KB budget.`);
   return total;
 }
 
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp' };
 
 async function serve(port = 5173) {
   await buildAll();

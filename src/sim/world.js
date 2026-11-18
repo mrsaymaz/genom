@@ -11,7 +11,7 @@ const AGE_I = { dark: 0, mythic: 1, arcane: 2, celestial: 3 };
 const UNIT_R = 0.32;
 
 export class World {
-  constructor({ teams = ['hufflepuff', 'gryffindor'], pace = 'relaxed', seed = CONFIG.map.seed, size = CONFIG.map.size } = {}) {
+  constructor({ teams = ['hufflepuff', 'gryffindor'], pace = 'relaxed', seed = CONFIG.map.seed, size = CONFIG.map.size, language = false } = {}) {
     this.cfg = CONFIG;
     this.pace = CONFIG.pace[pace] ? pace : 'relaxed';
     this.seed = seed;
@@ -32,6 +32,12 @@ export class World {
       stats: { gathered: { food: 0, lumber: 0, gold: 0 }, trained: 0, lost: 0, killed: 0, built: 0, razed: 0 },
       age: 'dark', units: unitDefs(CONFIG.teams[key].art), tech: {},
     }));
+    // Arena 1's required English moments (docs/LANGUAGE_TASKS.md), for the player only: the gold
+    // mine must be claimed, the first Barracks' foundation laid, the Mythic Age reached through
+    // the Age Ceremony, the first creature fed, and the rival's Town Center is warded until the
+    // battle cry. The rival waits its own timers.
+    this.language = !!language;
+    if (this.language) Object.assign(this.teams[0], { goldLocked: true, drilled: false, fed: false }), this.teams[1].ward = true;
     for (const r of this.map.resources) this.addResource(r);
     this.map.bases.forEach((b, i) => {
       const tc = this.addBuilding(i, 'towncenter', b.x, b.y, true);
@@ -170,6 +176,7 @@ export class World {
     if (!this.canPlace(team, type, x, y) || !this.canAfford(team, d.cost)) return null;
     this.pay(team, d.cost);
     const b = this.addBuilding(team, type, x, y, false);
+    if (this.language && team === 0 && type === 'barracks' && !this.teams[0].drilled && ![...this.buildings(0)].some(o => o.sealed)) b.sealed = 'drill';
     this.orderBuild(builders, b.id);
     return b;
   }
@@ -210,7 +217,7 @@ export class World {
     const c = this.canAgeUp(b.team);
     if (!c.ok) return false;
     this.pay(b.team, c.def.cost);
-    b.ageUp = { to: c.next, t: 0, time: c.def.time };
+    b.ageUp = { to: c.next, t: 0, time: c.def.time, ceremony: this.language && b.team === 0 && c.next === 'mythic' };
     this.events.push({ type: 'ageStart', team: b.team, id: b.id, age: c.next });
     return true;
   }
@@ -229,6 +236,23 @@ export class World {
     for (const b of this.buildings(team)) { b.maxHp = Math.round(b.maxHp * gain); b.hp = Math.min(b.maxHp, b.hp * gain); }
     this.events.push({ type: 'aged', team, age });
   }
+
+  // ---------- the required English moments (finished at their stations) ----------
+  claimGold(team) { if (!this.teams[team].goldLocked) return; this.teams[team].goldLocked = false; this.events.push({ type: 'claimed', team }); }
+  layFoundation(bid) {
+    const b = this.get(bid);
+    if (!b?.sealed) return;
+    b.sealed = null; this.teams[b.team].drilled = true;
+    b.progress = Math.max(b.progress, 0.25); b.hp = Math.max(b.hp, b.maxHp * 0.25); // the drill gives the builders a head start
+    this.events.push({ type: 'founded', id: b.id, team: b.team });
+  }
+  finishCeremony(bid) { const b = this.get(bid); if (!b?.ageUp?.ceremony) return; b.ageUp.ceremony = false; b.ageUp.t = b.ageUp.time; }
+  feedCreature(bid) {
+    const b = this.get(bid), q = b?.queue[0];
+    if (!q || q.type !== 'creature') return;
+    this.teams[b.team].fed = true; q.feed = false; q.t = this.def(b.team, 'creature').time;
+  }
+  battleCry(team) { const foe = this.teams[1 - team]; if (!foe.ward) return; foe.ward = false; this.events.push({ type: 'wardDown', team: 1 - team }); }
 
   // ---------- upgrades and technologies ----------
   lv(team, id) { return this.teams[team].tech[id] || 0; }
@@ -396,7 +420,8 @@ export class World {
   save() {
     return {
       v: 1, seed: this.seed, size: this.size, pace: this.pace, time: this.time, nextId: this.nextId, winner: this.winner,
-      teams: this.teams.map(t => ({ key: t.key, res: t.res, stats: t.stats, bell: !!t.bell, age: t.age, tech: t.tech })),
+      language: this.language,
+      teams: this.teams.map(t => ({ key: t.key, res: t.res, stats: t.stats, bell: !!t.bell, age: t.age, tech: t.tech, goldLocked: t.goldLocked, drilled: t.drilled, fed: t.fed, ward: t.ward })),
       ents: [...this.ents.values()], shots: this.shots, burns: this.burns,
     };
   }
@@ -405,8 +430,8 @@ export class World {
     const w = new World({ teams: data.teams.map(t => t.key), pace: data.pace, seed: data.seed, size: data.size || 48 });
     w.ents = new Map(); w.occ.fill(0);
     for (const e of data.ents) { w.ents.set(e.id, e); if (e.cat !== 'unit') w.mark(e, e.id); }
-    Object.assign(w, { time: data.time, nextId: data.nextId, winner: data.winner, events: [], shots: data.shots || [], burns: data.burns || [] });
-    data.teams.forEach((t, i) => { Object.assign(w.teams[i], { res: t.res, stats: t.stats, bell: t.bell, age: t.age || 'dark' }); w.teams[i].tech = t.tech || {}; w.teams[i].units = w.withTech(i, unitDefs(w.teams[i].nation.art, w.teams[i].age)); });
+    Object.assign(w, { time: data.time, nextId: data.nextId, winner: data.winner, events: [], shots: data.shots || [], burns: data.burns || [], language: !!data.language });
+    data.teams.forEach((t, i) => { Object.assign(w.teams[i], { res: t.res, stats: t.stats, bell: t.bell, age: t.age || 'dark' }); w.teams[i].tech = t.tech || {}; Object.assign(w.teams[i], { goldLocked: t.goldLocked, drilled: t.drilled, fed: t.fed, ward: t.ward }); w.teams[i].units = w.withTech(i, unitDefs(w.teams[i].nation.art, w.teams[i].age)); });
     for (const t of w.teams) t.pop = 0;
     for (const u of w.allUnits()) w.teams[u.team].pop += w.def(u.team, u.type).pop;
     w.recount();
@@ -517,6 +542,11 @@ export class World {
   // Counters, the element cycle and a few abilities shape the damage of every hit.
   damage(attacker, target, amount) {
     if (!this.ents.has(target.id)) return;
+    // The ward on the rival's Town Center holds until the battle cry.
+    if (target.cat === 'bld' && target.type === 'towncenter' && this.teams[target.team].ward && attacker.team !== target.team) {
+      if (this.time - (this.wardT || -9) > 2) { this.wardT = this.time; this.events.push({ type: 'warded', id: target.id }); }
+      return;
+    }
     let dmg = amount;
     const ar = attacker.cat === 'unit' ? roleOf(this.def(attacker.team, attacker.type)) : 'building';
     if (target.cat === 'bld') dmg *= attacker.cat === 'unit' ? (BLD_DAMAGE[ar] ?? 1) : 0.5;
@@ -575,7 +605,7 @@ export class World {
     // Root Network: buildings repair themselves when nothing has hit them for a while.
     if (this.lv(b.team, 'roots') && b.hp < b.maxHp && this.time - (b.hurtT ?? -99) > 6) b.hp = Math.min(b.maxHp, b.hp + b.maxHp * 0.006 * dt);
     if (b.ageUp) {
-      b.ageUp.t += dt;
+      if (!b.ageUp.ceremony) b.ageUp.t += dt; // the Age Ceremony replaces the wait
       if (b.ageUp.t >= b.ageUp.time) { const to = b.ageUp.to; b.ageUp = null; this.enterAge(b.team, to); }
     } else if (b.research) {
       // Researching: the building does not train until it is done.
@@ -588,7 +618,8 @@ export class World {
       }
     } else if (b.queue.length) {
       const q = b.queue[0], ud = this.def(b.team, q.type), t = this.teams[b.team];
-      if (q.t < ud.time) q.t += dt;
+      if (q.type === 'creature' && t.fed === false) q.feed = true; // the first creature is fed, not waited for
+      if (q.t < ud.time && !q.feed) q.t += dt;
       if (q.t >= ud.time) {
         if (t.pop + ud.pop <= t.popCap) {
           const u = this.spawnUnit(b.team, q.type, b);
@@ -679,7 +710,7 @@ export class World {
       case 'build': {
         const b = this.get(o.target);
         if (!b || b.built) { this.afterBuild(u, b); break; }
-        if (this.approach(u, b, 0.8, dt)) {
+        if (this.approach(u, b, 0.8, dt) && !b.sealed) {
           const n = Math.max(1, builders.get(b.id) || 0);
           const rate = CONFIG.buildRate(n) / n;
           const dp = Math.min(1 - b.progress, dt / b.bt * rate);
@@ -898,6 +929,7 @@ export class World {
     if (u.carry && (u.carry.type !== type || u.carry.amt >= cap)) { this.setOrder(u, { type: 'return', then: r.id }); return; }
     const inRange = r.cat === 'bld' ? this.distTo(u, r) <= 0.05 || this.approach(u, r, 0.05, dt) : this.approach(u, r, 0.8, dt);
     if (!inRange) return;
+    if (type === 'gold' && this.teams[u.team].goldLocked) return; // the claim comes first
     const rate = (r.cat === 'bld' ? CONFIG.gather.farm : CONFIG.gather[type]) * (1 + 0.2 * this.lv(u.team, type === 'lumber' ? 'axes' : type === 'gold' ? 'picks' : 'farming'));
     u.facing = Math.atan2(r.y + r.h / 2 - u.y, r.x + r.w / 2 - u.x);
     u.work = (u.work + dt) % 1;

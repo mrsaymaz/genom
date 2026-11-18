@@ -603,3 +603,56 @@ test('technologies survive a save', () => {
   run(b, 30);
   assert.equal(b.lv(0, 'baskets'), 1, 'the research in progress finishes after loading');
 });
+
+// ---------- Arena 1's required English moments ----------
+test('with language tasks on: gold waits for its claim, and the first Barracks for its foundation', () => {
+  const w = new World({ language: true });
+  const tc = [...w.buildings(0)].find(b => b.type === 'towncenter'), ws = [...w.units()].filter(u => u.team === 0);
+  const mine = w.nearestResource(...w.center(tc), 'gold', 30);
+  w.orderGather([ws[0].id], mine.id); run(w, 25);
+  assert.equal(ws[0].carry, null, 'nothing is mined before the claim');
+  w.claimGold(0); run(w, 25);
+  assert.ok(ws[0].carry || w.teams[0].stats.gathered.gold > 0, 'mining starts after the claim');
+  w.teams[0].res.lumber = 1000;
+  let spot; for (let y = tc.y - 12; y < tc.y + 8 && !spot; y++) for (let x = tc.x - 4; x < tc.x + 14 && !spot; x++) if (w.canPlace(0, 'barracks', x, y)) spot = [x, y];
+  const rax = w.place(0, 'barracks', spot[0], spot[1], [ws[1].id, ws[2].id]);
+  assert.equal(rax.sealed, 'drill');
+  run(w, 30);
+  assert.equal(rax.progress, 0, 'the builders wait for the foundation');
+  w.layFoundation(rax.id); run(w, 40);
+  assert.ok(rax.built, 'then they build, with a head start');
+  // The rival needs none of this.
+  assert.ok(!w.teams[1].goldLocked);
+});
+
+test('with language tasks on: the Mythic Age waits for the Age Ceremony, and the first creature for its food', () => {
+  const w = new World({ language: true });
+  const tc = [...w.buildings(0)].find(b => b.type === 'towncenter');
+  w.teams[0].res = { food: 5000, lumber: 5000, gold: 5000 };
+  const put = type => { for (let y = tc.y - 14; y < tc.y + 10; y++) for (let x = tc.x - 6; x < tc.x + 16; x++) if (w.canPlace(0, type, x, y)) return w.addBuilding(0, type, x, y, true); };
+  put('barracks'); put('house'); put('house'); w.recount();
+  assert.ok(w.startAgeUp(tc.id));
+  run(w, 90);
+  assert.equal(w.teams[0].age, 'dark', 'no waiting the ceremony out');
+  w.finishCeremony(tc.id); run(w, 1);
+  assert.equal(w.teams[0].age, 'mythic');
+  const pen = put('pen'); w.recount();
+  w.train(pen.id, 'creature'); run(w, 60);
+  assert.ok(pen.queue[0]?.feed, 'the first creature waits to be fed');
+  w.feedCreature(pen.id); run(w, 1);
+  assert.ok([...w.units()].some(u => u.team === 0 && u.type === 'creature'), 'fed, it joins at once');
+  const b = World.load(JSON.parse(JSON.stringify(w.save())));
+  assert.equal(b.teams[0].fed, true); assert.equal(b.language, true);
+});
+
+test('the rival Town Center is warded until the battle cry', () => {
+  const w = new World({ language: true });
+  const rtc = [...w.buildings(1)].find(b => b.type === 'towncenter'), s = w.spawnUnit(0, 'spearman', rtc);
+  const hp = rtc.hp; w.damage(s, rtc, 50);
+  assert.equal(rtc.hp, hp, 'the ward holds');
+  w.battleCry(0); w.damage(s, rtc, 50);
+  assert.ok(rtc.hp < hp, 'after the battle cry it can be hit');
+  // Without language tasks there is no ward (the tests and old saves).
+  const plain = new World(), t2 = [...plain.buildings(1)].find(b => b.type === 'towncenter'), s2 = plain.spawnUnit(0, 'spearman', t2);
+  plain.damage(s2, t2, 50); assert.ok(t2.hp < t2.maxHp);
+});

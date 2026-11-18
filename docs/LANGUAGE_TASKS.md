@@ -136,3 +136,18 @@ Follow solMaxima's `practice-selection.js`:
 ## Time budget
 
 An arena is 15–20 minutes. A student who rushes most jobs spends about 35–40% of it at stations: roughly 6–10 building jobs, a few squads and research, one Age Ceremony and a handful of extras. That is about one English moment per minute, all chosen by the student.
+
+## Built: the Arena 1 stations
+
+The five required moments of Arena 1 (Dark → Mythic) are built as 3D stations in the tutorial skirmish (`src/lang/`). The student picks a grade and a theme on the menu; the theme's items come from the word bank (`content/gradeN.json`, sliced into `dist/bank/<theme>.json` by `tools/gen-bank.mjs`, with Fluent Emoji pictures).
+
+- **Where they appear:** each waiting job shows a ticket over its place on the map and a chip on the job rail; the guide points at the first one. Tapping it opens the station: the camera glides in, the HUD steps aside, and the words stand on 3D props in the scene. Labels never overlap: they are spread out on screen and kept clear of the prompt and the coach.
+- **Gold mine claim** (spelling, 1 item): letter tiles stand before the claim post; the first letter is given, with the Turkish word and the picture. Until it is done, workers cannot gather gold.
+- **Barracks foundation** (sentence building, 3 items): the first Barracks waits as a sealed site. Soldiers hold the sentence blocks and march into line in the right order. Finishing gives the build a 25% head start.
+- **Age Ceremony** (3 rounds × 2 items: picture or Turkish match, clue, spelling): word crystals circle the Town Center. The Mythic research waits at the end until the ceremony is done.
+- **Creature's first form** (clue → word, 1 item): the creature is tossed the food carrying the answer; its training waits until it is fed.
+- **Battle cry** (appropriate reply, 1 item): once three soldiers stand near the rival Town Center, the herald asks and the student raises the banner with the right reply; the ward around the rival Town Center shatters.
+- **Feedback:** a first miss shows and speaks a hint (English, with Turkish behind the TR button); a second miss gives the explanation and then shows the answer step by step, so no one is stuck. First-try answers count for accuracy; missed concepts come back later in the match (practice memory per theme in the browser).
+- **Protected time:** while a station is open the game pauses on Relaxed and runs at quarter speed on Challenge. Step out at any time; progress is kept.
+- **End screen:** English tasks, items and first-try accuracy, and up to 3 stars (a win, 60% and 80% first-try).
+- **Not yet built:** the optional jobs with "wait or Instant!", and the stations of Arenas 2 and 3. Matches saved before this change continue without English tasks.

@@ -1,5 +1,6 @@
 // Genom (working title): the first playable slice. A Dark Age tutorial skirmish against one
 // rival on Sunmeadow Vale, with no language tasks yet.
+import * as THREE from 'three';
 import { CONFIG, TEAM_IDS } from './config.js';
 import { World } from './sim/world.js';
 import { RivalAI } from './sim/ai.js';
@@ -14,6 +15,8 @@ import { installGate } from './ui/install.js';
 import { Ascension, prepareArts } from './ageup.js';
 import { ELEMENTS } from './render/effects.js';
 import { techsFor, ROMAN } from './data/tech.js';
+import { Language, loadIndex, loadUnit } from './lang/bank.js';
+import { jobs, stationFor } from './lang/jobs.js';
 
 const STEP = 1 / 20;
 const plural = (name, n) => (n === 1 || name.endsWith('s') ? name : name.endsWith('man') ? `${name.slice(0, -3)}men` : `${name}s`);
@@ -36,8 +39,11 @@ function autoQuality() {
 function loadSave() { try { const d = JSON.parse(store.get(SAVE_KEY, 'null')); return d && d.v === 1 ? d : null; } catch { return null; } }
 
 class Game {
-  constructor({ team, pace }, saved = null) {
+  constructor({ team, pace, unit = null }, saved = null) {
     this.audio = audio;
+    // The student's English for this match: the theme they picked (null when the bank is offline).
+    this.lang = unit ? new Language(unit) : null;
+    if (this.lang) { this.lang.progress = {}; if (saved?.lang) { this.lang.load(saved.lang); this.lang.progress = saved.lang.progress || {}; this.lang.jobItems = saved.lang.jobItems || {}; } }
     if (saved) {
       // Continue a saved match.
       this.rivalKey = saved.rivalKey;
@@ -46,7 +52,7 @@ class Game {
     } else {
       const rivals = TEAM_IDS.filter(t => t !== team);
       this.rivalKey = rivals[Math.floor(Math.random() * rivals.length)];
-      this.world = new World({ teams: [team, this.rivalKey], pace });
+      this.world = new World({ teams: [team, this.rivalKey], pace, language: !!this.lang });
       this.ai = new RivalAI(this.world, 1);
     }
     const old = $('#view'), fresh = old.cloneNode(false); old.replaceWith(fresh); // a clean WebGL context each match
@@ -92,6 +98,7 @@ class Game {
       v: 1, savedAt: Date.now(), team: this.world.teams[0].key, rivalKey: this.rivalKey, pace: this.world.pace,
       world: this.world.save(), ai: this.ai.save(), tutorial: this.tutorial.i, raided: this.raided, calmFor: this.calmFor,
       cam: { x: v.target.x, z: v.target.z, zoom: v.zoom },
+      unitId: this.lang?.unit.id, lang: this.lang ? { ...this.lang.save(), progress: this.lang.progress, jobItems: this.lang.jobItems } : null,
     }));
   }
 
@@ -141,8 +148,11 @@ class Game {
     this.input.update(dt);
     // The age-up ceremony holds the game still while it plays (tap to skip).
     if (this.cinema && !this.paused) { this.cinema.update(dt); if (this.cinema.done) this.cinema = null; }
-    if (!this.paused && !this.over && !this.cinema) {
-      this.acc += dt;
+    // A language station: protected time. Relaxed pauses the match; Challenge runs at a quarter.
+    if (this.station) this.station.update(dt);
+    const slow = this.station ? (this.world.pace === 'challenge' ? 0.25 : 0) : 1;
+    if (!this.paused && !this.over && !this.cinema && slow > 0) {
+      this.acc += dt * slow;
       while (this.acc >= STEP && !this.cinema) {
         this.acc -= STEP;
         this.world.step(STEP);
@@ -160,6 +170,7 @@ class Game {
       this.workSounds(dt);
     }
     this.watchFps(dt);
+    this.wardFx(dt);
     for (const b of this.world.buildings()) if (!b.built) this.view.syncBuilding(b);
     this.pings = this.pings.filter(p => (p.t -= dt / 3) > 0);
     this.sel = this.sel.filter(id => { const e = this.world.get(id); return e && !e.inside; });
@@ -196,6 +207,10 @@ class Game {
         v.shot(v.toWorld(ev.x0, ev.y0), v.toWorld(ev.x, ev.y), ev.time, ev.effect, w.teams[ev.team].age);
         if (this.onScreen1(ev.x0, ev.y0)) audio.sfx('launch', 0.15);
       } else if (ev.type === 'impact') this.impactFx(ev);
+      else if (ev.type === 'claimed') { this.hud.toast('The gold mine is yours! Your workers can mine gold now.', 'good'); audio.sfx('built'); }
+      else if (ev.type === 'founded') { this.hud.toast('The foundation is laid. Your workers build the Barracks now.', 'good'); }
+      else if (ev.type === 'warded') this.hud.toast('A ward protects their Town Center. Bring 3 soldiers close and give the battle cry!');
+      else if (ev.type === 'wardDown') { this.hud.toast('The ward is broken! Attack their Town Center!', 'good'); audio.sfx('crumble'); }
       else if (ev.type === 'researched') {
         const T = techsFor(w.teams[ev.team].nation.art)[ev.tech], name = `${T.name}${T.ages.length > 1 ? ` ${ROMAN[ev.level - 1]}` : ''}`, b = w.get(ev.id);
         if (ev.team === 0) {
@@ -417,6 +432,7 @@ class Game {
 
   // ---------- input actions ----------
   tap(sx, sy, dbl) {
+    if (this.station) return;
     if (this.cinema) { if (this.cinema.t > 0.6) this.cinema.skip(); return; }
     this.tutorial.acted();
     if (this.hud.wheelAt) { this.hud.wheelAt = null; return; } // a tap on the map closes the build wheel
@@ -618,6 +634,38 @@ class Game {
     const u = list[this.gatherI]; this.view.centerOn(u.x, u.y);
     this.hud.toast(`${list.length} worker${list.length > 1 ? 's' : ''} gathering ${kind}.`);
   }
+  // ---------- English tasks ----------
+  jobs() { return jobs(this); }
+  openJob(id) {
+    if (this.station || this.cinema || this.over) return;
+    const job = this.jobs().find(j => j.id === id);
+    if (!job) return;
+    const st = stationFor(this, job);
+    if (st) st.open();
+  }
+  // The ward over the rival's Town Center: a glowing dome, which shatters at the battle cry.
+  wardFx(dt) {
+    const w = this.world, v = this.view, on = w.language && w.teams[1].ward, rtc = [...w.buildings(1)].find(b => b.type === 'towncenter');
+    if (on && rtc && !this.ward) {
+      const [cx, cy] = w.center(rtc), [x, z] = v.toWorld(cx, cy), col = w.teams[1].nation.color;
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(rtc.w * TILE * 0.85, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: new THREE.Color(col).convertSRGBToLinear(), transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide }));
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(rtc.w * TILE * 0.85, 0.06, 6, 48), new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffffff').convertSRGBToLinear(), transparent: true, opacity: 0.6 }));
+      rim.rotation.x = Math.PI / 2; rim.position.y = 0.08;
+      const g = new THREE.Group(); g.add(dome, rim); g.position.set(x, 0, z); g.renderOrder = 4;
+      v.scene.add(g); this.ward = { g, dome, t: 0, x, z };
+    }
+    if (this.ward) {
+      this.ward.t += dt;
+      this.ward.dome.material.opacity = 0.14 + 0.06 * Math.sin(this.ward.t * 2.5);
+      if (!on) {
+        v.scene.remove(this.ward.g);
+        v.magic.emit(w.teams[1].nation.art, this.ward.x, this.ward.z, { n: 120, radius: 3, speed: 2.2, life: 1.6, size: 1.3, shape: 'star' });
+        v.magic.ring(this.ward.x, this.ward.z, { color: '#ffffff', from: 2, to: 14, time: 1.2, width: 0.1 });
+        this.ward = null;
+      }
+    }
+  }
+
   // ---------- upgrades ----------
   research(bid, id) {
     const w = this.world, c = w.canResearch(bid, id), next = c.next || w.nextTech(0, id), name = next ? `${next.tech.name}${next.tech.ages.length > 1 ? ` ${ROMAN[next.level - 1]}` : ''}` : '';
@@ -644,6 +692,7 @@ class Game {
   ageUp() {
     const w = this.world, tc = this.home(), c = w.canAgeUp(0);
     if (!tc) return;
+    if (tc.ageUp?.ceremony) { this.openJob('ceremony'); return; }
     if (tc.ageUp) { this.hud.toast(`The ${CONFIG.ageUp[tc.ageUp.to].name}: ${Math.floor(100 * tc.ageUp.t / tc.ageUp.time)}% ready.`); return; }
     if (!c.ok) {
       if (c.why === 'needs') this.hud.toast(`Build a ${CONFIG.buildings[c.needs].name} first.`, 'bad');
@@ -652,6 +701,8 @@ class Game {
     }
     w.startAgeUp(tc.id);
     this.events();
+    // Reaching the Mythic Age takes the Age Ceremony: it opens straight away.
+    if (tc.ageUp?.ceremony) this.openJob('ceremony');
   }
   holdPosition() { this.world.orderHold(this.sel); this.hud.toast('Holding position.'); audio.sfx('order'); audio.say('hold'); }
   selectAllIdle() {
@@ -704,7 +755,11 @@ class Game {
       ['Time', `${Math.floor(this.world.time / 60)}:${String(Math.floor(this.world.time % 60)).padStart(2, '0')}`],
       [`${ICONS.food} Food`, Math.floor(g.food)], [`${ICONS.lumber} Lumber`, Math.floor(g.lumber)], [`${ICONS.gold} Gold`, Math.floor(g.gold)],
       ['Units trained', s.trained], ['Enemies defeated', s.killed], ['Units lost', s.lost], ['Buildings destroyed', s.razed],
+      ...(this.lang && this.lang.items ? [['English, right first time', `${this.lang.firstTry}/${this.lang.items} (${Math.round(this.lang.accuracy * 100)}%)`]] : []),
     ].map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('');
+    // Stars: one for the win, two for 60% right first time, three for 80%.
+    const stars = !this.lang ? 0 : (won ? 1 : 0) + (this.lang.items && this.lang.accuracy >= 0.6 ? 1 : 0) + (this.lang.items && this.lang.accuracy >= 0.8 ? 1 : 0);
+    $('#end-stars').innerHTML = this.lang ? [0, 1, 2].map(i => `<i class="${i < stars ? 'on' : ''}">${ICONS.age}</i>`).join('') : '';
     $('#end').classList.toggle('won', won);
     setTimeout(() => $('#end').classList.remove('hidden'), 900);
   }
@@ -712,7 +767,26 @@ class Game {
 
 // ---------- menus ----------
 let game = null;
-const choice = { team: store.get('genom.team', 'hufflepuff'), pace: store.get('genom.pace', 'relaxed') };
+const choice = { team: store.get('genom.team', 'hufflepuff'), pace: store.get('genom.pace', 'relaxed'), grade: +store.get('genom.grade', 5), unit: store.get('genom.unit', 'g5u1') };
+let bankIndex = null;
+
+// Your English: the grade, then the theme (unit) whose words and sentences the tasks use.
+async function englishUi() {
+  try { bankIndex = await loadIndex(); } catch { return; } // offline: the game plays without tasks
+  const box = $('#english'), grades = box.querySelector('.grades'), sel = $('#theme');
+  box.classList.remove('hidden');
+  const paint = () => {
+    grades.querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.g === choice.grade));
+    const g = bankIndex.find(x => x.grade === choice.grade);
+    sel.innerHTML = g.units.map(u => `<option value="${u.id}">${u.title}</option>`).join('');
+    if (!g.units.some(u => u.id === choice.unit)) choice.unit = g.units[0].id;
+    sel.value = choice.unit;
+  };
+  grades.innerHTML = bankIndex.map(g => `<button type="button" class="grade" data-g="${g.grade}">Grade ${g.grade}</button>`).join('');
+  grades.querySelectorAll('button').forEach(b => { b.onclick = () => { choice.grade = +b.dataset.g; store.set('genom.grade', choice.grade); paint(); store.set('genom.unit', choice.unit); }; });
+  sel.onchange = () => { choice.unit = sel.value; store.set('genom.unit', choice.unit); };
+  paint();
+}
 
 function menu() {
   const teams = $('#teams');
@@ -728,6 +802,7 @@ function menu() {
   teams.querySelectorAll('.team').forEach(b => { b.onclick = () => { choice.team = b.dataset.id; store.set('genom.team', choice.team); paint(); }; });
   document.querySelectorAll('.pace').forEach(b => { b.onclick = () => { choice.pace = b.dataset.pace; store.set('genom.pace', choice.pace); paint(); }; });
   paint();
+  englishUi();
   $('#start').onclick = () => start();
   $('#continue').onclick = () => { const s2 = loadSave(); if (s2) start(s2); };
   $('#resume').onclick = () => game?.togglePause(false);
@@ -796,12 +871,13 @@ function start(saved = null) {
   $('#menu').classList.add('hidden');
   for (const id of ['#pause', '#end']) $(id).classList.add('hidden');
   $('#loading').classList.remove('hidden');
-  // Let the loading screen paint before the heavy scene build.
-  setTimeout(() => {
+  // Let the loading screen paint before the heavy scene build. The theme's words load first.
+  const unitId = saved ? saved.unitId : bankIndex && choice.unit;
+  (unitId ? loadUnit(unitId).catch(() => null) : Promise.resolve(null)).then(unit => {
     try {
       game?.dispose();
       if (!saved) store.del(SAVE_KEY);
-      game = new Game(saved ? { team: saved.team, pace: saved.pace } : choice, saved);
+      game = new Game(saved ? { team: saved.team, pace: saved.pace, unit } : { ...choice, unit }, saved);
       game.toggleMute = toggleMute;
       window.__genom = game;
     } catch (err) {
@@ -811,7 +887,7 @@ function start(saved = null) {
       return;
     }
     $('#loading').classList.add('hidden');
-  }, 30);
+  });
 }
 
 try { artLibrary(); } catch (err) { console.error(err); }

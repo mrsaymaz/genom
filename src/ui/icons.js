@@ -42,6 +42,8 @@ export const ICONS = {
   creature: svg('<path d="M4 20c0-5 3-9 8-9s8 4 8 9z" fill="currentColor"/><circle cx="7" cy="8" r="2.4" fill="currentColor"/><circle cx="17" cy="8" r="2.4" fill="currentColor"/><circle cx="12" cy="6.5" r="2.2" fill="currentColor"/><path d="M9 16h.01M15 16h.01" stroke="#1b2128" stroke-width="2.4" stroke-linecap="round"/>'),
   hero: svg('<path d="M12 2l1.8 3.6 4-.6-2.7 3 1.9 3.5-3.6-1.3L12 13.5l-1.4-3.3L7 11.5 8.9 8 6.2 5l4 .6z" fill="currentColor"/><circle cx="12" cy="16" r="2.6" fill="currentColor"/><path d="M6.5 22c0-3 2.4-4.5 5.5-4.5s5.5 1.5 5.5 4.5z" fill="currentColor"/>'),
   workshop: svg('<path d="M2 21V10l5-3v3l5-3v3l5-3v14z" fill="currentColor"/><rect x="17" y="3" width="3" height="18" fill="currentColor"/><circle cx="9.5" cy="15.5" r="3" fill="#1b2128"/><circle cx="9.5" cy="15.5" r="1.2" fill="currentColor"/>'),
+  // The Instant! lightning bolt: a job waiting for an English task.
+  instant: svg('<path d="M13.5 1.5L4 13.5h6.5L9 22.5l10-12.5h-6.5z" fill="currentColor" stroke="#1b2128" stroke-width=".8" stroke-linejoin="round"/>'),
   // Research and the upgrades.
   research: svg('<path d="M9 2h6M10 2v6L4.5 18a2.2 2.2 0 002 3.2h11a2.2 2.2 0 002-3.2L14 8V2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M7 14h10l2.5 4.6a1.4 1.4 0 01-1.3 2H5.8a1.4 1.4 0 01-1.3-2z" fill="currentColor"/><circle cx="10.5" cy="17" r="1" fill="#1b2128"/><circle cx="14" cy="18.5" r=".8" fill="#1b2128"/>'),
   't-baskets': svg('<path d="M3 10h18l-2 10H5z" fill="currentColor"/><path d="M7 10a5 5 0 0110 0" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 13v5M12 13v5M16 13v5" stroke="#1b2128" stroke-width="1.2" opacity=".5"/>'),

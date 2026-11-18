@@ -124,7 +124,16 @@ export class Tutorial {
   get step() { return STEPS[this.i]; }
   get total() { return STEPS.length; }
   // What the pointer should show right now: { at: entity } or { ui: selector }, plus a hint.
-  guide() { return this.step ? this.step.guide(this.g) || {} : {}; }
+  guide() {
+    // A required English job comes first: it is what holds up the game (the gold, the Barracks,
+    // the Mythic Age, the creature, the ward).
+    const g = this.g, job = !g.station && g.jobs?.()[0];
+    if (job) {
+      const t = g.hud.root.querySelector(`[data-job="${job.id}"]`), onMap = t && !t.classList.contains('hidden');
+      return { ui: onMap ? `[data-job="${job.id}"]` : `[data-job-chip="${job.id}"]`, say: job.say, hint: job.say };
+    }
+    return this.step ? this.step.guide(this.g) || {} : {};
+  }
   update(dt = 0) {
     while (this.i < STEPS.length && STEPS[this.i].done(this.g)) {
       // A finished goal gives a small reward, shown on the resource tokens.

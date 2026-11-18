@@ -927,3 +927,467 @@ export const MYTHIC_UNITS = {
     },
   },
 };
+
+// ---------- Arcane Age units ----------
+// The Arcane forms lift each line into magic that floats: Air carries floating amber and small
+// sky islands, Water bends glass, bronze rings and moving water, Fire runs with rivers of magma,
+// and Earth's stones float on glowing runes around the World Tree's people.
+const STORM = '#5f6676', CLOUD = '#9aa2b4', BOLT = '#fff6a0';
+// A small stone carved with a glowing rune, floating (Earth).
+const runeStone = (k, p, s = 1, r = 0) => { k.push({ p, r: [0, r, 0], s }); k.box(0.1, 0.16, 0.06, [0, 0, 0], EAR.stone); k.octa(0.045, [0, 0, 0.032], EAR.glow, { s: [0.55, 1, 0.2], glow: true }); k.pop(); };
+// A floating amber hexagon (Air).
+const amberHex = (k, p, s = 1) => k.hex(0.045 * s, 0.03 * s, p, AIR.glow, { r: [Math.PI / 2, 0, 0.3], glow: true });
+
+export const ARCANE_UNITS = {
+  air: {
+    worker(k) {
+      const f = figure(k, { skin: SKIN[3], top: AIR.honey, skirt: AIR.cream, belt: AIR.black, legs: '#6a5a40', sleeve: AIR.cream, hands: { l: [0.22, 0.6, 0.2], r: [-0.24, 0.46, 0.14] }, hair: '#2a1e18' });
+      for (const [x, y] of [[-0.07, 0.6], [0.07, 0.6], [0, 0.69]]) k.hex(0.045, 0.03, [x, y, 0.155], '#e8b830', { r: [Math.PI / 2, 0, 0] });
+      const [hx, hy] = f.head;
+      // A honeycomb cap and an amber-glass visor.
+      k.ball(0.168, [hx, hy + 0.03, -0.01], AIR.honey, { tl: Math.PI * 0.48, ws: 12 });
+      k.hex(0.05, 0.05, [hx, hy + 0.18, 0], AIR.amber);
+      k.box(0.25, 0.055, 0.04, [hx, hy + 0.025, 0.135], AIR.amber);
+      k.box(0.22, 0.02, 0.045, [hx, hy + 0.025, 0.14], AIR.glow, { glow: true });
+      // A pole with a glowing comb, and a floating crystal over the free hand.
+      k.rod([-0.24, 0.15, 0.14], [-0.24, 1.1, 0.16], 0.018, AIR.timber);
+      k.hex(0.06, 0.05, [-0.24, 1.14, 0.16], AIR.glow, { r: [Math.PI / 2, 0, 0], glow: true });
+      k.octa(0.07, [0.24, 0.85, 0.24], AIR.glow, { s: [1, 1.6, 1], glow: true });
+      k.torus(0.1, 0.008, [0.24, 0.85, 0.24], '#fff3c0', { r: [Math.PI / 2, 0, 0], glow: true });
+      // A small honeycomb sky island carrying the load behind them.
+      k.push({ p: [0.36, 1.2, -0.3], s: 0.85 });
+      k.hex(0.2, 0.07, [0, 0, 0], AIR.straw);
+      k.hex(0.17, 0.02, [0, 0.045, 0], '#7fb24f');
+      k.cone(0.17, 0.26, [0, -0.17, 0], '#8d877c', { seg: 6, r: [Math.PI, 0, 0] });
+      for (const [x, z] of [[0.06, 0.03], [-0.06, -0.02]]) k.rod([x - 0.05, 0.08, z], [x + 0.05, 0.08, z + 0.02], 0.03, AIR.timber);
+      k.box(0.08, 0.08, 0.08, [-0.02, 0.12, -0.08], AIR.timber); k.octa(0.04, [-0.02, 0.2, -0.08], '#f2c040');
+      k.octa(0.05, [0, -0.33, 0], AIR.glow, { s: [1, 1.4, 1], glow: true });
+      k.pop();
+    },
+    infantry(k) {
+      const f = figure(k, { skin: SKIN[0], top: AIR.black, skirt: AIR.honey, legs: AIR.black, belt: AIR.timber, sleeve: AIR.honey, glove: AIR.black, hands: { l: [0.27, 0.6, 0.2], r: [-0.25, 0.62, 0.18] } });
+      for (const [x, y] of [[-0.075, 0.55], [0.075, 0.55], [0, 0.635], [-0.075, 0.72], [0.075, 0.72]]) k.hex(0.048, 0.03, [x, y, 0.15], '#e8b830', { r: [Math.PI / 2, 0, 0] });
+      for (const x of [0.2, -0.2]) { k.ball(0.1, [x, f.shY + 0.02, 0], AIR.honey, { tl: Math.PI / 2 }); amberHex(k, [x * 1.05, f.shY + 0.1, 0.02]); }
+      // Wings on the back.
+      for (const s of [1, -1]) { k.octa(0.26, [s * 0.2, 0.86, -0.2], '#fff3c0', { s: [0.32, 1, 0.06], r: [0.2, s * 0.35, -s * 0.6] }); k.octa(0.2, [s * 0.18, 0.64, -0.2], '#efe4c8', { s: [0.3, 0.9, 0.06], r: [0.2, s * 0.35, -s * 1.1] }); }
+      const [hx, hy] = f.head;
+      // A crested hive helm with an amber visor.
+      for (let i = 0; i < 5; i++) k.torus(0.168 - i * 0.026, 0.03, [hx, hy + 0.03 + i * 0.05, 0], i % 2 ? AIR.strawD : AIR.honey, { r: [Math.PI / 2, 0, 0], ts: 14 });
+      k.box(0.03, 0.2, 0.3, [hx, hy + 0.3, -0.02], AIR.black, { r: [0.2, 0, 0] });
+      k.box(0.032, 0.06, 0.3, [hx, hy + 0.36, -0.03], AIR.honey, { r: [0.2, 0, 0] });
+      k.box(0.22, 0.05, 0.03, [hx, hy, 0.15], AIR.glow, { glow: true });
+      // A round shield holding a spinning amber wind rose.
+      k.push({ p: [0.34, 0.6, 0.22], r: [Math.PI / 2, 0, -0.3] });
+      k.cyl(0.23, 0.23, 0.04, [0, 0, 0], AIR.honey, { seg: 16 });
+      k.torus(0.23, 0.02, [0, 0, 0], AIR.black, { r: [Math.PI / 2, 0, 0], ts: 20 });
+      k.octa(0.18, [0, 0.03, 0], AIR.black, { s: [1, 0.15, 0.3] }); k.octa(0.18, [0, 0.03, 0], AIR.black, { s: [0.3, 0.15, 1] });
+      k.octa(0.13, [0, 0.04, 0], AIR.glow, { s: [1, 0.18, 1], r: [0, Math.PI / 4, 0], glow: true });
+      k.pop();
+      // A long lance with a striped pennant, held forward.
+      k.rod([-0.25, 0.15, -0.1], [-0.25, 1.62, 0.42], 0.024, AIR.timber);
+      k.point([-0.25, 1.62, 0.42], [-0.25, 1.82, 0.48], 0.05, AIR.black, { seg: 5 });
+      k.box(0.02, 0.12, 0.22, [-0.25, 1.48, 0.25], AIR.honey, { r: [0.3, 0, 0] }); k.box(0.021, 0.05, 0.22, [-0.25, 1.48, 0.25], AIR.black, { r: [0.3, 0, 0] });
+    },
+    ranged(k) {
+      const f = figure(k, { skin: SKIN[2], top: AIR.cream, skirt: AIR.honey, legs: AIR.timber, belt: AIR.black, sleeve: AIR.honey, hands: ARCHER_HANDS });
+      const [hx, hy] = f.head;
+      k.ball(0.168, [hx, hy + 0.04, -0.01], AIR.honey, { tl: Math.PI * 0.5, ws: 12 });
+      k.box(0.03, 0.14, 0.24, [hx, hy + 0.22, -0.04], AIR.black, { r: [0.25, 0, 0] });
+      k.ball(0.042, [0.06, hy + 0.08, 0.13], AIR.amber); k.ball(0.042, [-0.06, hy + 0.08, 0.13], AIR.amber);
+      // A sail-cloth mantle, with amber hexes floating round the shoulders.
+      k.push({ p: [0, 0.94, -0.15], r: [0.5, 0, 0] });
+      for (let j = -3; j <= 3; j++) k.box(0.07, 0.68, 0.02, [j * 0.065, -0.33, -Math.abs(j) * 0.035], j % 2 ? AIR.black : AIR.honey, { r: [0, j * 0.16, 0] });
+      k.pop();
+      around(5, 0.28, (x, z) => { if (z < 0.12) amberHex(k, [x, f.shY + 0.16, z - 0.02]); });
+      // A great sail-winged bow; the arrow spins inside rings of wind.
+      bow(k, 0.46, AIR.timber, '#e8dcc0', { tips: AIR.amber });
+      k.rod([0.02, 0.8, 0.0], [0.44, 0.8, 0.44], 0.011, AIR.timber);
+      k.point([0.44, 0.8, 0.44], [0.5, 0.8, 0.5], 0.028, AIR.black, { seg: 4 });
+      for (const t of [0.35, 0.6, 0.85]) k.torus(0.09 - t * 0.03, 0.01, [0.02 + 0.42 * t, 0.8, 0.42 * t], '#fff3c0', { r: [0, Math.PI / 4, 0], glow: true });
+    },
+    special(k) {
+      // Bee Rider: a giant striped honeybee with glowing amber wings.
+      k.push({ p: [0, 0.42, 0], s: 1.3 });
+      k.ball(0.26, [0, 0.12, -0.3], AIR.honey, { s: [0.9, 0.85, 1.25], ws: 12 });
+      for (const z of [-0.18, -0.32, -0.46]) k.torus(0.2 - Math.abs(z + 0.32) * 0.3, 0.035, [0, 0.13, z], AIR.black, { ts: 14 });
+      k.cone(0.05, 0.16, [0, 0.08, -0.62], AIR.black, { seg: 5, r: [-Math.PI / 2 - 0.3, 0, 0] });
+      k.ball(0.19, [0, 0.16, 0.05], '#3a2f20', { ws: 10 });
+      k.ball(0.14, [0, 0.12, 0.3], AIR.black);
+      for (const s of [1, -1]) {
+        k.ball(0.07, [s * 0.08, 0.16, 0.37], AIR.glow, { s: [0.8, 1, 0.7], glow: true });
+        k.rod([s * 0.05, 0.24, 0.36], [s * 0.12, 0.42, 0.5], 0.01, AIR.black); k.ball(0.022, [s * 0.12, 0.42, 0.5], AIR.amber);
+        for (const [z, a] of [[0.15, 0.3], [-0.05, -0.1], [-0.25, -0.5]]) k.rod([s * 0.12, 0.05, z], [s * 0.26, -0.28, z + a * 0.2], 0.014, AIR.black);
+        k.octa(0.34, [s * 0.32, 0.38, -0.02], '#fff3c0', { s: [1, 0.06, 0.42], r: [0, s * 0.2, s * 0.35], glow: true });
+        k.octa(0.26, [s * 0.28, 0.32, -0.2], AIR.glow, { s: [1, 0.05, 0.4], r: [0, -s * 0.25, s * 0.25], glow: true });
+      }
+      k.pop();
+      // The rider, with goggles and a lance.
+      k.push({ p: [0, 0.45, 0.0], s: 0.85 });
+      const f = figure(k, { skin: SKIN[1], top: AIR.honey, skirt: AIR.black, legs: AIR.black, belt: AIR.black, sleeve: AIR.cream, hands: { l: [0.2, 0.55, 0.24], r: [-0.22, 0.62, 0.2] }, hair: '#2a1e18' });
+      const [hx, hy] = f.head;
+      k.torus(0.15, 0.02, [hx, hy + 0.04, 0], AIR.black, { r: [Math.PI / 2, 0, 0] });
+      k.ball(0.042, [0.06, hy + 0.03, 0.14], AIR.amber); k.ball(0.042, [-0.06, hy + 0.03, 0.14], AIR.amber);
+      k.pop();
+      k.rod([-0.19, 0.68, -0.2], [-0.2, 1.18, 0.8], 0.02, AIR.timber);
+      k.point([-0.2, 1.18, 0.8], [-0.2, 1.25, 0.95], 0.04, AIR.black, { seg: 5 });
+    },
+    hero(k) {
+      k.push({ s: 1.2 });
+      const f = figure(k, { skin: SKIN[1], top: STORM, robe: true, skirt: AIR.honey, legs: STORM, belt: AIR.black, sleeve: STORM, hands: { l: [0.2, 0.64, 0.18], r: [-0.26, 0.74, 0.14] }, hair: '#3a2a1a' });
+      k.cyl(0.27, 0.28, 0.04, [0, 0.03, 0], AIR.black, { seg: 12 });
+      k.cyl(0.22, 0.34, 0.82, [0, 0.5, -0.03], STORM, { seg: 12, open: true, t0: Math.PI * 0.7, arc: Math.PI * 0.6 });
+      for (const y of [0.2, 0.45, 0.7]) k.torus(0.2 + (0.7 - y) * 0.15, 0.014, [0, y, -0.03], AIR.honey, { r: [Math.PI / 2, 0, 0], arc: Math.PI * 0.6, ts: 12 });
+      const [hx, hy] = f.head;
+      // A crown of floating amber hexagons.
+      around(7, 0.15, (x, z) => amberHex(k, [hx + x, hy + 0.24 + Math.abs(x) * 0.15, z], 1.15));
+      // A staff wrapped in a small storm cloud, lightning flickering in the amber.
+      k.rod([-0.26, 0.05, 0.14], [-0.26, 1.52, 0.14], 0.022, AIR.timber);
+      k.push({ p: [-0.26, 1.66, 0.14] });
+      for (const [x, y, z, r] of [[0, 0, 0, 0.13], [0.12, -0.02, 0.03, 0.1], [-0.12, -0.01, -0.02, 0.1], [0.04, 0.08, -0.06, 0.1], [-0.05, -0.06, 0.08, 0.09]]) k.ball(r, [x, y, z], CLOUD, { ws: 8, hs: 6 });
+      k.octa(0.08, [0, -0.02, 0.1], AIR.glow, { s: [1, 1.5, 1], glow: true });
+      const bolt = [[0.06, -0.08, 0.06], [0.12, -0.2, 0.08], [0.06, -0.28, 0.1], [0.14, -0.42, 0.1]];
+      for (let i = 0; i < bolt.length - 1; i++) k.rod(bolt[i], bolt[i + 1], 0.012, BOLT, { glow: true });
+      k.pop();
+      k.pop();
+    },
+  },
+
+  water: {
+    worker(k) {
+      const f = figure(k, { skin: SKIN[1], top: WAT.deep, robe: true, skirt: WAT.blue, legs: WAT.deep, belt: WAT.bronze, sleeve: WAT.deep, hands: { l: [0.2, 0.66, 0.22], r: [-0.24, 0.55, 0.16] }, hair: '#2a1a12' });
+      k.cyl(0.26, 0.27, 0.035, [0, 0.03, 0], WAT.bronze, { seg: 12 });
+      const [hx, hy] = f.head;
+      // A scholar's cap, bronze spectacles.
+      k.ball(0.168, [hx, hy + 0.04, -0.01], WAT.deep, { tl: Math.PI * 0.45, ws: 12 });
+      k.torus(0.16, 0.015, [hx, hy + 0.07, 0], WAT.bronze, { r: [Math.PI / 2, 0, 0] });
+      k.cyl(0.02, 0.02, 0.1, [hx + 0.08, hy + 0.2, -0.04], WAT.pearl, { r: [0, 0, -0.6] });
+      for (const x of [0.055, -0.055]) k.torus(0.035, 0.008, [x, hy + 0.01, 0.15], WAT.bronze);
+      k.box(0.03, 0.008, 0.01, [0, hy + 0.01, 0.155], WAT.bronze);
+      // A satchel of scrolls.
+      k.box(0.16, 0.16, 0.08, [0.17, 0.42, -0.06], '#6a5a3a', { r: [0, 0.3, 0] });
+      for (const x of [0.13, 0.2]) k.cyl(0.022, 0.022, 0.2, [x, 0.55, -0.08], WAT.pearl);
+      // A bronze astrolabe in one hand, a floating orb of water in a bronze ring over the other.
+      k.push({ p: [-0.24, 0.62, 0.2], r: [0.2, 0.4, 0] });
+      k.cyl(0.09, 0.09, 0.015, [0, 0, 0], WAT.bronze, { r: [Math.PI / 2, 0, 0], seg: 14 });
+      k.torus(0.09, 0.01, [0, 0, 0.01], '#e8c070', { ts: 16 });
+      k.rod([-0.08, 0, 0.012], [0.08, 0, 0.012], 0.006, '#5a4020'); k.rod([0, -0.08, 0.012], [0, 0.08, 0.012], 0.006, '#5a4020');
+      k.pop();
+      k.ball(0.075, [0.22, 0.92, 0.26], WAT.glow, { glow: true });
+      k.torus(0.12, 0.012, [0.22, 0.92, 0.26], WAT.bronze, { r: [Math.PI / 2 - 0.5, 0.3, 0] });
+    },
+    infantry(k) {
+      const f = figure(k, { skin: SKIN[3], top: WAT.deep, skirt: WAT.blue, legs: WAT.deep, belt: WAT.bronze, sleeve: WAT.pearl, glove: WAT.bronze, hands: { l: [0.27, 0.62, 0.2], r: [-0.25, 0.55, 0.12] } });
+      for (const [y, r] of [[0.74, 0.16], [0.64, 0.168], [0.54, 0.174]]) { k.cyl(r, r + 0.012, 0.12, [0, y, 0], WAT.pearl, { seg: 12, open: true, t0: -1.0, arc: 2.0 }); k.torus(r + 0.008, 0.012, [0, y - 0.06, 0], WAT.bronze, { r: [Math.PI / 2, 0, 0], arc: 2.0, ts: 10 }); }
+      for (const x of [0.2, -0.2]) { k.ball(0.11, [x, f.shY + 0.02, 0], WAT.bronze, { tl: Math.PI / 2, s: [1, 0.75, 1] }); k.ball(0.085, [x, f.shY + 0.05, 0], WAT.pearl, { tl: Math.PI / 2, s: [1, 0.8, 1] }); }
+      const [hx, hy] = f.head;
+      // A pearl helm with a bronze rim and a glass dome crest.
+      k.ball(0.175, [hx, hy + 0.02, 0], WAT.pearl, { tl: Math.PI * 0.55, ws: 12 });
+      k.torus(0.172, 0.02, [hx, hy, 0], WAT.bronze, { r: [Math.PI / 2, 0, 0] });
+      k.box(0.025, 0.12, 0.3, [hx, hy + 0.18, -0.02], WAT.bronze);
+      k.ball(0.09, [hx, hy + 0.2, 0.02], GLASS);
+      k.ball(0.05, [hx, hy + 0.2, 0.02], WAT.glow, { glow: true });
+      // A curved wall of moving water as a shield.
+      k.push({ p: [0.12, 0.62, 0.05], r: [0, 0.75, 0] });
+      k.cyl(0.36, 0.36, 0.6, [0, 0, 0], '#4fb6e8', { seg: 16, open: true, t0: -0.75, arc: 1.5 });
+      k.cyl(0.345, 0.345, 0.56, [0, 0, 0], '#2f8fd0', { seg: 16, open: true, t0: -0.72, arc: 1.44 });
+      k.torus(0.36, 0.016, [0, 0.3, 0], WAT.glow, { r: [Math.PI / 2, 0, 0], arc: 1.5, ts: 16, glow: true });
+      for (const [a, y] of [[-0.4, 0.05], [0.1, -0.12], [0.5, 0.15]]) k.torus(0.37, 0.008, [0, y, 0], '#bfe6f2', { r: [Math.PI / 2, 0, a], arc: 0.7, ts: 8, glow: true });
+      for (const y of [-0.31, 0.33]) k.ball(0.025, [Math.cos(0.3) * 0.36, y, Math.sin(0.3) * 0.36], WAT.glow, { glow: true });
+      k.pop();
+      // A bronze trident.
+      const top = [-0.25, 1.3, 0.12];
+      k.rod([-0.25, 0.0, 0.12], top, 0.022, WAT.bronze);
+      k.box(0.2, 0.03, 0.03, [-0.25, top[1], 0.12], WAT.bronze);
+      for (const dx of [-0.09, 0, 0.09]) k.cone(0.026, dx ? 0.15 : 0.2, [-0.25 + dx, top[1] + (dx ? 0.08 : 0.1), 0.12], '#e8c070', { seg: 4 });
+      k.ball(0.03, [-0.25, top[1] - 0.04, 0.14], WAT.glow, { glow: true });
+    },
+    ranged(k) {
+      const f = figure(k, { skin: SKIN[0], top: WAT.pearl, skirt: WAT.deep, legs: WAT.deep, belt: WAT.bronze, sleeve: WAT.blue, hands: ARCHER_HANDS, hair: '#c89a5a' });
+      const [hx, hy] = f.head;
+      k.torus(0.158, 0.018, [hx, hy + 0.06, 0], WAT.bronze, { r: [Math.PI / 2 - 0.1, 0, 0] });
+      k.octa(0.03, [hx, hy + 0.08, 0.16], WAT.glow, { glow: true });
+      k.cyl(0.2, 0.32, 0.66, [0, 0.5, -0.05], WAT.deep, { seg: 12, open: true, t0: Math.PI * 0.68, arc: Math.PI * 0.64 });
+      for (let i = 0; i < 6; i++) { const a = Math.PI * 0.72 + (i / 5) * Math.PI * 0.56; k.ball(0.05, [Math.sin(a) * 0.32, 0.19, Math.cos(a) * 0.32 - 0.05], i % 2 ? WAT.blue : '#9fd8e8', { s: [1, 0.6, 1] }); }
+      // A small armillary turning at the hip.
+      k.torus(0.07, 0.008, [0.18, 0.44, 0.06], WAT.bronze, { r: [0.4, 0, 0] }); k.torus(0.07, 0.008, [0.18, 0.44, 0.06], WAT.bronze, { r: [0, 0.6, 1.1] }); k.ball(0.025, [0.18, 0.44, 0.06], WAT.glow, { glow: true });
+      // A bow of clear glass; arrows of glass and water.
+      bow(k, 0.44, GLASS, '#e8eef4', { tips: WAT.bronze });
+      k.rod([0.02, 0.8, 0.0], [0.44, 0.8, 0.44], 0.011, GLASS);
+      k.point([0.44, 0.8, 0.44], [0.51, 0.8, 0.51], 0.032, WAT.glow, { seg: 4, glow: true });
+      for (const t of [0.5, 0.75]) k.ball(0.018, [0.02 + 0.42 * t, 0.84, 0.42 * t], WAT.glow, { glow: true });
+    },
+    special(k) {
+      const f = figure(k, { skin: SKIN[2], top: WAT.deep, robe: true, skirt: WAT.blue, legs: WAT.deep, belt: WAT.pearl, sleeve: WAT.deep, hands: { l: [0.16, 0.86, 0.3], r: [-0.16, 0.86, 0.3] }, hair: '#d8d0c0' });
+      k.torus(0.26, 0.02, [0, 0.04, 0], WAT.bronze, { r: [Math.PI / 2, 0, 0] });
+      k.rod([0, f.shY, 0.15], [0, 0.1, 0.25], 0.045, WAT.pearl, { r2: 0.055 });
+      const [hx, hy] = f.head;
+      // A tall pearl mitre.
+      k.cone(0.14, 0.4, [hx, hy + 0.3, -0.01], WAT.pearl, { seg: 8 });
+      k.torus(0.13, 0.016, [hx, hy + 0.13, 0], WAT.bronze, { r: [Math.PI / 2, 0, 0] });
+      k.octa(0.035, [hx, hy + 0.26, 0.11], WAT.coral);
+      // A floating shell pouring a spring of glowing water between the hands.
+      k.push({ p: [0, 1.5, 0.42], r: [Math.PI - 0.5, 0, 0] });
+      for (let i = -3; i <= 3; i++) k.box(0.05, 0.22, 0.025, [Math.sin(i * 0.3) * 0.09, Math.cos(i * 0.3) * 0.04, 0], i % 2 ? WAT.pearl : WAT.sheen, { r: [0, 0, -i * 0.3] });
+      k.pop();
+      for (const dx of [-0.04, 0, 0.04]) k.rod([dx, 1.46, 0.46], [dx * 0.5, 0.9, 0.36], 0.01, WAT.glow, { glow: true });
+      k.ball(0.07, [0, 0.88, 0.34], WAT.glow, { glow: true });
+      k.torus(0.13, 0.01, [0, 0.86, 0.34], '#bfe6f2', { r: [Math.PI / 2, 0, 0], glow: true });
+      for (const [x, y, z] of [[0.18, 0.86, 0.32], [-0.17, 0.82, 0.3], [0.1, 0.75, 0.36]]) k.ball(0.022, [x, y, z], WAT.glow, { glow: true });
+      k.torus(0.32, 0.012, [0, 0.45, 0], WAT.glow, { r: [Math.PI / 2 - 0.2, 0, 0.3], arc: Math.PI * 1.2, glow: true });
+    },
+    hero(k) {
+      k.push({ s: 1.18 });
+      const f = figure(k, { skin: SKIN[1], top: WAT.deep, robe: true, skirt: WAT.deep, legs: '#2a2a3a', belt: WAT.bronze, sleeve: WAT.deep, hands: { l: [0.2, 0.86, 0.24], r: [-0.24, 0.5, 0.12] }, hair: '#2a1a12' });
+      k.cyl(0.26, 0.27, 0.04, [0, 0.03, 0], WAT.bronze, { seg: 12 });
+      for (const y of [0.3, 0.45, 0.6, 0.72]) k.ball(0.018, [0, y, 0.2 - y * 0.06], WAT.pearl);
+      const [hx, hy] = f.head;
+      k.cyl(0.26, 0.24, 0.04, [hx, hy + 0.1, 0], WAT.pearl, { seg: 3, r: [0, Math.PI / 6, 0] });
+      k.ball(0.14, [hx, hy + 0.12, 0], WAT.pearl, { tl: Math.PI / 2 });
+      k.torus(0.14, 0.014, [hx, hy + 0.13, 0], WAT.bronze, { r: [Math.PI / 2, 0, 0] });
+      // A bronze sextant held up.
+      k.push({ p: [0.2, 0.9, 0.28], r: [0, -0.4, 0] });
+      k.torus(0.1, 0.012, [0, 0, 0], WAT.bronze, { arc: Math.PI / 3, r: [0, 0, Math.PI * 1.33] });
+      k.rod([0, 0, 0], [0.05, -0.1, 0], 0.008, WAT.bronze); k.rod([0, 0, 0], [-0.05, -0.1, 0], 0.008, WAT.bronze);
+      k.cyl(0.015, 0.015, 0.08, [0, 0.02, 0], '#e8c070', { r: [Math.PI / 2, 0, 0] });
+      k.pop();
+      // A glass-and-bronze armillary sphere turning behind, an orb of water at its heart.
+      k.push({ p: [0, 1.05, -0.36] });
+      k.torus(0.36, 0.016, [0, 0, 0], WAT.bronze, { r: [Math.PI / 2, 0, 0], ts: 24 });
+      k.torus(0.34, 0.014, [0, 0, 0], WAT.bronze, { r: [0.3, 0.9, 0], ts: 24 });
+      k.torus(0.32, 0.014, [0, 0, 0], '#e8c070', { r: [1.3, -0.5, 0.2], ts: 24 });
+      k.ball(0.15, [0, 0, 0], GLASS);
+      k.ball(0.09, [0, 0, 0], WAT.glow, { glow: true });
+      k.ball(0.03, [0.3, 0.1, 0.12], WAT.glow, { glow: true });
+      k.pop();
+      k.pop();
+    },
+  },
+
+  fire: {
+    worker(k) {
+      const f = figure(k, { skin: SKIN[2], top: FIR.scarlet, skirt: FIR.basalt, legs: '#3a2a22', belt: FIR.gold, stocky: true, sleeve: FIR.scarlet, forearm: FIR.iron, glove: FIR.iron, hands: { l: [0.27, 0.56, 0.22], r: [-0.2, 0.95, -0.05] } });
+      // A basalt-plated apron with a glowing seam.
+      for (const [y, w] of [[0.58, 0.3], [0.44, 0.32]]) { k.box(w, 0.13, 0.04, [0, y, 0.19], FIR.basalt); k.box(w - 0.02, 0.012, 0.045, [0, y - 0.07, 0.19], FIR.glow, { glow: true }); }
+      for (const x of [0.27, -0.2]) for (const dz of [-0.03, 0.03]) k.ball(0.016, [x + 0.03, x > 0 ? 0.58 : 0.97, (x > 0 ? 0.25 : -0.02) + dz], FIR.glow, { glow: true });
+      const [hx, hy] = f.head;
+      k.ball(0.165, [hx, hy + 0.035, 0], FIR.scarlet, { tl: Math.PI * 0.42, ws: 12 });
+      k.torus(0.16, 0.018, [hx, hy + 0.05, 0], FIR.gold, { r: [Math.PI / 2, 0, 0] });
+      // A hammer whose head is a block of cooling magma.
+      k.rod([-0.2, 0.95, -0.05], [-0.22, 1.08, -0.47], 0.026, '#3a2a22');
+      k.box(0.18, 0.15, 0.24, [-0.22, 1.11, -0.53], FIR.basalt);
+      k.box(0.185, 0.03, 0.245, [-0.22, 1.1, -0.53], FIR.glow, { glow: true });
+      k.box(0.03, 0.155, 0.245, [-0.17, 1.11, -0.53], FIR.glow, { glow: true });
+      // A small floating ember over the free hand.
+      k.octa(0.06, [0.3, 0.86, 0.26], FIR.hot, { s: [1, 1.4, 1], glow: true });
+      k.torus(0.08, 0.008, [0.3, 0.86, 0.26], FIR.glow, { r: [Math.PI / 2, 0, 0], glow: true });
+    },
+    infantry(k) {
+      const f = figure(k, { skin: SKIN[1], top: FIR.basalt, skirt: FIR.basalt, legs: FIR.basalt, belt: FIR.gold, sleeve: FIR.basalt, glove: FIR.iron, stocky: true, hands: { l: [0.3, 0.6, 0.2], r: [-0.27, 0.55, 0.12] } });
+      // Heavy stepped plates with rivers of magma between them.
+      for (const [y, w] of [[0.5, 0.42], [0.6, 0.38], [0.7, 0.34], [0.8, 0.3]]) { k.box(w, 0.085, 0.1, [0, y, 0.13], FIR.basalt); k.box(w - 0.03, 0.02, 0.105, [0, y - 0.048, 0.13], FIR.glow, { glow: true }); }
+      for (const x of [0.25, -0.25]) { k.box(0.17, 0.08, 0.2, [x, f.shY + 0.05, 0], FIR.basalt); k.box(0.12, 0.06, 0.15, [x, f.shY + 0.12, 0], FIR.basalt); k.box(0.175, 0.015, 0.205, [x, f.shY + 0.09, 0], FIR.glow, { glow: true }); for (const z of [-0.05, 0.05]) k.cone(0.026, 0.13, [x * 1.1, f.shY + 0.2, z], FIR.iron, { seg: 4 }); }
+      const [hx, hy] = f.head;
+      // A horned helm under a crown of fire.
+      k.ball(0.178, [hx, hy + 0.02, 0], FIR.basalt, { tl: Math.PI * 0.62, ws: 12 });
+      k.box(0.21, 0.05, 0.03, [hx, hy - 0.01, 0.155], FIR.gold);
+      for (const s of [1, -1]) { k.rod([s * 0.14, hy + 0.06, 0], [s * 0.26, hy + 0.14, 0.02], 0.03, FIR.iron, { r2: 0.022 }); k.cone(0.022, 0.12, [s * 0.29, hy + 0.21, 0.02], FIR.iron, { seg: 5, r: [0, 0, -s * 0.35] }); }
+      around(5, 0.1, (x, z) => k.cone(0.03, 0.13, [hx + x, hy + 0.2, z], FIR.glow, { seg: 5, glow: true }));
+      // A tall ziggurat shield with a glowing core.
+      k.push({ p: [0.37, 0.6, 0.22], r: [0, 0.35, 0] });
+      for (const [y, w, h] of [[-0.14, 0.38, 0.14], [0.0, 0.3, 0.14], [0.13, 0.22, 0.12], [0.24, 0.13, 0.1]]) { k.box(w, h, 0.05, [0, y, 0], FIR.basalt); k.box(w + 0.01, 0.012, 0.055, [0, y + h / 2, 0], FIR.gold); }
+      k.box(0.08, 0.1, 0.03, [0, 0.0, 0.03], FIR.hot, { glow: true });
+      k.box(0.13, 0.15, 0.025, [0, 0.0, 0.026], FIR.glow, { glow: true });
+      k.pop();
+      const top = spear(k, [-0.27, 0.55, 0.12], 1.35, '#3a2a22', FIR.gold);
+      k.box(0.05, 0.16, 0.02, [top[0], top[1] - 0.04, top[2]], FIR.gold);
+      k.cone(0.035, 0.12, [top[0], top[1] + 0.22, top[2]], FIR.glow, { seg: 5, glow: true });
+    },
+    ranged(k) {
+      const f = figure(k, { skin: SKIN[3], top: FIR.scarlet, skirt: FIR.basalt, legs: '#3a2a22', belt: FIR.gold, sleeve: FIR.basalt, hands: ARCHER_HANDS });
+      const [hx, hy] = f.head;
+      k.hood(0.195, [hx, hy + 0.02, -0.01], FIR.basalt, { tl: Math.PI * 0.72 });
+      k.box(0.2, 0.06, 0.04, [hx, hy - 0.06, 0.14], FIR.iron);
+      k.torus(0.17, 0.016, [hx, hy + 0.08, 0], FIR.gold, { r: [Math.PI / 2 - 0.15, 0, 0] });
+      for (const s of [1, -1]) k.cone(0.035, 0.18, [s * 0.13, hy + 0.2, -0.02], FIR.iron, { seg: 5, r: [0, 0, -s * 0.45] });
+      // A cloak of smouldering scarlet, embers along its hem.
+      k.cyl(0.2, 0.32, 0.64, [0, 0.5, -0.05], FIR.scarlet, { seg: 12, open: true, t0: Math.PI * 0.68, arc: Math.PI * 0.64 });
+      for (let i = 0; i < 6; i++) { const a = Math.PI * 0.72 + (i / 5) * Math.PI * 0.56; k.octa(0.025, [Math.sin(a) * 0.32, 0.2 + (i % 2) * 0.04, Math.cos(a) * 0.32 - 0.05], FIR.glow, { glow: true }); }
+      k.cyl(0.06, 0.05, 0.38, [-0.08, 0.78, -0.2], FIR.basalt, { r: [0.3, 0, 0.25] });
+      for (const dx of [-0.03, 0.01, 0.05]) k.cone(0.03, 0.09, [-0.15 + dx, 1.02, -0.28], FIR.glow, { seg: 5, glow: true });
+      // A forged bow burning along its edges; an arrow of pure flame.
+      bow(k, 0.46, FIR.basalt, FIR.hot, { tips: FIR.gold });
+      for (const [x, y, z] of [[0.43, 1.14, 0.18], [0.4, 0.46, 0.18], [0.36, 1.0, 0.26], [0.36, 0.6, 0.26]]) k.cone(0.03, 0.1, [x, y, z], FIR.glow, { seg: 5, glow: true });
+      k.rod([0.02, 0.8, 0.0], [0.44, 0.8, 0.44], 0.016, FIR.glow, { glow: true });
+      k.point([0.42, 0.8, 0.42], [0.54, 0.8, 0.54], 0.05, FIR.hot, { glow: true });
+    },
+    special(k) {
+      // Lava Charger: an armoured salamander whose back splits with glowing magma.
+      k.push({ p: [0, 0, 0], s: [1.2, 1.1, 1.25] });
+      const body = [[0.0, 0.32, 0.28, 0.2], [0.0, 0.34, 0.02, 0.24], [0.0, 0.32, -0.24, 0.22], [0.0, 0.26, -0.46, 0.16], [0.0, 0.2, -0.64, 0.11], [0.03, 0.15, -0.78, 0.07]];
+      for (const [x, y, z, r] of body) k.ball(r, [x, y, z], '#5a2a1e', { s: [1.15, 0.7, 1.1], ws: 10 });
+      for (const [x, y, z, r] of body.slice(0, 4)) { k.box(0.06, 0.02, r * 1.4, [x, y + r * 0.66, z], FIR.glow, { glow: true }); for (const s of [1, -1]) k.box(0.03, r * 0.9, r * 1.2, [s * r * 1.05, y + 0.02, z], FIR.iron, { r: [0, 0, s * 0.35] }); }
+      // Head and jaws.
+      k.ball(0.17, [0, 0.33, 0.5], '#5a2a1e', { s: [1.15, 0.6, 1.3] });
+      k.box(0.24, 0.05, 0.16, [0, 0.27, 0.6], '#3a1a14');
+      for (const s of [1, -1]) { k.ball(0.035, [s * 0.1, 0.4, 0.58], FIR.hot, { glow: true }); k.cone(0.02, 0.07, [s * 0.08, 0.28, 0.68], '#f2ead8', { seg: 4, r: [Math.PI, 0, 0] }); }
+      k.box(0.2, 0.06, 0.04, [0, 0.42, 0.46], FIR.gold);
+      // Legs splayed out to the sides.
+      for (const [z, s] of [[0.22, 1], [0.22, -1], [-0.3, 1], [-0.3, -1]]) { k.rod([s * 0.16, 0.26, z], [s * 0.3, 0.16, z + 0.03], 0.075, '#5a2a1e', { r2: 0.065 }); k.rod([s * 0.3, 0.16, z + 0.03], [s * 0.32, 0.05, z + 0.08], 0.06, '#5a2a1e', { r2: 0.05 }); k.box(0.13, 0.04, 0.13, [s * 0.32, 0.02, z + 0.11], '#3a1a14'); }
+      k.box(0.5, 0.04, 0.36, [0, 0.55, -0.02], FIR.scarlet); k.box(0.52, 0.02, 0.38, [0, 0.53, -0.02], FIR.gold);
+      k.pop();
+      // The rider, with a fire lance and a gold-rimmed shield.
+      k.push({ p: [0, 0.16, -0.04] });
+      const f = figure(k, { skin: SKIN[0], top: FIR.scarlet, skirt: FIR.basalt, legs: FIR.basalt, belt: FIR.gold, sleeve: FIR.iron, hands: { l: [0.24, 0.55, 0.16], r: [-0.22, 0.62, 0.18] }, hair: '#2a1a12' });
+      const [hx, hy] = f.head;
+      k.ball(0.175, [hx, hy + 0.03, 0], FIR.basalt, { tl: Math.PI * 0.55, ws: 12 });
+      around(4, 0.08, (x, z) => k.cone(0.026, 0.1, [hx + x, hy + 0.18, z], FIR.glow, { seg: 5, glow: true }));
+      k.push({ p: [0.32, 0.58, 0.1], r: [Math.PI / 2, 0, -0.2] });
+      k.cyl(0.16, 0.16, 0.035, [0, 0, 0], FIR.basalt, { seg: 12 }); k.torus(0.16, 0.018, [0, 0, 0], FIR.gold, { r: [Math.PI / 2, 0, 0] }); k.ball(0.05, [0, 0.03, 0], FIR.glow, { glow: true });
+      k.pop();
+      k.pop();
+      k.rod([-0.22, 0.68, -0.4], [-0.24, 1.08, 0.95], 0.022, '#3a2a22');
+      k.point([-0.24, 1.08, 0.95], [-0.25, 1.14, 1.12], 0.045, FIR.gold, { seg: 5 });
+      k.cone(0.04, 0.14, [-0.25, 1.18, 1.05], FIR.glow, { seg: 5, glow: true, r: [0.9, 0, 0] });
+    },
+    hero(k) {
+      k.push({ s: 1.22 });
+      const f = figure(k, { skin: SKIN[2], top: FIR.basalt, skirt: FIR.basalt, legs: FIR.basalt, belt: FIR.gold, sleeve: FIR.basalt, glove: FIR.iron, stocky: true, hands: { l: [0.26, 0.55, 0.16], r: [-0.22, 0.72, 0.22] }, hair: '#2a1a12' });
+      // Basalt plate split by magma seams.
+      for (const [y, w] of [[0.56, 0.4], [0.68, 0.36], [0.8, 0.32]]) { k.box(w, 0.1, 0.07, [0, y, 0.15], FIR.basalt); k.box(w - 0.02, 0.018, 0.075, [0, y - 0.055, 0.15], FIR.glow, { glow: true }); }
+      k.box(0.02, 0.32, 0.075, [0.04, 0.68, 0.152], FIR.glow, { glow: true });
+      around(10, 0.22, (x, z) => { if (z < 0.08) k.cone(0.055, 0.24, [x, f.shY + 0.12, z * 0.9 - 0.02], FIR.glow, { seg: 5, glow: true, r: [-z * 1.5, 0, -x * 1.6] }); });
+      k.box(0.44, 0.74, 0.03, [0, 0.5, -0.23], FIR.scarlet, { r: [0.18, 0, 0] });
+      k.box(0.45, 0.04, 0.035, [0, 0.14, -0.3], FIR.gold, { r: [0.18, 0, 0] });
+      const [hx, hy] = f.head;
+      // Burning horns and a crown of fire.
+      k.torus(0.145, 0.022, [hx, hy + 0.1, 0], FIR.gold, { r: [Math.PI / 2, 0, 0] });
+      for (const s of [1, -1]) { k.rod([s * 0.13, hy + 0.1, 0], [s * 0.27, hy + 0.22, 0.02], 0.028, FIR.iron, { r2: 0.02 }); k.cone(0.03, 0.16, [s * 0.3, hy + 0.32, 0.02], FIR.glow, { seg: 5, glow: true, r: [0, 0, -s * 0.3] }); }
+      around(6, 0.12, (x, z) => k.cone(0.032, 0.13, [hx + x, hy + 0.19, z], FIR.glow, { seg: 5, glow: true }));
+      // A great blade that burns white-hot.
+      k.rod([-0.22, 0.62, 0.22], [-0.22, 0.82, 0.24], 0.026, '#3a2a22');
+      k.box(0.22, 0.035, 0.05, [-0.22, 0.84, 0.24], FIR.gold);
+      k.box(0.13, 0.86, 0.03, [-0.22, 1.28, 0.26], FIR.basalt);
+      k.box(0.08, 0.84, 0.034, [-0.22, 1.28, 0.26], '#fff2c0', { glow: true });
+      k.box(0.02, 0.84, 0.035, [-0.155, 1.28, 0.26], FIR.glow, { glow: true }); k.box(0.02, 0.84, 0.035, [-0.285, 1.28, 0.26], FIR.glow, { glow: true });
+      k.cone(0.075, 0.16, [-0.22, 1.79, 0.26], '#fff2c0', { seg: 4, s: [1, 1, 0.4], glow: true });
+      k.pop();
+    },
+  },
+
+  earth: {
+    worker(k) {
+      const f = figure(k, { skin: SKIN[1], top: EAR.moss, skirt: EAR.bark, legs: '#5a4a32', belt: EAR.barkD, hands: { l: [0.22, 0.5, 0.14], r: [-0.25, 0.55, 0.16] } });
+      k.cyl(0.19, 0.24, 0.3, [0, 0.66, -0.03], EAR.moss, { seg: 10, open: true, t0: Math.PI * 0.6, arc: Math.PI * 0.8 });
+      const [hx, hy] = f.head;
+      // A bark-ringed hat with a small sapling growing from it.
+      k.cyl(0.28, 0.28, 0.03, [hx, hy + 0.09, 0], EAR.bark, { seg: 14 });
+      k.lathe([[0.001, 0.14], [0.13, 0.13], [0.16, 0.0]], [hx, hy + 0.1, 0], EAR.barkD, { seg: 12 });
+      for (const r of [0.22, 0.16]) k.torus(r, 0.008, [hx, hy + 0.108, 0], '#c8a070', { r: [Math.PI / 2, 0, 0], ts: 16 });
+      k.rod([hx, hy + 0.22, 0], [hx + 0.02, hy + 0.44, 0], 0.012, EAR.bark);
+      for (const [x, y, z] of [[0.06, 0.44, 0], [-0.04, 0.4, 0.03], [0.02, 0.5, -0.03]]) k.ico(0.045, [hx + x, hy + y, z], EAR.leafL);
+      // A rune-carved sickle.
+      k.rod([-0.25, 0.4, 0.16], [-0.25, 0.8, 0.18], 0.02, EAR.bark);
+      k.torus(0.12, 0.02, [-0.25, 0.8, 0.28], EAR.stone, { arc: Math.PI * 0.9, r: [Math.PI / 2, 0, Math.PI * 0.55] });
+      k.box(0.012, 0.12, 0.012, [-0.25, 0.6, 0.18], EAR.glow, { glow: true });
+      // A rune stone floating by the shoulder.
+      runeStone(k, [0.32, 1.08, 0.02], 1.2, -0.4);
+      k.torus(0.1, 0.007, [0.32, 0.98, 0.02], EAR.glow, { r: [Math.PI / 2, 0, 0], glow: true });
+    },
+    infantry(k) {
+      const f = figure(k, { skin: SKIN[2], top: EAR.stoneD, skirt: EAR.moss, legs: EAR.barkD, belt: EAR.bark, sleeve: EAR.stone, glove: EAR.stoneD, hands: { l: [0.28, 0.6, 0.2], r: [-0.25, 0.55, 0.12] } });
+      // Moss-covered stone plate.
+      k.dodeca(0.21, [0, 0.64, 0.04], EAR.stone, { s: [1.05, 0.95, 0.75] });
+      k.ico(0.07, [0.08, 0.76, 0.16], EAR.moss, { s: [1.3, 0.45, 1] });
+      k.octa(0.06, [0, 0.62, 0.2], EAR.glow, { s: [0.55, 1, 0.25], glow: true });
+      for (const x of [0.22, -0.22]) { k.dodeca(0.12, [x, f.shY + 0.03, 0], EAR.stone); k.ico(0.07, [x, f.shY + 0.12, 0], EAR.moss, { s: [1.3, 0.5, 1.2] }); }
+      const [hx, hy] = f.head;
+      // An antler crown.
+      k.ball(0.175, [hx, hy + 0.025, 0], EAR.stoneD, { tl: Math.PI * 0.55, ws: 12 });
+      for (const x of [1, -1]) {
+        k.rod([0.1 * x, hy + 0.12, 0], [0.22 * x, hy + 0.4, -0.02], 0.02, EAR.bark, { r2: 0.011 });
+        k.rod([0.17 * x, hy + 0.27, -0.01], [0.3 * x, hy + 0.34, 0.06], 0.012, EAR.bark, { r2: 0.008 });
+        for (const [dx, dy] of [[0.22, 0.41], [0.3, 0.35]]) k.ico(0.035, [dx * x, hy + dy, 0], EAR.leafL);
+      }
+      // A standing-stone shield carved with a glowing rune.
+      k.push({ p: [0.38, 0.6, 0.22], r: [0, 0.3, 0] });
+      k.box(0.3, 0.62, 0.08, [0, 0, 0], EAR.stone);
+      k.box(0.26, 0.06, 0.085, [0, 0.29, 0], EAR.stoneD);
+      k.ico(0.07, [0.08, 0.32, 0.02], EAR.moss, { s: [1.4, 0.5, 1] });
+      k.octa(0.13, [0, -0.02, 0.045], EAR.glow, { s: [0.5, 1, 0.2], glow: true });
+      k.octa(0.05, [0.06, 0.12, 0.045], EAR.glow, { s: [0.5, 1, 0.2], r: [0, 0, -0.7], glow: true });
+      k.pop();
+      // Two small rune stones orbiting.
+      runeStone(k, [-0.36, 1.0, -0.18], 1, 0.6); runeStone(k, [0.1, 1.2, -0.34], 0.9, -0.3);
+      k.torus(0.4, 0.006, [0, 1.05, -0.05], EAR.glow, { r: [Math.PI / 2 - 0.25, 0, 0.2], arc: Math.PI * 1.3, glow: true });
+      const top = spear(k, [-0.25, 0.55, 0.12], 1.3, EAR.bark, EAR.stone);
+      k.octa(0.03, [top[0], top[1] - 0.1, top[2] + 0.025], EAR.glow, { glow: true });
+    },
+    ranged(k) {
+      const f = figure(k, { skin: SKIN[0], top: EAR.leaf, skirt: EAR.moss, legs: EAR.barkD, belt: EAR.bark, sleeve: EAR.leaf, hands: ARCHER_HANDS });
+      const [hx, hy] = f.head;
+      k.hood(0.195, [hx, hy + 0.02, -0.01], EAR.leaf, { tl: Math.PI * 0.7 });
+      k.cone(0.12, 0.3, [hx, hy + 0.2, -0.1], EAR.leaf, { seg: 7, r: [-0.6, 0, 0] });
+      // A leaf mantle with glowing rune bands.
+      k.cyl(0.21, 0.32, 0.64, [0, 0.52, -0.05], EAR.moss, { seg: 10, open: true, t0: Math.PI * 0.68, arc: Math.PI * 0.64 });
+      for (const y of [0.4, 0.62]) k.torus(0.26 - (y - 0.4) * 0.15, 0.01, [0, y, -0.05], EAR.glow, { r: [Math.PI / 2, 0, 0], arc: Math.PI * 0.6, glow: true, t0: 0 });
+      k.torus(0.155, 0.012, [0, 0.47, 0], EAR.glow, { r: [Math.PI / 2, 0, 0], glow: true });
+      k.cyl(0.06, 0.05, 0.36, [-0.08, 0.78, -0.22], EAR.barkD, { r: [0.3, 0, 0.25] });
+      for (const dx of [-0.02, 0.03]) k.ball(0.026, [-0.14 + dx, 0.98, -0.28], EAR.glow, { glow: true });
+      // A rune-carved bow of living wood.
+      bow(k, 0.48, EAR.bark, '#d8c8a0', { leaves: EAR.leafL });
+      for (const [x, y, z] of [[0.43, 1.12, 0.16], [0.43, 0.48, 0.16], [0.38, 0.8, 0.26]]) k.octa(0.03, [x, y, z], EAR.glow, { s: [0.5, 1, 0.3], glow: true });
+      k.rod([0.02, 0.8, 0.0], [0.42, 0.8, 0.42], 0.01, EAR.bark);
+      k.ball(0.045, [0.45, 0.8, 0.45], EAR.glow, { glow: true, s: [1, 1.3, 1] });
+      k.torus(0.06, 0.007, [0.45, 0.8, 0.45], EAR.leafL, { r: [0, Math.PI / 4, 0], glow: true });
+    },
+    special(k) {
+      // Rune Golem: floating standing stones held together by glowing runes.
+      k.push({ s: 1.5 });
+      for (const x of [0.12, -0.12]) { k.box(0.13, 0.36, 0.13, [x, 0.18, 0], EAR.stone); k.octa(0.03, [x, 0.4, 0.06], EAR.glow, { glow: true }); }
+      // The body: a trilithon with a heart-stone.
+      for (const x of [0.15, -0.15]) k.box(0.12, 0.42, 0.14, [x, 0.66, 0], EAR.stoneD);
+      k.box(0.46, 0.12, 0.17, [0, 0.93, 0], EAR.stone);
+      k.dodeca(0.1, [0, 0.66, 0], EAR.glow, { glow: true });
+      k.dodeca(0.12, [0, 0.66, -0.02], EAR.stoneD, { s: [1, 1, 0.5] });
+      // Arms of floating blocks with rune links.
+      for (const s of [1, -1]) {
+        k.box(0.12, 0.14, 0.12, [s * 0.32, 0.86, 0], EAR.stone);
+        k.octa(0.03, [s * 0.32, 0.76, 0.03], EAR.glow, { glow: true });
+        k.box(0.11, 0.16, 0.11, [s * 0.36, 0.63, 0.04], EAR.stoneD);
+        k.octa(0.03, [s * 0.37, 0.52, 0.06], EAR.glow, { glow: true });
+        k.dodeca(0.1, [s * 0.38, 0.4, 0.08], EAR.stone, { s: [1.1, 1, 1.1] });
+      }
+      // The head and a crown of moss.
+      k.box(0.18, 0.16, 0.15, [0, 1.11, 0.01], EAR.stone);
+      for (const x of [0.045, -0.045]) k.box(0.04, 0.02, 0.02, [x, 1.12, 0.085], EAR.glow, { glow: true });
+      k.ico(0.1, [0, 1.2, -0.01], EAR.moss, { s: [1.5, 0.45, 1.3] });
+      for (const [x, z, r] of [[-0.05, -0.03, 0.3], [0.06, -0.04, -0.3], [0, -0.06, 0]]) k.cone(0.025, 0.16, [x, 1.28, z], EAR.leaf, { seg: 4, r: [-0.3, 0, r] });
+      k.torus(0.34, 0.008, [0, 0.66, 0], EAR.glow, { r: [Math.PI / 2, 0, 0], arc: Math.PI * 1.4, glow: true });
+      k.pop();
+    },
+    hero(k) {
+      k.push({ s: 1.2 });
+      const f = figure(k, { skin: SKIN[2], top: EAR.moss, robe: true, skirt: EAR.leaf, legs: EAR.barkD, belt: EAR.bark, sleeve: EAR.moss, hands: { l: [0.22, 0.55, 0.16], r: [-0.26, 0.8, 0.16] }, hair: '#d8d0c0' });
+      k.cyl(0.27, 0.28, 0.04, [0, 0.03, 0], EAR.moss, { seg: 12 });
+      for (let i = 0; i < 6; i++) { const a = i * 1.05; k.ball(0.025, [Math.sin(a) * 0.25, 0.1 + (i % 3) * 0.15, Math.cos(a) * 0.25], FLOWER[i % 3]); }
+      k.octa(0.09, [0, 0.66, 0.17], EAR.glow, { s: [0.6, 1, 0.25], glow: true });
+      const [hx, hy] = f.head;
+      k.cone(0.07, 0.15, [hx, hy - 0.16, 0.1], '#e8e2d4', { seg: 6, r: [Math.PI - 0.3, 0, 0] });
+      // A great branching antler crown.
+      for (const x of [1, -1]) {
+        k.rod([0.08 * x, hy + 0.12, 0], [0.22 * x, hy + 0.42, 0], 0.018, EAR.bark, { r2: 0.01 });
+        k.rod([0.14 * x, hy + 0.26, 0], [0.3 * x, hy + 0.3, 0.06], 0.012, EAR.bark);
+        k.rod([0.19 * x, hy + 0.36, 0], [0.32 * x, hy + 0.48, -0.04], 0.01, EAR.bark);
+        for (const [dx, dy] of [[0.22, 0.43], [0.3, 0.31], [0.32, 0.49], [0.12, 0.3]]) k.ico(0.035, [dx * x, hy + dy, 0], EAR.leafL);
+      }
+      // A staff grown from the World Tree, with a small canopy.
+      for (let i = 0; i < 7; i++) { const a = i * 0.9, b2 = (i + 1) * 0.9; k.rod([-0.26 + Math.cos(a) * 0.035, 0.04 + i * 0.24, 0.16 + Math.sin(a) * 0.035], [-0.26 + Math.cos(b2) * 0.035, 0.04 + (i + 1) * 0.24, 0.16 + Math.sin(b2) * 0.035], 0.024, EAR.bark); }
+      for (const [x, y, z, r] of [[0, 1.78, 0, 0.14], [0.1, 1.72, 0.05, 0.1], [-0.1, 1.74, -0.04, 0.1]]) k.ico(r, [-0.26 + x, y, 0.16 + z], EAR.leaf);
+      k.octa(0.06, [-0.26, 1.64, 0.22], EAR.glow, { s: [0.8, 1.3, 0.8], glow: true });
+      // Rune stones orbiting.
+      runeStone(k, [0.36, 1.0, -0.1], 1.1, -0.5); runeStone(k, [-0.08, 1.2, -0.38], 1, 0.2); runeStone(k, [0.3, 0.55, 0.26], 0.9, 0.8);
+      k.torus(0.42, 0.006, [0, 0.9, 0], EAR.glow, { r: [Math.PI / 2 - 0.3, 0, 0.25], ts: 28, glow: true });
+      k.pop();
+    },
+  },
+};

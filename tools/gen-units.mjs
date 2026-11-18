@@ -154,9 +154,9 @@ td.na { color: var(--muted); }
       <h1>${AGE} Age Units</h1>
       <button id="motion" type="button" aria-pressed="false">Pause turntable</button>
     </div>
-    <p class="lead">${ai ? `Each nation's units after the age-up to the ${AGE} Age: every line keeps its outline but gains the materials of the nation's ${AGE} buildings, and the first hero joins them. Switch to Dark Age to compare. These are the game's own low-poly models.` : `Each nation's four Dark Age units: a worker, a spear fighter, a ranged fighter and one special unit that fits its element. Every line transforms in each new age, as the buildings do. These are the game's own low-poly models, so what you see here is what students will command.`}</p>
+    <p class="lead">${ai ? `Each nation's units after the age-up to the ${AGE} Age: every line keeps its outline but gains the materials of the nation's ${AGE} buildings, ${ai === 1 ? 'and the first hero joins them' : 'and the hero takes a new form'}. Switch ages to compare. These are the game's own low-poly models.` : `Each nation's four Dark Age units: a worker, a spear fighter, a ranged fighter and one special unit that fits its element. Every line transforms in each new age, as the buildings do. These are the game's own low-poly models, so what you see here is what students will command.`}</p>
     <div class="controls">
-${ai ? `      <div><span class="clbl">Age</span><span class="seg" role="group" aria-label="Age"><button type="button" data-age="${age}" aria-pressed="true">${AGE}</button><button type="button" data-age="dark" aria-pressed="false">Dark Age</button></span></div>
+${ai ? `      <div><span class="clbl">Age</span><span class="seg" role="group" aria-label="Age">${AGES.slice(0, ai + 1).reverse().map((a, i) => `<button type="button" data-age="${a}" aria-pressed="${i === 0}">${AGE_NAMES[a]}</button>`).join('')}</span></div>
 ` : ''}      <div><span class="clbl">View</span><span class="seg" role="group" aria-label="View"><button type="button" data-view="color" aria-pressed="true">Colour</button><button type="button" data-view="sil" aria-pressed="false">Silhouette</button></span></div>
     </div>
   </header>
@@ -207,7 +207,7 @@ ${data}
 ${models}
   var T3 = THREE;
   var PAGE_AGE = "${age}", LINE_ORDER = ${JSON.stringify(lines)}, LADDER_LINES = ["worker", "infantry", "ranged", "special"];
-  var SETS = { dark: DARK_UNITS, mythic: typeof MYTHIC_UNITS !== "undefined" ? MYTHIC_UNITS : DARK_UNITS };
+  var SETS = { dark: DARK_UNITS, mythic: MYTHIC_UNITS, arcane: ARCANE_UNITS };
   var state = { n: "air", sil: false, paused: false, age: PAGE_AGE };
   var BY_HASH = {}; NATION_ORDER.forEach(function (n) { BY_HASH[NATION_INFO[n].hash] = n; });
   var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
@@ -223,7 +223,8 @@ ${models}
     document.querySelectorAll(".card").forEach(function (card) {
       var line = card.dataset.line;
       if (line === "hero") {
-        var hd = HEROES[n], hb = hd.base;
+        var hd = HEROES[n], sc = AGE_SCALE[state.age] || AGE_SCALE.mythic, m = AGE_SCALE.mythic;
+        var hb = { hp: Math.round(hd.base.hp * sc.hp / m.hp), attack: Math.round(hd.base.attack * sc.attack / m.attack * 10) / 10, speed: hd.base.speed };
         card.querySelector(".eyebrow").textContent = "Hero · " + hd.role + " · Sanctum";
         card.querySelector(".fp").textContent = "One at a time";
         card.querySelector("h2").textContent = ai ? r.hero[ai - 1][0] : "No hero yet";
@@ -422,4 +423,5 @@ ${models}
 writeFileSync('docs/UNIT_ROSTER.md', roster());
 writeFileSync('docs/concepts/dark-age-units.html', page('dark'));
 writeFileSync('docs/concepts/mythic-age-units.html', page('mythic'));
-console.log('Wrote docs/UNIT_ROSTER.md, docs/concepts/dark-age-units.html and docs/concepts/mythic-age-units.html');
+writeFileSync('docs/concepts/arcane-age-units.html', page('arcane'));
+console.log('Wrote docs/UNIT_ROSTER.md and the dark, mythic and arcane unit pages');

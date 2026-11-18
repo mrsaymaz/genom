@@ -4,6 +4,7 @@ import { CONFIG } from '../config.js';
 import { TILE, makeBuilding } from './art.js';
 import { buildTerrain, Resources } from './terrain.js';
 import { UnitMeshes } from './units.js';
+import { Effects } from './effects.js';
 
 const DIR = new THREE.Vector3(1, 0.816, 1).normalize();
 const lin = c => new THREE.Color(c).convertSRGBToLinear();
@@ -22,7 +23,8 @@ export class View {
     this.scene.fog = new THREE.Fog(this.scene.background, 60, 140);
     this.cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 200);
     this.zoom = Math.min(innerWidth, innerHeight) < 500 ? 18 : 22; this.target = new THREE.Vector3();
-    this.scene.add(new THREE.HemisphereLight(lin('#dfeeff'), lin('#5a4630'), 0.7));
+    this.hemi = new THREE.HemisphereLight(lin('#dfeeff'), lin('#5a4630'), 0.7);
+    this.scene.add(this.hemi);
     this.sun = new THREE.DirectionalLight(lin('#fff0d6'), 1.5);
     this.sun.castShadow = true;
     this.sun.shadow.bias = -0.0006; this.sun.shadow.normalBias = 0.03;
@@ -33,6 +35,8 @@ export class View {
     this.scene.add(t.group); this.waterTex = t.water; this.ground = t.ground;
     this.res = new Resources(world, this.scene);
     this.units = new UnitMeshes(this.scene, world.teams);
+    this.magic = new Effects(this.scene);
+    this.unitLook = null; // during an age-up: which units still wear their old form
     this.blds = new Map();
     this.fx = [];
     this.ghost = null;
@@ -145,14 +149,15 @@ export class View {
 
   addBuilding(b) {
     if (this.blds.has(b.id)) return;
-    const art = makeBuilding(this.world.teams[b.team].key, b.type);
+    const age = this.world.teams[b.team].age;
+    const art = makeBuilding(this.world.teams[b.team].key, b.type, age);
     const [wx, wz] = this.toWorld(b.x + b.w / 2, b.y + b.h / 2);
     art.group.position.set(wx, 0, wz);
     const scaffold = this.makeScaffold(b.w * TILE, Math.max(1.4, art.height * 0.8));
     scaffold.visible = !b.built;
     art.group.add(scaffold);
     this.scene.add(art.group);
-    this.blds.set(b.id, { art, scaffold, built: b.built });
+    this.blds.set(b.id, { art, scaffold, built: b.built, age });
     this.syncBuilding(b);
   }
   makeScaffold(w, h) {
@@ -172,6 +177,21 @@ export class View {
     v.art.holder.scale.y = v.art.holder.scale.x * Math.max(0.06, Math.pow(p, 0.8));
     v.scaffold.visible = !b.built;
   }
+  // Replaces a building's model with its form in another age (prepared art can be passed in).
+  // Returns { old, art } so the age-up can animate the change.
+  swapArt(b, age, art) {
+    const v = this.blds.get(b.id);
+    if (!v) return null;
+    art = art || makeBuilding(this.world.teams[b.team].key, b.type, age);
+    art.group.position.copy(v.art.group.position);
+    const old = v.art;
+    old.group.remove(v.scaffold);
+    art.group.add(v.scaffold);
+    this.scene.add(art.group);
+    v.art = art; v.age = age;
+    return { old, art };
+  }
+
   removeEntity(ev) {
     if (ev.cat === 'res') { this.res.remove(ev.id); return; }
     if (ev.cat === 'bld') {
@@ -200,7 +220,7 @@ export class View {
     if (!this.ghost || this.ghost.type !== type) {
       this.setGhost(null);
       const g = new THREE.Group();
-      const art = makeBuilding(this.world.teams[team].key, type);
+      const art = makeBuilding(this.world.teams[team].key, type, this.world.teams[team].age);
       const ghostly = m => { const c = m.clone(); c.transparent = true; c.opacity = 0.55; return c; };
       art.group.traverse(o => { if (o.isMesh) { o.material = Array.isArray(o.material) ? o.material.map(ghostly) : ghostly(o.material); o.castShadow = false; } });
       g.add(art.group);
@@ -225,7 +245,8 @@ export class View {
       const k = (time * 0.9) % 1;
       pt.ring.scale.setScalar((pt.size || 1) * (0.8 + k * 0.6)); pt.ringMat.opacity = 0.85 * (1 - k);
     }
-    this.units.update(this.world, alpha, time, (x, y) => this.toWorld(x, y));
+    this.units.update(this.world, alpha, time, (x, y) => this.toWorld(x, y), this.unitLook);
+    this.magic.update(dt);
     this.units.rings(rings);
     this.fx = this.fx.filter(e => {
       e.t += dt;

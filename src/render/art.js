@@ -25,8 +25,12 @@ const ROLE_INDEX = { house: 0, farm: 1, storehouse: 2, barracks: 3, watchtower: 
 // The concept dioramas are drawn on slabs of these sizes; scale them to the game footprint.
 const SLAB = { 2: 3.2, 3: 4.2, 4: 6.0 };
 
-function sceneFor(team, type) {
+function sceneFor(team, type, age = 'dark') {
   const lib = artLibrary(), nat = CONFIG.teams[team].art;
+  if (age === 'mythic') {
+    if (type === 'towncenter') return { fn: (lib.tcs.MYTHNEW && lib.tcs.MYTHNEW[nat]) || lib.tcs.MYTHIC[nat], B: lib.tcs.B };
+    return { fn: lib.bld.MYTHB[nat][ROLE_INDEX[type]], B: lib.bld.B };
+  }
   if (type === 'towncenter') return { fn: lib.tcs.DARKNEW[nat] || lib.tcs.SCENES[nat], B: lib.tcs.B };
   const table = (lib.bld.NEWB && lib.bld.NEWB[nat]) || lib.bld.DARK[nat];
   return { fn: table[ROLE_INDEX[type]], B: lib.bld.B };
@@ -60,8 +64,8 @@ function prepGeometry(o) {
 }
 
 // Builds one building for a team and returns { group, fx, height }.
-export function makeBuilding(team, type) {
-  const { fn, B } = sceneFor(team, type);
+export function makeBuilding(team, type, age = 'dark') {
+  const { fn, B } = sceneFor(team, type, age);
   const root = new THREE.Group();
   const holder = new THREE.Group();
   root.add(holder);

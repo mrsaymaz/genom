@@ -25,7 +25,7 @@ export class World {
       res: { food: CONFIG.start.food, lumber: CONFIG.start.lumber, gold: CONFIG.start.gold },
       pop: 0, popCap: 0,
       stats: { gathered: { food: 0, lumber: 0, gold: 0 }, trained: 0, lost: 0, killed: 0, built: 0, razed: 0 },
-      units: unitDefs(CONFIG.teams[key].art),
+      age: 'dark', units: unitDefs(CONFIG.teams[key].art),
     }));
     for (const r of this.map.resources) this.addResource(r);
     this.map.bases.forEach((b, i) => {
@@ -172,6 +172,46 @@ export class World {
     return true;
   }
 
+  // ---------- ages ----------
+  nextAge(team) { const a = CONFIG.ages, i = a.indexOf(this.teams[team].age); return a[i + 1] || null; }
+  // Can this team start researching its next age? Returns { ok, why }.
+  canAgeUp(team) {
+    const next = this.nextAge(team), d = next && CONFIG.ageUp[next];
+    if (!d) return { ok: false, why: 'max' };
+    const tcs = [...this.buildings(team)].filter(b => b.type === 'towncenter' && b.built);
+    if (tcs.some(b => b.ageUp)) return { ok: false, why: 'busy' };
+    if (!tcs.length) return { ok: false, why: 'tc' };
+    if (![...this.buildings(team)].some(b => b.type === d.needs && b.built)) return { ok: false, why: 'needs', needs: d.needs };
+    if (!this.canAfford(team, d.cost)) return { ok: false, why: 'cost', cost: d.cost };
+    return { ok: true, next, def: d };
+  }
+  startAgeUp(bid) {
+    const b = this.get(bid);
+    if (!b || b.type !== 'towncenter') return false;
+    const c = this.canAgeUp(b.team);
+    if (!c.ok) return false;
+    this.pay(b.team, c.def.cost);
+    b.ageUp = { to: c.next, t: 0, time: c.def.time };
+    this.events.push({ type: 'ageStart', team: b.team, id: b.id, age: c.next });
+    return true;
+  }
+  cancelAgeUp(bid) {
+    const b = this.get(bid);
+    if (!b?.ageUp) return;
+    this.refund(b.team, CONFIG.ageUp[b.ageUp.to].cost);
+    b.ageUp = null;
+  }
+  // The team enters the age: units take their next form (keeping their share of health) and
+  // buildings grow stronger.
+  enterAge(team, age) {
+    const t = this.teams[team], gain = CONFIG.ageUp[age]?.hpGain || 1;
+    t.age = age;
+    t.units = unitDefs(t.nation.art, age);
+    for (const u of this.allUnits()) if (u.team === team) { const m = t.units[u.type].hp; u.hp = (u.hp / u.maxHp) * m; u.maxHp = m; }
+    for (const b of this.buildings(team)) { b.maxHp = Math.round(b.maxHp * gain); b.hp = Math.min(b.maxHp, b.hp * gain); }
+    this.events.push({ type: 'aged', team, age });
+  }
+
   cancel(bid, i) {
     const b = this.get(bid);
     if (!b || !b.queue[i]) return;
@@ -269,7 +309,7 @@ export class World {
   save() {
     return {
       v: 1, seed: this.seed, pace: this.pace, time: this.time, nextId: this.nextId, winner: this.winner,
-      teams: this.teams.map(t => ({ key: t.key, res: t.res, stats: t.stats, bell: !!t.bell })),
+      teams: this.teams.map(t => ({ key: t.key, res: t.res, stats: t.stats, bell: !!t.bell, age: t.age })),
       ents: [...this.ents.values()],
     };
   }
@@ -278,7 +318,7 @@ export class World {
     w.ents = new Map(); w.occ.fill(0);
     for (const e of data.ents) { w.ents.set(e.id, e); if (e.cat !== 'unit') w.mark(e, e.id); }
     Object.assign(w, { time: data.time, nextId: data.nextId, winner: data.winner, events: [] });
-    data.teams.forEach((t, i) => { Object.assign(w.teams[i], { res: t.res, stats: t.stats, bell: t.bell }); });
+    data.teams.forEach((t, i) => { Object.assign(w.teams[i], { res: t.res, stats: t.stats, bell: t.bell, age: t.age || 'dark' }); w.teams[i].units = unitDefs(w.teams[i].nation.art, w.teams[i].age); });
     for (const t of w.teams) t.pop = 0;
     for (const u of w.allUnits()) w.teams[u.team].pop += w.def(u.team, u.type).pop;
     w.recount();
@@ -428,7 +468,11 @@ export class World {
   updateBuilding(b, dt) {
     const d = CONFIG.buildings[b.type];
     if (!b.built) return;
-    if (b.queue.length) {
+    // Researching the next age: training waits until it is done.
+    if (b.ageUp) {
+      b.ageUp.t += dt;
+      if (b.ageUp.t >= b.ageUp.time) { const to = b.ageUp.to; b.ageUp = null; this.enterAge(b.team, to); }
+    } else if (b.queue.length) {
       const q = b.queue[0], ud = this.def(b.team, q.type), t = this.teams[b.team];
       if (q.t < ud.time) q.t += dt;
       if (q.t >= ud.time) {

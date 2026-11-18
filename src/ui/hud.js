@@ -52,6 +52,9 @@ export class HUD {
     const pop = h('div', 'tok pop', `${ICONS.house}<b>0</b>`); pop.title = 'Population: build Houses for more';
     this.res.pop = pop.querySelector('b'); this.tok.pop = pop;
     this.tray.append(pop);
+    // The age the student's nation is in.
+    this.ageTok = h('div', 'tok age', `${ICONS.age}<b></b>`); this.ageTok.title = 'Your age';
+    this.tray.append(this.ageTok);
     // Sound and pause: two small round buttons at the top right.
     this.top = h('div', 'sys');
     this.muteBtn = h('button', 'icon-btn frame'); this.muteBtn.onclick = () => game.toggleMute?.();
@@ -109,6 +112,8 @@ export class HUD {
     for (const k of RES) this.res[k].textContent = Math.floor(t.res[k]);
     this.res.pop.textContent = `${t.pop}/${t.popCap}`;
     this.tok.pop.classList.toggle('warn', t.pop >= t.popCap);
+    const ageName = CONFIG.ageUp[t.age]?.name.split(' ')[0] || 'Dark';
+    if (this.ageTok.dataset.age !== t.age) { this.ageTok.dataset.age = t.age; this.ageTok.querySelector('b').textContent = ageName; }
     const idle = g.idleWorkers().length, army = g.army().length;
     this.idleBtn.querySelector('i').textContent = idle || '';
     this.idleBtn.classList.toggle('dim', !idle);
@@ -393,6 +398,13 @@ export class HUD {
         });
         if (d.trains) items.push({ id: 'rally', icon: ICONS.rally, label: 'Rally', hint: 'Set where new units go', act: () => { g.rallyMode = true; this.toast('Tap where new units should go.'); } });
         if (b.type === 'towncenter') {
+          // The next age: a button with the research progress on its ring.
+          const next = w.nextAge(0), ad = next && CONFIG.ageUp[next];
+          if (ad) {
+            const c = w.canAgeUp(0), r = b.ageUp;
+            items.push({ id: 'age', icon: ICONS.age, label: r ? `${Math.floor(100 * r.t / r.time)}%` : ad.name.split(' ')[0], cls: r ? 'on' : 'main', cost: r ? null : ad.cost,
+              hint: `Reach the ${ad.name}: every building and unit takes a new form`, poor: !r && !c.ok, progress: r ? r.t / r.time : 0, act: () => g.ageUp() });
+          }
           items.push(w.teams[0].bell
             ? { id: 'clear', icon: ICONS.clear, label: 'All clear', cls: 'go', hint: 'Send the workers back to work', badge: w.sheltered(b).length, act: () => g.allClear() }
             : { id: 'bell', icon: ICONS.bell, label: 'Bell', cls: 'warn', hint: 'Ring the Town bell: workers hide inside and the Town Center shoots harder', act: () => g.ringBell() });

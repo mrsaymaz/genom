@@ -36,6 +36,7 @@ export const ICONS = {
   soundOff: svg('<path d="M3 9h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'),
   pointer: svg('<defs><linearGradient id="pg" x1="0" x2="1"><stop offset="0" stop-color="#c9a2ff"/><stop offset=".5" stop-color="#9b5cff"/><stop offset="1" stop-color="#6a2fd6"/></linearGradient></defs><path d="M12 23L3.5 12H8.5V2.5h7V12h5z" fill="url(#pg)" stroke="#2c0f66" stroke-width="1.4" stroke-linejoin="round"/><path d="M12 23L3.5 12H8.5V2.5H12z" fill="#fff" opacity=".22"/><path d="M8.5 12h7" stroke="#e7d7ff" stroke-width="1.2"/>'),
   scroll: svg('<path d="M6 4h11a3 3 0 013 3v1h-3V7" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 4a3 3 0 00-3 3v1h3" fill="currentColor"/><path d="M6 4v13a3 3 0 003 3h9a3 3 0 003-3v-1H9v1a3 3 0 01-3 3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 9h6M9 12.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'),
+  age: svg('<path d="M12 2l2.6 5.6 6.1.6-4.6 4.1 1.3 6L12 15.2 6.6 18.3l1.3-6L3.3 8.2l6.1-.6z" fill="currentColor"/><path d="M5 22h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'),
   back: svg('<path d="M14 5l-7 7 7 7" stroke="currentColor" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
   rally: svg('<path d="M6 21V3" stroke="currentColor" stroke-width="2"/><path d="M6 3h12l-3 4 3 4H6z" fill="currentColor"/>'),
 };

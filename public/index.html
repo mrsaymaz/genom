@@ -21,6 +21,12 @@
   <div id="app">
     <canvas id="view"></canvas>
     <div id="hud"></div>
+    <!-- The age-up ceremony: letterbox bars, a flash and the title card. Tap to skip. -->
+    <div id="ascend" class="hidden" aria-live="polite">
+      <i class="bar top"></i><i class="bar bot"></i><div class="flashl"></div>
+      <div class="card2"><span class="halo"></span><span class="emb"></span><p class="k"></p><h1></h1><p class="s"></p></div>
+      <p class="skip">Tap to skip</p>
+    </div>
 
     <section id="menu" class="screen menu">
       <svg class="vista" viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">

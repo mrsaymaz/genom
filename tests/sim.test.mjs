@@ -198,3 +198,43 @@ test('chargers hit twice as hard after a run-up, and scouts speed away after a h
   for (let t = 0; t < 3 && scout.boost <= 0; t += 0.05) w.step(0.05);
   assert.ok(scout.boost > 0, 'Tailwind is active after the hit');
 });
+
+test('a team ages up: units take their Mythic forms and buildings grow stronger', () => {
+  const w = new World({ teams: ['gryffindor', 'slytherin'] });
+  const tc = [...w.buildings(0)].find(b => b.type === 'towncenter');
+  assert.equal(w.canAgeUp(0).why, 'needs', 'a Barracks is needed first');
+  const spot = (() => { for (let y = tc.y - 12; y < tc.y + 8; y++) for (let x = tc.x - 4; x < tc.x + 14; x++) if (w.canPlace(0, 'barracks', x, y)) return [x, y]; })();
+  w.addBuilding(0, 'barracks', spot[0], spot[1], true);
+  w.teams[0].res = { food: 1000, lumber: 1000, gold: 1000 };
+  const worker = [...w.units()].find(u => u.team === 0);
+  worker.hp = worker.maxHp / 2;
+  const tcHp = tc.maxHp;
+  assert.ok(w.startAgeUp(tc.id));
+  assert.equal(w.teams[0].res.food, 600, 'the age-up was paid for');
+  assert.equal(w.startAgeUp(tc.id), false, 'only one age-up at a time');
+  // Training waits while the age is researched.
+  w.train(tc.id, 'worker');
+  run(w, 20);
+  assert.equal(tc.queue.length, 1);
+  // A save in the middle carries on.
+  const b = World.load(JSON.parse(JSON.stringify(w.save())));
+  run(w, 22); run(b, 22);
+  for (const x of [w, b]) {
+    assert.equal(x.teams[0].age, 'mythic');
+    assert.equal(x.def(0, 'spearman').name, 'Flame Guard');
+    assert.equal(x.teams[1].age, 'dark', 'the rival is unchanged');
+  }
+  const ev = w.drainEvents();
+  assert.ok(ev.some(e => e.type === 'aged' && e.team === 0 && e.age === 'mythic'));
+  assert.equal(tc.maxHp, Math.round(tcHp * 1.2));
+  assert.ok(Math.abs(worker.hp / worker.maxHp - 0.5) < 0.01, 'the worker keeps half its health');
+  assert.ok(worker.maxHp > 25);
+  assert.equal(w.canAgeUp(0).why, 'max');
+});
+
+test('the rival ages up on its own', () => {
+  const w = new World({ pace: 'challenge' }), ai = new RivalAI(w, 1);
+  const mine = [...w.buildings(0)].find(b => b.type === 'towncenter'); mine.hp = mine.maxHp = 1e9; // an idle player must not lose first
+  run(w, 760, [ai]);
+  assert.equal(w.teams[1].age, 'mythic', `rival age at ${Math.round(w.time)} s`);
+});

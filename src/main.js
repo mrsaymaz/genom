@@ -11,6 +11,7 @@ import { ICONS, EMBLEMS } from './ui/icons.js';
 import { Tutorial } from './tutorial.js';
 import { Audio } from './audio.js';
 import { installGate } from './ui/install.js';
+import { Ascension, prepareArts } from './ageup.js';
 
 const STEP = 1 / 20;
 const plural = (name, n) => (n === 1 || name.endsWith('s') ? name : name.endsWith('man') ? `${name.slice(0, -3)}men` : `${name}s`);
@@ -136,15 +137,20 @@ class Game {
     this.last = now;
     this.time += dt;
     this.input.update(dt);
-    if (!this.paused && !this.over) {
+    // The age-up ceremony holds the game still while it plays (tap to skip).
+    if (this.cinema && !this.paused) { this.cinema.update(dt); if (this.cinema.done) this.cinema = null; }
+    if (!this.paused && !this.over && !this.cinema) {
       this.acc += dt;
-      while (this.acc >= STEP) {
+      while (this.acc >= STEP && !this.cinema) {
         this.acc -= STEP;
         this.world.step(STEP);
         this.ai.update(STEP);
         this.events();
         this.watch(STEP);
       }
+      if (this.cinema) this.acc = 0;
+      if (this.rivalShift) { this.rivalShift.update(dt); if (this.rivalShift.done) this.rivalShift = null; }
+      this.researchGlow(dt);
       this.tutorial.update(dt);
       this.saveT += dt;
       if (this.saveT > 20) { this.saveT = 0; this.save(); }
@@ -211,8 +217,29 @@ class Game {
           { label: 'Show me', icon: ICONS.army, act: () => { const alive = units.filter(u => w.get(u.id)); if (alive[0]) this.view.centerOn(alive[0].x, alive[0].y); } },
           { label: 'Ring the bell', icon: ICONS.bell, act: () => this.ringBell() },
         ], 'bad', 14);
+      } else if (ev.type === 'ageStart') {
+        const name = CONFIG.ageUp[ev.age].name;
+        if (ev.team === 0) { this.hud.toast(`Your people prepare for the ${name}!`); audio.sfx('trained'); audio.speak('We are growing stronger!', true); }
+        else { this.hud.alert(`The rival is reaching for the ${name}!`, [], 'bad', 6); audio.sfx('alarm'); }
+      } else if (ev.type === 'aged') {
+        if (ev.team === 0) { this.cinema = new Ascension(this, 0, ev.age, { cinematic: true }); this.sel = []; }
+        else { this.rivalShift = new Ascension(this, ev.team, ev.age, { cinematic: false }); this.hud.toast(`The rival has reached the ${CONFIG.ageUp[ev.age].name}!`, 'bad'); }
       } else if (ev.type === 'end') this.end(ev.winner === 0);
     }
+  }
+
+  // While the Town Center researches the next age: an elemental vortex swirls around it, a soft
+  // pillar of light grows, and the new buildings are prepared a few at a time.
+  researchGlow(dt) {
+    const tc = this.home(), v = this.view;
+    if (!tc?.ageUp) { if (this.glowPillar) { this.glowPillar.done = true; this.glowPillar = null; } return; }
+    const [cx, cy] = this.world.center(tc), [x, z] = v.toWorld(cx, cy), k = tc.ageUp.t / tc.ageUp.time;
+    const el = this.world.teams[0].nation.art;
+    if (this.onScreen1(cx, cy)) v.magic.emit(el, x, z, { n: Math.random() < dt * (6 + 18 * k) ? 1 : 0, radius: 2.4, speed: 0.6 + k, life: 1.8, size: 0.9 });
+    if (!this.glowPillar) this.glowPillar = v.magic.pillar(x, z, { color: '#ffffff', radius: 1.3, height: 12 });
+    this.glowPillar.opacity = 0.08 + 0.3 * k * (0.85 + 0.15 * Math.sin(this.time * 4));
+    this.glowPillar.width = 0.5 + 0.5 * k;
+    prepareArts(this, 0, tc.ageUp.to);
   }
 
   // Tracks whether the rival's raid has reached the base and been beaten off (tutorial goal),
@@ -255,6 +282,7 @@ class Game {
   }
 
   rings() {
+    if (this.cinema) return [];
     const w = this.world, v = this.view, out = [];
     for (const id of this.sel) {
       const e = w.get(id);
@@ -285,6 +313,7 @@ class Game {
 
   // ---------- input actions ----------
   tap(sx, sy, dbl) {
+    if (this.cinema) { if (this.cinema.t > 0.6) this.cinema.skip(); return; }
     this.tutorial.acted();
     if (this.hud.wheelAt) { this.hud.wheelAt = null; return; } // a tap on the map closes the build wheel
     if (this.placing) {
@@ -481,6 +510,19 @@ class Game {
     this.sel = list.map(u => u.id);
     const u = list[this.gatherI]; this.view.centerOn(u.x, u.y);
     this.hud.toast(`${list.length} worker${list.length > 1 ? 's' : ''} gathering ${kind}.`);
+  }
+  // Research the next age at the Town Center.
+  ageUp() {
+    const w = this.world, tc = this.home(), c = w.canAgeUp(0);
+    if (!tc) return;
+    if (tc.ageUp) { this.hud.toast(`The ${CONFIG.ageUp[tc.ageUp.to].name}: ${Math.floor(100 * tc.ageUp.t / tc.ageUp.time)}% ready.`); return; }
+    if (!c.ok) {
+      if (c.why === 'needs') this.hud.toast(`Build a ${CONFIG.buildings[c.needs].name} first.`, 'bad');
+      else if (c.why === 'cost') this.hud.toast(`Not enough: ${this.missing(c.cost)}.`, 'bad');
+      return;
+    }
+    w.startAgeUp(tc.id);
+    this.events();
   }
   holdPosition() { this.world.orderHold(this.sel); this.hud.toast('Holding position.'); audio.sfx('order'); audio.say('hold'); }
   selectAllIdle() {

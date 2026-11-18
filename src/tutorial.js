@@ -83,6 +83,23 @@ export const STEPS = [
     guide: g => ({ at: soldiers(g.world, 0) < 5 ? mine(g, 'barracks') : null, say: 'Train more soldiers!', hint: 'Train more soldiers while you wait. Keep your workers gathering.' }),
   },
   {
+    title: 'Reach the Mythic Age', short: 'Age up', reward: { food: 100, gold: 50 }, hint: 'Tap your Town Center, then tap the Mythic button. You need a Barracks, 400 food and 150 gold.',
+    done: g => g.world.teams[0].age !== 'dark',
+    guide: g => {
+      const tc = mine(g, 'towncenter');
+      if (!tc) return {};
+      if (tc.ageUp) return { at: tc, say: 'The Mythic Age is coming!', hint: 'Your people are getting ready. Keep gathering while you wait.' };
+      const c = g.world.canAgeUp(0);
+      if (c.why === 'needs') return buildGuide(g, c.needs);
+      if (c.why === 'cost') {
+        const r = g.world.teams[0].res, w = workerFor(g);
+        return r.food < c.cost.food ? { at: nearest(g, w, 'berries') || mine(g, 'farm'), say: 'We need more food!', hint: 'Send workers to the berries or farms.' } : { at: nearest(g, w, 'gold'), say: 'We need more gold!', hint: 'Send workers to the gold mine.' };
+      }
+      if (g.sel.includes(tc.id)) return { ui: '[data-id="age"]', say: 'Tap Mythic!', hint: 'Tap the Mythic button on your Town Center.' };
+      return { at: tc, say: 'Tap the Town Center!', hint: 'Tap your Town Center.' };
+    },
+  },
+  {
     title: "Destroy the rival's Town Center", short: 'Destroy their Town Center', reward: null, hint: 'Gather an army, cross a ford and attack the rival Town Center across the river.',
     done: g => g.world.winner === 0,
     guide: g => ({ at: [...g.world.buildings(1)].find(b => b.type === 'towncenter'), say: 'Attack their Town Center!', hint: 'Select your soldiers, tap Attack, then tap the rival Town Center.' }),

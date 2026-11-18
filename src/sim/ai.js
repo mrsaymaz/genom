@@ -26,13 +26,14 @@ export class RivalAI {
     this.economy();
     this.buildUp();
     this.army();
+    this.ageUp();
   }
 
   economy() {
     const w = this.w, tc = this.home, t = this.t;
     const workers = this.units('worker');
     const queued = tc.queue.length;
-    if (workers.length + queued < this.p.aiWorkers && queued < 2 && t.res.food >= 50) w.train(tc.id, 'worker');
+    if (workers.length + queued < this.p.aiWorkers && queued < 2 && t.res.food >= 50 && !this.saving()) w.train(tc.id, 'worker');
     const counts = { food: 0, lumber: 0, gold: 0 };
     const kindOf = u => { const o = u.order; if (!o) return null; const e = w.get(o.target ?? o.then); if (!e) return o.kind === 'tree' ? 'lumber' : o.kind === 'gold' ? 'gold' : o.kind ? 'food' : null; return e.cat === 'bld' ? 'food' : e.kind === 'tree' ? 'lumber' : e.kind === 'gold' ? 'gold' : 'food'; };
     for (const u of workers) { const k = kindOf(u); if (k) counts[k]++; }
@@ -90,7 +91,7 @@ export class RivalAI {
   army() {
     const w = this.w, t = this.t;
     const rax = this.mine('barracks').find(b => b.built);
-    if (rax && w.time >= this.nextTrain && rax.queue.length < 2) {
+    if (rax && w.time >= this.nextTrain && rax.queue.length < 2 && !this.saving()) {
       // Keep a mix: about half spears, then ranged units and the nation's special.
       const mix = { spearman: 0.45, archer: 0.3, special: 0.25 };
       const type = Object.keys(mix).filter(t => w.canAfford(this.team, w.def(this.team, t).cost))
@@ -116,6 +117,25 @@ export class RivalAI {
         this.wave++;
         this.nextWave = w.time + this.p.waveEvery;
       } else this.nextWave = w.time + 15;
+    }
+  }
+
+  // The rival ages up too, on a timer set by the pace. From 90 s before, it stops training and
+  // saves food and gold, moving workers onto gold if it is short.
+  saving() {
+    const next = this.w.nextAge(this.team);
+    return !!next && this.w.time >= this.p.aiAgeAt - 90 && !this.home?.ageUp && this.mine('barracks').some(b => b.built);
+  }
+  ageUp() {
+    const w = this.w;
+    if (!this.saving()) return;
+    if (w.time >= this.p.aiAgeAt && w.canAgeUp(this.team).ok) { w.startAgeUp(this.home.id); return; }
+    const cost = CONFIG.ageUp[w.nextAge(this.team)].cost, r = this.t.res;
+    const onGold = this.units('worker').filter(u => w.get(u.order?.target)?.kind === 'gold' || u.carry?.type === 'gold');
+    if (r.gold < cost.gold && onGold.length < 4) {
+      const pick = this.units('worker').find(u => w.get(u.order?.target)?.kind === 'tree');
+      const [cx, cy] = w.center(this.home), mine = w.nearestResource(cx, cy, 'gold', 30);
+      if (pick && mine) w.orderGather([pick.id], mine.id);
     }
   }
 

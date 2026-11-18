@@ -117,6 +117,18 @@ export class Audio {
       alarm: () => { for (let i = 0; i < 3; i++) this.tone({ f: 330, f2: 300, type: 'sawtooth', t: 0.22, v: 0.09, delay: i * 0.28 }); },
       bell: () => { for (let i = 0; i < 3; i++) { this.tone({ f: 880, type: 'sine', t: 1.2, v: 0.22, delay: i * 0.45 }); this.tone({ f: 2093, type: 'sine', t: 0.8, v: 0.07, delay: i * 0.45 }); } },
       clear: () => [392, 523].forEach((f, i) => this.tone({ f, type: 'sine', t: 0.6, v: 0.18, delay: i * 0.2 })),
+      // The age-up: a low swell that rises into a bright chord and a run of bells.
+      ascend: () => {
+        for (const [f, d] of [[65.4, 0], [98, 0.05], [130.8, 0.1]]) this.tone({ f, f2: f * 2, type: 'sawtooth', t: 1.5, v: 0.05, delay: d, attack: 1.2 });
+        this.noise({ t: 1.5, v: 0.12, f: 500, q: 0.6, type: 'lowpass' });
+        [261.6, 329.6, 392, 523.3, 659.3, 784].forEach((f, i) => this.tone({ f, type: 'triangle', t: 3.2, v: 0.12, delay: 1.4 + i * 0.03, attack: 0.02 }));
+        [130.8, 196].forEach(f => this.tone({ f, type: 'sine', t: 3.5, v: 0.2, delay: 1.4 }));
+        [1047, 1319, 1568, 2093, 1568, 2093, 2637].forEach((f, i) => this.tone({ f, type: 'sine', t: 0.9, v: 0.07, delay: 1.6 + i * 0.13 }));
+        [349.2, 440, 523.3, 698.5].forEach((f, i) => this.tone({ f, type: 'triangle', t: 2.6, v: 0.1, delay: 4.2 + i * 0.04 }));
+        [392, 493.9, 587.3, 784, 987.8].forEach((f, i) => this.tone({ f, type: 'triangle', t: 3, v: 0.11, delay: 5.4 + i * 0.04 }));
+      },
+      whoosh: () => { this.noise({ t: 0.5, v: 0.18, f: 900, q: 1.2 }); this.tone({ f: 300, f2: 900, type: 'sine', t: 0.45, v: 0.05 }); },
+      chime: () => this.tone({ f: 1568 + Math.random() * 600, type: 'sine', t: 0.35, v: 0.05 }),
       victory: () => [523, 659, 784, 1047, 784, 1047].forEach((f, i) => this.tone({ f, type: 'triangle', t: i === 5 ? 0.8 : 0.22, v: 0.18, delay: i * 0.16 })),
       defeat: () => [392, 330, 262, 196].forEach((f, i) => this.tone({ f, type: 'triangle', t: 0.45, v: 0.16, delay: i * 0.3 })),
     };

@@ -14,8 +14,8 @@ export const CONFIG = {
 
   // Pace: Relaxed or Challenge. The rival's timings and size come from here.
   pace: {
-    relaxed: { aiWorkers: 9, aiBarracksAt: 210, firstWaveAt: 480, waveEvery: 210, firstWave: 3, waveGrowth: 1, aiTrainEvery: 26 },
-    challenge: { aiWorkers: 13, aiBarracksAt: 140, firstWaveAt: 330, waveEvery: 165, firstWave: 5, waveGrowth: 2, aiTrainEvery: 18 },
+    relaxed: { aiWorkers: 9, aiBarracksAt: 210, firstWaveAt: 480, waveEvery: 210, firstWave: 3, waveGrowth: 1, aiTrainEvery: 26, aiAgeAt: 780 },
+    challenge: { aiWorkers: 13, aiBarracksAt: 140, firstWaveAt: 330, waveEvery: 165, firstWave: 5, waveGrowth: 2, aiTrainEvery: 18, aiAgeAt: 520 },
   },
 
   map: { size: 48, seed: 7, name: 'Sunmeadow Vale' },
@@ -33,6 +33,12 @@ export const CONFIG = {
     watchtower: { name: 'Watchtower', role: 'tower', size: 2, hp: 800, bt: 40, cost: { lumber: 100, gold: 50 }, attack: { range: 7, damage: 7, cooldown: 1.5 } },
   },
   buildOrder: ['house', 'farm', 'storehouse', 'barracks', 'watchtower'],
+
+  // Ages. Research the next age at the Town Center once a Barracks stands. (The Age Ceremony
+  // language task will join this step; for now the research timer runs.) Buildings gain 20% HP
+  // with each age, and every unit takes its next form.
+  ages: ['dark', 'mythic'],
+  ageUp: { mythic: { name: 'Mythic Age', cost: { food: 400, gold: 150 }, time: 40, needs: 'barracks', hpGain: 1.2 } },
 
   // Unit stats come from the roster in src/data/units.js (each nation has its own units).
 

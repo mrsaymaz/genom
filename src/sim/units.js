@@ -2,9 +2,9 @@
 // Unit type keys in the game: worker, spearman (infantry line), archer (ranged line), special
 // (the nation's element special: scout, healer, charger or guardian), and from the Mythic Age the
 // hero (trained at the Sanctum) and the signature creature (trained at the Beast Pen).
-import { ROSTER, SPECIALS, LINES, HEROES, HERO_ABILITY, CREATURES, AGE_SCALE, unitStats } from '../data/units.js';
+import { ROSTER, SPECIALS, LINES, HEROES, HERO_ABILITY, CREATURES, SIEGE, SIEGE_BASE, AGE_SCALE, unitStats } from '../data/units.js';
 
-export const TYPE_LINE = { worker: 'worker', spearman: 'infantry', archer: 'ranged', special: 'special', hero: 'hero', creature: 'creature' };
+export const TYPE_LINE = { worker: 'worker', spearman: 'infantry', archer: 'ranged', special: 'special', hero: 'hero', creature: 'creature', siege: 'siege' };
 export const UNIT_TYPES = Object.keys(TYPE_LINE);
 // Heroes and creatures: only one of each at a time (in the field or in training).
 export const UNIQUE = { hero: true, creature: true };
@@ -20,7 +20,7 @@ export function unitDefs(nation, age = 'dark') {
   const ageIndex = AGES.indexOf(age);
   const out = {};
   for (const [type, line] of Object.entries(TYPE_LINE)) {
-    if (type === 'hero' || type === 'creature') continue;
+    if (type === 'hero' || type === 'creature' || type === 'siege') continue;
     const st = unitStats(nation, line, age), def = line === 'special' ? SPECIALS[nation] : LINES[line];
     const name = ROSTER[nation][line][ageIndex][0];
     out[type] = {
@@ -51,6 +51,20 @@ export function unitDefs(nation, age = 'dark') {
       scale: grow(age, 'attack'),
     };
   }
+  if (ageIndex >= 2) {
+    // The siege engine: stats are given for the Arcane Age and grow into the Celestial Age.
+    const sg = SIEGE[nation], b = { ...SIEGE_BASE, ...sg.stats }, name = sg.forms[ageIndex - 2][0];
+    const up = k => (AGE_SCALE[age][k] / AGE_SCALE.arcane[k]);
+    out.siege = {
+      type: 'siege', line: 'siege', name, short: name /* every engine's name fits its button */, kind: 'siege', icon: `siege-${nation}`,
+      attackType: 'ranged', ability: sg.trait, role: sg.role,
+      siege: { effect: sg.trait.id, splash: b.splash + (ageIndex - 2) * 0.3, minRange: b.minRange },
+      hp: Math.round(b.hp * up('hp')), damage: Math.round(b.attack * up('attack') * 10) / 10,
+      range: b.range, cooldown: b.cooldown, speed: b.speed, sight: b.sight,
+      cost: Object.fromEntries(Object.entries(b.cost).map(([k, v]) => [k, Math.round((v * up('cost')) / 5) * 5])),
+      time: b.time, pop: b.pop, heal: 0, carry: 0, regen: nation === 'water' ? 0.5 : 0,
+    };
+  }
   return out;
 }
 
@@ -58,14 +72,17 @@ export function unitDefs(nation, age = 'dark') {
 export const roleOf = d => d.kind;
 
 // Attacker role -> target role -> damage multiplier.
+// Siege engines are weak up close: infantry and fast units tear into them; arrows do little.
 export const COUNTER = {
-  infantry: { scout: 1.5, charger: 1.5, creature: 1.3 },
-  ranged: { infantry: 1.25, guardian: 1.6 },
-  scout: { ranged: 1.5, worker: 1.5, healer: 1.5 },
-  charger: { ranged: 1.5, worker: 1.5, healer: 1.5 },
+  infantry: { scout: 1.5, charger: 1.5, creature: 1.3, siege: 1.6 },
+  ranged: { infantry: 1.25, guardian: 1.6, siege: 0.5 },
+  scout: { ranged: 1.5, worker: 1.5, healer: 1.5, siege: 1.6 },
+  charger: { ranged: 1.5, worker: 1.5, healer: 1.5, siege: 1.8 },
+  // Siege shots are made for walls: half damage against units.
+  siege: { worker: 0.5, infantry: 0.5, ranged: 0.5, scout: 0.5, healer: 0.5, charger: 0.5, guardian: 0.5, hero: 0.5, creature: 0.5, siege: 0.5 },
   guardian: { infantry: 1.4, scout: 1.3, charger: 1.3 },
 };
 // Damage against buildings, by attacker role.
-export const BLD_DAMAGE = { infantry: 1.5, ranged: 0.35, worker: 0.5, scout: 0.5, healer: 0.2, charger: 1.0, guardian: 1.2, hero: 1.0, creature: 1.2 };
+export const BLD_DAMAGE = { infantry: 1.5, ranged: 0.35, worker: 0.5, scout: 0.5, healer: 0.2, charger: 1.0, guardian: 1.2, hero: 1.0, creature: 1.2, siege: 3.2 };
 // The element cycle: each element beats the next.
 export const ELEMENT_BEATS = { fire: 'earth', earth: 'air', air: 'water', water: 'fire' };

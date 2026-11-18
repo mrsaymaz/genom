@@ -35,18 +35,20 @@ export const CONFIG = {
     // its hero (one of each at a time).
     pen: { name: 'Beast Pen', role: 'pen', size: 3, hp: 1300, bt: 50, cost: { lumber: 175, gold: 50 }, age: 'mythic', trains: ['creature'] },
     sanctum: { name: 'Sanctum', role: 'sanctum', size: 3, hp: 1000, bt: 60, cost: { lumber: 150, gold: 150 }, age: 'mythic', trains: ['hero'] },
+    // Arcane Age: the Workshop builds siege engines.
+    workshop: { name: 'Workshop', role: 'workshop', size: 3, hp: 1100, bt: 55, cost: { lumber: 200, gold: 100 }, age: 'arcane', trains: ['siege'] },
   },
-  buildOrder: ['house', 'farm', 'storehouse', 'barracks', 'watchtower', 'pen', 'sanctum'],
+  buildOrder: ['house', 'farm', 'storehouse', 'barracks', 'watchtower', 'pen', 'sanctum', 'workshop'],
 
   // Ages. Research the next age at the Town Center once its key building stands: a Barracks for
-  // the Mythic Age, a Sanctum for the Arcane Age and a Beast Pen for the Celestial Age. (The Age
+  // the Mythic Age, a Sanctum for the Arcane Age and a Workshop for the Celestial Age. (The Age
   // Ceremony language task will join this step; for now the research timer runs.) Buildings gain
   // 20% HP with each age, and every unit takes its next form.
   ages: ['dark', 'mythic', 'arcane', 'celestial'],
   ageUp: {
     mythic: { name: 'Mythic Age', cost: { food: 400, gold: 150 }, time: 40, needs: 'barracks', hpGain: 1.2 },
     arcane: { name: 'Arcane Age', cost: { food: 600, gold: 300 }, time: 45, needs: 'sanctum', hpGain: 1.2 },
-    celestial: { name: 'Celestial Age', cost: { food: 800, gold: 450 }, time: 50, needs: 'pen', hpGain: 1.2 },
+    celestial: { name: 'Celestial Age', cost: { food: 800, gold: 450 }, time: 50, needs: 'workshop', hpGain: 1.2 },
   },
 
   // Unit stats come from the roster in src/data/units.js (each nation has its own units).

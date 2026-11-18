@@ -97,7 +97,7 @@ td.na { color: var(--muted); }
       <h1>Celestial Age Units</h1>
       <button id="motion" type="button" aria-pressed="false">Pause turntable</button>
     </div>
-    <p class="lead">Each nation's units after the age-up to the Celestial Age: every line keeps its outline but gains the materials of the nation's Celestial buildings, and the hero and the creature take their final forms. These are the strongest units in the game. Switch ages to compare. These are the game's own low-poly models.</p>
+    <p class="lead">Each nation's units after the age-up to the Celestial Age: every line keeps its outline but gains the materials of the nation's Celestial buildings, and the hero, the creature and the siege engine take their final forms. These are the strongest units in the game. Switch ages to compare. These are the game's own low-poly models.</p>
     <div class="controls">
       <div><span class="clbl">Age</span><span class="seg" role="group" aria-label="Age"><button type="button" data-age="celestial" aria-pressed="true">Celestial</button><button type="button" data-age="arcane" aria-pressed="false">Arcane</button><button type="button" data-age="mythic" aria-pressed="false">Mythic</button><button type="button" data-age="dark" aria-pressed="false">Dark</button></span></div>
       <div><span class="clbl">View</span><span class="seg" role="group" aria-label="View"><button type="button" data-view="color" aria-pressed="true">Colour</button><button type="button" data-view="sil" aria-pressed="false">Silhouette</button></span></div>
@@ -165,6 +165,16 @@ td.na { color: var(--muted); }
       <p class="ability" hidden></p>
     </article>
     <article class="card" data-line="creature">
+      <div class="card-head"><p class="eyebrow"></p><span class="fp"></span></div>
+      <h2></h2>
+      <div class="art"><p class="fallback">Loading 3D preview…</p></div>
+      <p class="desc"></p>
+      <p class="role"></p>
+      <dl class="stats"></dl>
+      <dl class="vs"><div><dt>Strong against</dt><dd class="strong"></dd></div><div><dt>Weak against</dt><dd class="weak"></dd></div></dl>
+      <p class="ability" hidden></p>
+    </article>
+    <article class="card" data-line="siege">
       <div class="card-head"><p class="eyebrow"></p><span class="fp"></span></div>
       <h2></h2>
       <div class="art"><p class="fallback">Loading 3D preview…</p></div>
@@ -307,7 +317,7 @@ const ROSTER = {
       ['Starwing Rider', 'A rider in gold armour and a winged helm on a royal honeybee with a gold crown and four starlit wings, trailing a puff of cloud, carrying a star-tipped lance.'],
     ],
     hero: [['Wind Warden', 'A tall leader in a long honey cloak and a crown of amber hexes, holding a staff topped by a spinning wind rose with a floating amber crystal.'], ['Storm Warden', 'A leader in a storm-grey and honey cloak, with a crown of floating amber hexes, holding a staff wrapped in a small storm cloud where lightning flickers in the amber.'], ['Sky Warden', 'A leader who stands on a cloud with great white wings, in a cloud-white robe banded with gold, crowned with gold hexes under a blazing amber star, while a constellation ring turns around them and a gold wind rose tops the staff.']],
-    siege: ['Gust Cannon', 'Storm Engine'],
+    siege: ['Gust Cannon', 'Storm Engine'], // see SIEGE
   },
   water: {
     worker: [
@@ -450,6 +460,46 @@ const CREATURES = {
       ['Rootcoil Serpent', 'A great moss-scaled serpent with leaves along its spine, a leaf frill behind its head, stone horns, glowing green eyes and rune rings around its body.'],
       ['Runecoil Serpent', 'A longer serpent with stone plates carved with glowing runes, rune stones floating along its back and a frill of stone and moss.'],
       ['Bloomcoil Serpent', 'A vast serpent in living green with star blossoms opening along its back, a frill of glowing petals and an emerald crown of horns.'],
+    ],
+  },
+};
+
+// Siege engines: trained at the Workshop from the Arcane Age, two forms (Arcane, Celestial).
+// Every engine is slow, fires a long, lobbed shot that bursts where it lands, wrecks buildings
+// and is weak up close (it cannot fire at anything right beside it). Each nation's shot does its
+// own thing when it lands. Stats are for the Arcane Age.
+const SIEGE_BASE = { hp: 260, attack: 40, range: 7, minRange: 2, cooldown: 4.2, speed: 1.15, sight: 8, cost: { lumber: 200, gold: 150 }, time: 40, pop: 3, splash: 1.5 };
+const SIEGE = {
+  air: {
+    role: 'Long-range wind cannon', stats: { attack: 34, range: 8, speed: 1.35 },
+    trait: { id: 'gust', name: 'Gust Shot', text: 'Its blasts of wind throw enemy units back from where they land.' },
+    forms: [
+      ['Gust Cannon', 'A honeycomb gun carriage on four spoked wheels with a striped sail, a great leather bellows and a brass horn for a barrel, fanned by a spinning wind rose; a beekeeper works the bellows.'],
+      ['Storm Engine', 'A gun carriage riding on a bank of cloud, with a storm cloud caught in a gold cage, a lightning-rod barrel and a blazing amber star; it fires bolts of wind and lightning.'],
+    ],
+  },
+  water: {
+    role: 'Water-orb thrower', stats: { splash: 1.9 },
+    trait: { id: 'soak', name: 'Soak', text: 'Its orbs of water burst wide and soak enemy units, slowing them for a few seconds.' },
+    forms: [
+      ['Tide Engine', 'A bronze cart carrying a great glass tank of water, with a pump and a bronze throwing arm that hurls glowing orbs of water; a small armillary turns on its frame.'],
+      ['Moon Engine', 'A silver ballista shaped like a great crescent bow on a pearl platform, firing glowing moon orbs, while a small orrery turns above it.'],
+    ],
+  },
+  fire: {
+    role: 'Molten mortar', stats: { attack: 46, range: 6.5 },
+    trait: { id: 'lava', name: 'Lava Splash', text: 'Its balls of molten rock leave the ground burning for a few seconds.' },
+    forms: [
+      ['Magma Mortar', 'A squat basalt mortar on a stone sled, banded in gold with a lion face, its bore glowing with magma beside a stack of molten shot.'],
+      ['Sun Cannon', 'A gold cannon on a stepped sun platform, with a great mirror dish behind it that focuses sunlight through a solar lens into blazing sunballs.'],
+    ],
+  },
+  earth: {
+    role: 'Boulder catapult', stats: { hp: 340, speed: 1.0 },
+    trait: { id: 'shatter', name: 'Shatter', text: 'Its boulders crack stone: they hit buildings even harder and spray shards around them.' },
+    forms: [
+      ['Root Catapult', 'A catapult grown from living wood: a bent root throwing arm with a mossy boulder, rune stones for its counterweight and wheels of woven roots.'],
+      ['Earthshaker', 'A trebuchet of living trees in bloom, slinging a great rune boulder wrapped in roots that shakes the ground where it lands, with an emerald counterweight.'],
     ],
   },
 };
@@ -2678,8 +2728,217 @@ function serpent(k, v) {
 const CREATURE_FN = { air: bear, water: raven, fire: lion, earth: serpent };
 [MYTHIC_UNITS, ARCANE_UNITS, CELESTIAL_UNITS].forEach((set, v) => { for (const n of Object.keys(CREATURE_FN)) set[n].creature = k => CREATURE_FN[n](k, v); });
 
+// ---------- Siege engines ----------
+// One engine per nation from the Workshop, in two forms: Arcane (v = 0) and Celestial (v = 1).
+// Each has its own outline: a horn cannon, a water thrower or crescent ballista, a mortar or sun
+// cannon, a catapult or trebuchet. A small crew member stands at the back. They fire towards +Z.
+function wheel(k, p, r, c, hub) {
+  k.push({ p, r: [0, Math.PI / 2, 0] });
+  k.torus(r, r * 0.2, [0, 0, 0], c, { ts: 14 });
+  for (let i = 0; i < 3; i++) { const a = (i / 3) * Math.PI; k.rod([Math.cos(a) * r, Math.sin(a) * r, 0], [-Math.cos(a) * r, -Math.sin(a) * r, 0], r * 0.09, c); }
+  k.ball(r * 0.28, [0, 0, 0], hub, { ws: 8, hs: 6 });
+  k.pop();
+}
+function crew(k, p, o) { k.push({ p, s: 0.68 }); const f = figure(k, o.fig); if (o.hat) o.hat(f); k.pop(); }
+
+function gustCannon(k, v) {
+  if (v) for (const [x, z, s] of [[0.32, 0.42, 0.75], [-0.32, 0.42, 0.75], [0.32, -0.38, 0.8], [-0.32, -0.38, 0.8], [0, 0.02, 0.9]]) cloud(k, [x, 0.17, z], s);
+  else for (const [x, z] of [[0.38, 0.32], [-0.38, 0.32], [0.38, -0.32], [-0.38, -0.32]]) wheel(k, [x, 0.22, z], 0.21, AIR.timber, AIR.honey);
+  const base = v ? SKY.cloud : AIR.timber, trim = v ? SKY.gold : AIR.black;
+  k.push({ p: [0, v ? 0.14 : 0, 0] });
+  // The carriage, studded with honeycomb.
+  k.box(0.62, 0.14, 1.0, [0, 0.36, 0], base);
+  k.box(0.64, 0.04, 1.02, [0, 0.45, 0], trim);
+  for (const s of [1, -1]) for (const z of [-0.28, 0.02, 0.32]) k.hex(0.085, 0.03, [s * 0.32, 0.36, z], v ? SKY.gold : AIR.honey, { r: [0, 0, Math.PI / 2] });
+  if (v) for (const [x, z] of [[0.2, 0.36], [-0.2, 0.36], [0.2, -0.1], [-0.2, -0.1]]) amberHex(k, [x, 0.48, z], 1.2);
+  // The barrel: a brass horn, or a gold lightning rod.
+  for (const s of [1, -1]) k.box(0.05, 0.22, 0.16, [s * 0.13, 0.56, 0.08], trim);
+  k.push({ p: [0, 0.64, 0.06], r: [Math.PI / 2 - 0.42, 0, 0] });
+  if (!v) {
+    k.lathe([[0.07, -0.2], [0.075, 0.4], [0.1, 0.68], [0.17, 0.86]], [0, 0, 0], '#d8a640', { seg: 12 });
+    k.torus(0.168, 0.02, [0, 0.86, 0], AIR.black, { r: [Math.PI / 2, 0, 0], ts: 16 });
+    k.cyl(0.14, 0.14, 0.01, [0, 0.84, 0], AIR.glow, { seg: 12, glow: true });
+    for (const y of [0.05, 0.3]) k.torus(0.095, 0.016, [0, y, 0], AIR.black, { r: [Math.PI / 2, 0, 0] });
+  } else {
+    k.cyl(0.075, 0.1, 1.05, [0, 0.32, 0], SKY.gold, { seg: 8 });
+    for (const y of [0.0, 0.3, 0.6]) k.torus(0.12, 0.016, [0, y, 0], AIR.glow, { r: [Math.PI / 2, 0, 0], glow: true });
+    k.cone(0.07, 0.22, [0, 0.95, 0], SKY.gold, { seg: 6 });
+    sparkle(k, [0, 1.08, 0], 0.14, '#fff6cf');
+    constellation(k, [[0.06, 0.62, 0.07], [0.14, 0.78, 0.05], [0.06, 0.92, 0.07]], BOLT, 0.014);
+  }
+  k.pop();
+  if (!v) {
+    // A great leather bellows at the back.
+    for (let i = 0; i < 4; i++) k.box(0.36 - i * 0.03, 0.05, 0.3, [0, 0.5 + i * 0.065, -0.3], i % 2 ? '#7a4a2a' : '#5e3a1c', { r: [0.12 * (i % 2 ? 1 : -1), 0, 0] });
+    k.box(0.38, 0.03, 0.32, [0, 0.77, -0.3], AIR.timber); k.rod([0, 0.78, -0.45], [0, 0.95, -0.62], 0.015, AIR.timber);
+  } else {
+    // A storm cloud caught in a gold cage.
+    for (const a of [0, Math.PI / 3, -Math.PI / 3]) k.torus(0.22, 0.012, [0, 0.8, -0.3], SKY.gold, { r: [0, a, 0], ts: 18 });
+    for (const [x, y, z, r] of [[0, 0.8, -0.3, 0.13], [0.08, 0.78, -0.25, 0.09], [-0.08, 0.82, -0.35, 0.1]]) k.ball(r, [x, y, z], CLOUD, { ws: 8, hs: 6 });
+    k.ball(0.1, [0, 0.84, -0.27], STORM, { ws: 8, hs: 6 });
+    k.octa(0.05, [0.02, 0.7, -0.2], BOLT, { glow: true });
+  }
+  // A mast at the back: a striped sail and a spinning wind rose, or a blazing amber star.
+  k.rod([0.22, 0.45, -0.46], [0.22, 1.3, -0.46], 0.02, v ? SKY.gold : AIR.timber);
+  if (!v) {
+    for (let i = 0; i < 4; i++) k.box(0.02, 0.09, 0.26, [0.24, 1.08 - i * 0.09, -0.34], i % 2 ? AIR.black : AIR.honey);
+    k.push({ p: [0.22, 1.36, -0.46] });
+    k.octa(0.16, [0, 0, 0], AIR.honey, { s: [1, 0.2, 0.2] }); k.octa(0.16, [0, 0, 0], AIR.honey, { s: [0.2, 1, 0.2] });
+    k.octa(0.1, [0, 0, 0.01], AIR.black, { s: [1, 0.2, 0.2], r: [0, 0, Math.PI / 4] }); k.octa(0.1, [0, 0, 0.01], AIR.black, { s: [0.2, 1, 0.2], r: [0, 0, Math.PI / 4] });
+    k.ball(0.04, [0, 0, 0.03], AIR.glow, { glow: true });
+    k.pop();
+  } else {
+    sparkle(k, [0.22, 1.42, -0.46], 0.2, '#fff6cf'); sparkle(k, [0.22, 1.42, -0.45], 0.13, AIR.glow, { r: [0, 0, Math.PI / 4] });
+    k.torus(0.16, 0.008, [0.22, 1.42, -0.46], SKY.gold, { ts: 20 });
+    for (const s of [1, -1]) wing(k, s, [s * 0.3, 0.45, -0.1], { n: 3, len: 0.42, a0: 1.0, da: 0.3, shrink: 0.06, cols: [SKY.cloud, SKY.shade], tip: AIR.glow, back: -0.9 });
+  }
+  k.pop();
+  crew(k, [-0.46, 0, -0.62], { fig: { skin: SKIN[1], top: v ? SKY.cloud : AIR.cream, skirt: AIR.honey, belt: v ? SKY.gold : AIR.timber, legs: '#6a5a40', hands: { l: [0.22, 0.6, 0.2], r: [-0.2, 0.6, 0.2] } },
+    hat: f => { const [hx, hy] = f.head; k.cyl(0.28, 0.28, 0.025, [hx, hy + 0.08, 0], v ? SKY.cloud : AIR.straw, { seg: 12 }); k.ball(0.16, [hx, hy + 0.08, 0], v ? SKY.cloud : AIR.straw, { tl: Math.PI / 2 }); } });
+}
+
+function tideEngine(k, v) {
+  if (!v) {
+    for (const [x, z] of [[0.38, 0.32], [-0.38, 0.32], [0.38, -0.32], [-0.38, -0.32]]) wheel(k, [x, 0.21, z], 0.2, WAT.bronze, '#e8c070');
+    k.box(0.64, 0.12, 1.0, [0, 0.34, 0], '#2a4a7a'); k.box(0.66, 0.04, 1.02, [0, 0.42, 0], WAT.bronze);
+    // A great glass tank of glowing water, rimmed in bronze.
+    k.cyl(0.27, 0.27, 0.44, [0, 0.66, -0.2], GLASS, { seg: 14 });
+    k.cyl(0.245, 0.245, 0.34, [0, 0.63, -0.2], '#4fb6e8', { seg: 14 });
+    for (const y of [0.44, 0.88]) k.torus(0.275, 0.02, [0, y, -0.2], WAT.bronze, { r: [Math.PI / 2, 0, 0], ts: 18 });
+    k.cyl(0.2, 0.2, 0.01, [0, 0.805, -0.2], WAT.glow, { seg: 12, glow: true });
+    // A pump at the side.
+    k.cyl(0.06, 0.06, 0.32, [0.3, 0.6, -0.2], WAT.bronze, { seg: 8 }); k.rod([0.3, 0.78, -0.2], [0.42, 0.92, -0.32], 0.014, WAT.bronze);
+    // The bronze throwing arm with an orb of water in its cup.
+    for (const s of [1, -1]) k.rod([s * 0.16, 0.44, 0.22], [s * 0.1, 0.84, 0.22], 0.03, WAT.bronze);
+    k.rod([-0.14, 0.82, 0.22], [0.14, 0.82, 0.22], 0.025, '#e8c070');
+    k.rod([0, 0.82, 0.22], [0, 0.62, 0.48], 0.03, WAT.bronze);
+    k.rod([0, 0.82, 0.22], [0, 1.32, -0.22], 0.03, WAT.bronze);
+    k.ball(0.11, [0, 1.36, -0.26], WAT.bronze, { tl: Math.PI * 0.55, r: [Math.PI, 0, 0], ws: 10 });
+    k.ball(0.09, [0, 1.42, -0.26], WAT.glow, { glow: true });
+    // A small armillary turning on the frame.
+    k.torus(0.1, 0.01, [-0.32, 0.62, 0.25], WAT.bronze, { r: [0.4, 0, 0] }); k.torus(0.1, 0.01, [-0.32, 0.62, 0.25], WAT.bronze, { r: [0, 0.6, 1.1] }); k.ball(0.035, [-0.32, 0.62, 0.25], WAT.glow, { glow: true });
+  } else {
+    // A pearl platform on silver wheels.
+    for (const [x, z] of [[0.4, 0.3], [-0.4, 0.3], [0.4, -0.3], [-0.4, -0.3]]) wheel(k, [x, 0.2, z], 0.19, MOON.silver, MOON.moon);
+    k.cyl(0.48, 0.5, 0.14, [0, 0.36, 0], WAT.pearl, { seg: 8 });
+    k.cyl(0.51, 0.51, 0.05, [0, 0.31, 0], MOON.night, { seg: 8 });
+    k.torus(0.49, 0.02, [0, 0.43, 0], MOON.silver, { r: [Math.PI / 2, 0, 0], ts: 24 });
+    around(6, 0.4, (x, z) => sparkle(k, [x, 0.45, z], 0.035, MOON.glow, { r: [Math.PI / 2, 0, 0] }));
+    // The crescent ballista: a great silver crescent bow, its string drawn back to a moon orb.
+    k.cyl(0.06, 0.09, 0.62, [0, 0.72, 0.0], MOON.silverD, { seg: 8 });
+    k.rod([0, 0.98, -0.3], [0, 1.12, 0.5], 0.03, MOON.silver);
+    crescent(k, [0, 1.1, 0.3], 0.34, 0.05, MOON.silver, Math.PI / 2, { rx: -Math.PI / 2 + 0.45 });
+    k.ball(0.06, [0, 1.1, 0.3], MOON.silverD, { ws: 8, hs: 6 });
+    for (const s of [1, -1]) k.rod([s * 0.33, 1.16, 0.25], [0, 1.02, -0.18], 0.008, '#eef5ff');
+    k.ball(0.1, [0, 1.04, -0.14], MOON.moon, { glow: true });
+    k.torus(0.13, 0.008, [0, 1.04, -0.14], MOON.glow, { glow: true, ts: 16 });
+    // A small orrery turning above it.
+    k.rod([0.25, 0.42, -0.3], [0.25, 1.3, -0.3], 0.014, MOON.silver);
+    k.ball(0.06, [0.25, 1.36, -0.3], MOON.moon, { glow: true });
+    k.torus(0.16, 0.008, [0.25, 1.36, -0.3], MOON.silver, { r: [Math.PI / 2 - 0.3, 0, 0.2], ts: 18 }); k.torus(0.12, 0.007, [0.25, 1.36, -0.3], MOON.silver, { r: [0.4, 0.8, 0], ts: 16 });
+    k.ball(0.025, [0.41, 1.37, -0.3], WAT.blue); k.ball(0.02, [0.19, 1.42, -0.19], WAT.pearl);
+  }
+  crew(k, [-0.5, 0, -0.6], { fig: { skin: SKIN[0], top: v ? MOON.night : WAT.deep, skirt: WAT.blue, belt: v ? MOON.silver : WAT.bronze, legs: WAT.deep, hands: { l: [0.22, 0.6, 0.2], r: [-0.2, 0.6, 0.2] } },
+    hat: f => { const [hx, hy] = f.head; k.ball(0.168, [hx, hy + 0.04, -0.01], v ? MOON.night : WAT.deep, { tl: Math.PI * 0.45, ws: 10 }); k.torus(0.16, 0.015, [hx, hy + 0.07, 0], v ? MOON.silver : WAT.bronze, { r: [Math.PI / 2, 0, 0] }); } });
+}
+
+function magmaMortar(k, v) {
+  if (!v) {
+    // A stone sled with glowing magma seams.
+    for (const s of [1, -1]) k.box(0.1, 0.1, 1.05, [s * 0.3, 0.05, 0], FIR.basalt, { r: [0, 0, 0] });
+    k.box(0.72, 0.18, 0.95, [0, 0.19, 0], FIR.basalt);
+    for (const s of [1, -1]) k.box(0.01, 0.025, 0.8, [s * 0.365, 0.2, 0], FIR.glow, { glow: true });
+    k.box(0.74, 0.03, 0.97, [0, 0.29, 0], FIR.gold);
+  } else {
+    // A stepped sun platform.
+    for (const [y, w2] of [[0.06, 1.0], [0.18, 0.82], [0.29, 0.64]]) { k.box(w2, 0.12, w2 * 1.15, [0, y, 0], SUN.gold); k.box(w2 + 0.01, 0.015, w2 * 1.15 + 0.01, [0, y + 0.055, 0], SUN.white); }
+  }
+  // The barrel, tilted up: a squat basalt mortar with a glowing bore, or a long gold cannon.
+  k.push({ p: [0, 0.32, 0.06], r: [v ? 0.75 : 0.55, 0, 0] });
+  if (!v) {
+    k.lathe([[0.3, 0], [0.33, 0.12], [0.28, 0.45], [0.25, 0.52], [0.28, 0.57]], [0, 0, 0], FIR.basalt, { seg: 12 });
+    for (const y of [0.12, 0.44]) k.torus(0.31 - y * 0.1, 0.022, [0, y, 0], FIR.gold, { r: [Math.PI / 2, 0, 0], ts: 16 });
+    k.cyl(0.23, 0.23, 0.02, [0, 0.565, 0], FIR.glow, { seg: 12, glow: true });
+    k.ball(0.12, [0, 0.56, 0], FIR.hot, { glow: true, s: [1, 0.5, 1] });
+  } else {
+    k.cyl(0.12, 0.16, 1.1, [0, 0.52, 0], SUN.gold, { seg: 10 });
+    for (const y of [0.1, 0.5, 0.95]) k.torus(0.15, 0.022, [0, y, 0], SUN.white, { r: [Math.PI / 2, 0, 0], ts: 16 });
+    k.cyl(0.11, 0.11, 0.02, [0, 1.08, 0], SUN.core, { seg: 10, glow: true });
+    sunburst(k, [0, 1.1, 0], 0.14, 12, 0.16, 0.03, SUN.ray, { r: [Math.PI / 2, 0, 0] });
+    // A solar lens set in the barrel.
+    k.cyl(0.16, 0.16, 0.025, [0, 0.62, 0], GLASS, { seg: 14 }); k.torus(0.16, 0.014, [0, 0.62, 0], SUN.gold, { r: [Math.PI / 2, 0, 0] });
+  }
+  k.pop();
+  if (!v) {
+    // A gold lion face on the front, smoke rising from the bore, and a stack of molten shot.
+    k.cyl(0.11, 0.11, 0.03, [0, 0.2, 0.49], FIR.gold, { r: [Math.PI / 2, 0, 0], seg: 12 });
+    around(8, 0.13, (x, y, a) => k.cone(0.03, 0.08, [x, 0.2 + y, 0.49], FIR.glow, { seg: 4, glow: true, r: [0, 0, a - Math.PI / 2] }));
+    for (const x of [0.04, -0.04]) k.ball(0.018, [x, 0.22, 0.51], FIR.hot, { glow: true });
+    for (const [x, y, z, r] of [[0, 1.0, 0.45, 0.1], [0.06, 1.16, 0.52, 0.08], [-0.03, 1.3, 0.58, 0.06]]) k.ball(r, [x, y, z], '#6a6468', { ws: 7, hs: 5 });
+    for (const [x, y, z] of [[0.3, 0.38, -0.32], [0.42, 0.38, -0.22], [0.36, 0.5, -0.27]]) { k.ball(0.07, [x, y, z], '#3a2a28', { ws: 8, hs: 6 }); k.box(0.1, 0.012, 0.02, [x, y, z + 0.06], FIR.glow, { glow: true }); }
+  } else {
+    // A great mirror dish behind, focusing sunlight, with a small sun at its heart.
+    k.push({ p: [0, 0.98, -0.42], r: [Math.PI / 2 - 0.35, 0, 0] });
+    k.cyl(0.46, 0.46, 0.05, [0, 0.02, 0], SUN.gold, { seg: 18 });
+    k.cyl(0.4, 0.4, 0.052, [0, 0.03, 0], SUN.white, { seg: 18 });
+    k.cyl(0.25, 0.25, 0.054, [0, 0.035, 0], '#fff8e0', { seg: 16, glow: true });
+    k.torus(0.46, 0.025, [0, 0.06, 0], SUN.gold, { r: [Math.PI / 2, 0, 0], ts: 24 });
+    k.ball(0.09, [0, 0.12, 0], SUN.core, { glow: true });
+    sunburst(k, [0, 0.13, 0], 0.5, 16, 0.16, 0.035, SUN.ray, { r: [Math.PI / 2, 0, 0] });
+    k.pop();
+    for (const s of [1, -1]) k.rod([s * 0.3, 0.32, -0.3], [s * 0.2, 0.9, -0.42], 0.03, SUN.gold);
+    sparkle(k, [0, 1.6, -0.6], 0.12, SUN.core);
+  }
+  crew(k, [-0.5, 0, -0.6], { fig: { skin: SKIN[2], top: FIR.scarlet, skirt: FIR.basalt, belt: v ? SUN.gold : FIR.gold, legs: '#3a2a22', stocky: true, glove: v ? SUN.gold : FIR.iron, hands: { l: [0.25, 0.6, 0.2], r: [-0.22, 0.6, 0.2] } },
+    hat: f => { const [hx, hy] = f.head; k.ball(0.165, [hx, hy + 0.035, 0], FIR.scarlet, { tl: Math.PI * 0.42, ws: 10 }); k.torus(0.16, 0.018, [hx, hy + 0.05, 0], v ? SUN.gold : FIR.gold, { r: [Math.PI / 2, 0, 0] }); } });
+}
+
+function rootCatapult(k, v) {
+  if (!v) {
+    // A frame of logs on wheels of woven roots.
+    for (const s of [1, -1]) k.rod([s * 0.3, 0.24, -0.5], [s * 0.3, 0.24, 0.5], 0.06, EAR.bark);
+    for (const z of [-0.42, 0.1, 0.42]) k.rod([-0.34, 0.26, z], [0.34, 0.26, z], 0.045, EAR.barkD);
+    for (const [x, z] of [[0.4, 0.34], [-0.4, 0.34], [0.4, -0.34], [-0.4, -0.34]]) { k.push({ p: [x, 0.2, z], r: [0, Math.PI / 2, 0] }); k.torus(0.18, 0.04, [0, 0, 0], EAR.bark, { ts: 12 }); k.torus(0.15, 0.025, [0, 0, 0.01], EAR.barkD, { ts: 10, r: [0, 0, 0.5] }); k.ball(0.05, [0, 0, 0], EAR.moss); k.pop(); }
+    // Uprights and an axle.
+    for (const s of [1, -1]) k.rod([s * 0.26, 0.26, 0.12], [s * 0.18, 0.8, 0.1], 0.045, EAR.bark);
+    k.rod([-0.2, 0.78, 0.1], [0.2, 0.78, 0.1], 0.04, EAR.stone);
+    // The throwing arm: a bent root with a mossy boulder in its cup, rune stones at the short end.
+    const arm = [[0, 0.62, 0.42], [0, 0.78, 0.1], [0, 0.98, -0.15], [0, 1.18, -0.38], [0, 1.28, -0.5]];
+    for (let i = 1; i < arm.length; i++) k.rod(arm[i - 1], arm[i], 0.045 - i * 0.004, EAR.bark);
+    k.ball(0.13, [0, 1.3, -0.56], EAR.barkD, { tl: Math.PI * 0.5, r: [Math.PI, 0, 0], ws: 10 });
+    k.dodeca(0.13, [0, 1.38, -0.56], EAR.stone);
+    k.ico(0.07, [0.04, 1.47, -0.55], EAR.moss, { s: [1.4, 0.5, 1.2] });
+    runeStone(k, [0.06, 0.52, 0.48], 1.4, 0.3); runeStone(k, [-0.07, 0.48, 0.44], 1.2, -0.4);
+    for (const [x, y, z] of [[0.05, 0.98, -0.15], [-0.04, 1.18, -0.38], [0.2, 0.62, 0.1]]) k.ico(0.05, [x, y + 0.04, z], EAR.leafL);
+  } else {
+    // A trebuchet of two living trees in bloom.
+    for (const s of [1, -1]) {
+      k.rod([s * 0.34, 0.0, 0.05], [s * 0.28, 1.35, 0.0], 0.1, EAR.bark, { r2: 0.065 });
+      for (const a of [0.6, 2.2, 4.0]) k.rod([s * 0.34, 0.08, 0.05], [s * 0.34 + Math.cos(a) * 0.22, 0.0, 0.05 + Math.sin(a) * 0.22], 0.03, EAR.bark);
+      for (const [dx, dy, dz, r] of [[0, 1.5, 0, 0.24], [s * 0.14, 1.4, 0.12, 0.17], [-s * 0.06, 1.44, -0.16, 0.16]]) k.ico(r, [s * 0.28 + dx, dy, dz], EAR.leaf);
+      blossom(k, [s * 0.3, 1.66, 0.02], 1.0, { glow: true }); blossom(k, [s * 0.42, 1.48, 0.12], 0.8, { glow: true });
+    }
+    k.rod([-0.3, 1.28, 0], [0.3, 1.28, 0], 0.04, EAR.stone);
+    // The arm: an emerald counterweight on the short end, a sling and rune boulder on the long end.
+    k.rod([0, 1.28, 0], [0, 1.6, 0.32], 0.04, EAR.bark); k.rod([0, 1.28, 0], [0, 0.5, -0.72], 0.04, EAR.bark);
+    k.box(0.2, 0.2, 0.2, [0, 1.62, 0.36], EAR.barkD, { r: [0.5, 0, 0] });
+    k.octa(0.11, [0, 1.62, 0.47], BLOOM.emerald, { s: [1, 1.3, 0.6], glow: true });
+    k.rod([0, 0.5, -0.72], [0.06, 0.28, -0.86], 0.008, '#c8b890'); k.rod([0, 0.5, -0.72], [-0.06, 0.28, -0.86], 0.008, '#c8b890');
+    k.dodeca(0.17, [0, 0.2, -0.88], EAR.stone);
+    for (const a of [0.3, 1.9]) k.torus(0.17, 0.018, [0, 0.2, -0.88], EAR.bark, { r: [a, 0.5, 0], ts: 14 });
+    k.octa(0.05, [0, 0.24, -0.72], EAR.glow, { s: [0.55, 1, 0.2], glow: true });
+    blossom(k, [0.08, 0.36, -0.88], 0.7, { glow: true });
+  }
+  crew(k, [-0.52, 0, -0.55], { fig: { skin: SKIN[1], top: EAR.moss, skirt: EAR.leaf, belt: EAR.barkD, legs: '#5a4a32', hands: { l: [0.22, 0.6, 0.2], r: [-0.2, 0.6, 0.2] } },
+    hat: f => { const [hx, hy] = f.head; k.cyl(0.26, 0.26, 0.03, [hx, hy + 0.09, 0], EAR.bark, { seg: 12 }); k.lathe([[0.001, 0.12], [0.12, 0.11], [0.15, 0.0]], [hx, hy + 0.1, 0], EAR.barkD, { seg: 10 }); if (v) blossom(k, [hx, hy + 0.24, 0], 0.7, { glow: true }); } });
+}
+
+// The engines join the Arcane and Celestial sets.
+const SIEGE_FN = { air: gustCannon, water: tideEngine, fire: magmaMortar, earth: rootCatapult };
+[ARCANE_UNITS, CELESTIAL_UNITS].forEach((set, v) => { for (const n of Object.keys(SIEGE_FN)) set[n].siege = k => SIEGE_FN[n](k, v); });
+
   var T3 = THREE;
-  var PAGE_AGE = "celestial", LINE_ORDER = ["worker","infantry","ranged","special","hero","creature"], LADDER_LINES = ["worker", "infantry", "ranged", "special"];
+  var PAGE_AGE = "celestial", LINE_ORDER = ["worker","infantry","ranged","special","hero","creature","siege"], LADDER_LINES = ["worker", "infantry", "ranged", "special"];
   var SETS = { dark: DARK_UNITS, mythic: MYTHIC_UNITS, arcane: ARCANE_UNITS, celestial: CELESTIAL_UNITS };
   var state = { n: "air", sil: false, paused: false, age: PAGE_AGE };
   var BY_HASH = {}; NATION_ORDER.forEach(function (n) { BY_HASH[NATION_INFO[n].hash] = n; });
@@ -2709,6 +2968,21 @@ const CREATURE_FN = { air: bear, water: raven, fire: lion, earth: serpent };
         card.querySelector(".strong").textContent = "Every line, one at a time";
         card.querySelector(".weak").textContent = "Being surrounded";
         var ab0 = card.querySelector(".ability"); ab0.hidden = false; ab0.innerHTML = "<b>" + hd.ability.name + " (tap to use):</b> " + hd.ability.text;
+        return;
+      }
+      if (line === "siege") {
+        var sg = SIEGE[n], sb = Object.assign({}, SIEGE_BASE, sg.stats), sk = function (key) { return (AGE_SCALE[state.age] || AGE_SCALE.arcane)[key] / AGE_SCALE.arcane[key]; };
+        var si = ai - 2;
+        card.querySelector(".eyebrow").textContent = "Siege · " + sg.role + " · Workshop";
+        card.querySelector(".fp").textContent = sb.pop + " population";
+        card.querySelector("h2").textContent = si >= 0 ? sg.forms[si][0] : "No siege yet";
+        card.querySelector(".desc").textContent = si >= 0 ? sg.forms[si][1] : "Siege engines join from the Arcane Age, built at the Workshop.";
+        card.querySelector(".role").textContent = "Lobs a long shot that bursts where it lands. Wrecks buildings; cannot fire at anything right beside it.";
+        var sc2 = {}; Object.keys(sb.cost).forEach(function (r2) { sc2[r2] = Math.round(sb.cost[r2] * sk("cost") / 5) * 5; });
+        card.querySelector(".stats").innerHTML = [["HP", Math.round(sb.hp * sk("hp"))], ["Attack", Math.round(sb.attack * sk("attack") * 10) / 10 + " siege"], ["Range", sb.minRange + " to " + sb.range + " tiles"], ["Speed", speedWord(sb.speed) + " (" + sb.speed + ")"], ["Burst", (sb.splash + Math.max(0, si) * 0.3).toFixed(1) + " tiles"], ["Train", sb.time + " s"], ["Cost", costText(sc2), "wide"]].map(function (x) { return '<div' + (x[2] ? ' class="wide"' : "") + '><dt>' + x[0] + "</dt><dd>" + x[1] + "</dd></div>"; }).join("");
+        card.querySelector(".strong").textContent = "Buildings and towers";
+        card.querySelector(".weak").textContent = "Spear fighters, scouts and chargers up close";
+        var ab2 = card.querySelector(".ability"); ab2.hidden = false; ab2.innerHTML = "<b>" + sg.trait.name + ":</b> " + sg.trait.text;
         return;
       }
       if (line === "creature") {
@@ -2747,7 +3021,7 @@ const CREATURE_FN = { air: bear, water: raven, fire: lion, earth: serpent };
     var rowsH = LADDER_LINES.map(function (l) { return "<tr><td>" + (l === "special" ? sp.label : LINES[l].label) + "</td>" + r[l].map(function (x, i) { return '<td class="' + now(i) + '">' + x[0] + "</td>"; }).join("") + "</tr>"; });
     rowsH.push('<tr><td>Hero</td><td class="' + now(0) + ' na">—</td>' + r.hero.map(function (h, i) { return '<td class="' + now(i + 1) + '">' + h[0] + "</td>"; }).join("") + "</tr>");
     rowsH.push('<tr><td>Creature</td><td class="' + now(0) + ' na">—</td>' + CREATURES[n].forms.map(function (c, i) { return '<td class="' + now(i + 1) + '">' + c[0] + "</td>"; }).join("") + "</tr>");
-    rowsH.push('<tr><td>Siege</td><td class="' + now(0) + ' na">—</td><td class="' + now(1) + ' na">—</td>' + r.siege.map(function (h, i) { return '<td class="' + now(i + 2) + '">' + h + "</td>"; }).join("") + "</tr>");
+    rowsH.push('<tr><td>Siege</td><td class="' + now(0) + ' na">—</td><td class="' + now(1) + ' na">—</td>' + SIEGE[n].forms.map(function (h, i) { return '<td class="' + now(i + 2) + '">' + h[0] + "</td>"; }).join("") + "</tr>");
     document.getElementById("ladder").innerHTML = "<thead>" + head + "</thead><tbody>" + rowsH.join("") + "</tbody>";
   }
 
@@ -2843,7 +3117,7 @@ const CREATURE_FN = { air: bear, water: raven, fire: lion, earth: serpent };
   // world unit is about 21.7 points. Drawn here at the same scale with the game's camera.
   function drawField() {
     var PPU = 390 / 18, cols = LINE_ORDER.length, rows = 4, gap = 4.4, rowGap = 3.7;
-    var cssW = cols > 4 ? 660 : 560, cssH = 300, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var cssW = cols > 6 ? 740 : cols > 4 ? 660 : 560, cssH = 300, dpr = Math.min(window.devicePixelRatio || 1, 2);
     var cv = document.getElementById("field-cv"), field = document.getElementById("field");
     cv.width = cssW * dpr; cv.height = cssH * dpr; cv.style.width = cssW + "px"; cv.style.height = cssH + "px";
     field.style.width = cssW + "px";

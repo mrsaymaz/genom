@@ -22,6 +22,8 @@ export class World {
     this.occ = new Int32Array(this.size * this.size);
     this.events = [];
     this.winner = null;
+    // Siege shots in flight, and burning ground left by molten shot.
+    this.shots = []; this.burns = [];
     this.teams = teams.map((key, i) => ({
       index: i, key, nation: CONFIG.teams[key],
       res: { food: CONFIG.start.food, lumber: CONFIG.start.lumber, gold: CONFIG.start.gold },
@@ -73,7 +75,7 @@ export class World {
       run: 0, boost: 0, healCd: 0, hurtT: -99,
       // Hero and creature abilities, and what they leave on others: arrows dodged, a battle roar,
       // roots holding a unit in place.
-      castCd: 0, traitCd: 2, dodge: 0, roar: 0, rootT: 0,
+      castCd: 0, traitCd: 2, dodge: 0, roar: 0, rootT: 0, slowT: 0,
     };
     this.ents.set(e.id, e);
     this.teams[team].pop += d.pop;
@@ -325,14 +327,14 @@ export class World {
     return {
       v: 1, seed: this.seed, pace: this.pace, time: this.time, nextId: this.nextId, winner: this.winner,
       teams: this.teams.map(t => ({ key: t.key, res: t.res, stats: t.stats, bell: !!t.bell, age: t.age })),
-      ents: [...this.ents.values()],
+      ents: [...this.ents.values()], shots: this.shots, burns: this.burns,
     };
   }
   static load(data) {
     const w = new World({ teams: data.teams.map(t => t.key), pace: data.pace, seed: data.seed });
     w.ents = new Map(); w.occ.fill(0);
     for (const e of data.ents) { w.ents.set(e.id, e); if (e.cat !== 'unit') w.mark(e, e.id); }
-    Object.assign(w, { time: data.time, nextId: data.nextId, winner: data.winner, events: [] });
+    Object.assign(w, { time: data.time, nextId: data.nextId, winner: data.winner, events: [], shots: data.shots || [], burns: data.burns || [] });
     data.teams.forEach((t, i) => { Object.assign(w.teams[i], { res: t.res, stats: t.stats, bell: t.bell, age: t.age || 'dark' }); w.teams[i].units = unitDefs(w.teams[i].nation.art, w.teams[i].age); });
     for (const t of w.teams) t.pop = 0;
     for (const u of w.allUnits()) w.teams[u.team].pop += w.def(u.team, u.type).pop;
@@ -374,7 +376,7 @@ export class World {
     if (!u.path || !u.path.length) return true;
     if (u.rootT > 0) return false; // held by roots
     const d = this.def(u.team, u.type);
-    const speed = d.speed * (!d.flies && this.terrainAt(Math.floor(u.x), Math.floor(u.y)) === T.FORD ? 0.7 : 1) * (u.boost > 0 ? 1.4 : 1);
+    const speed = d.speed * (!d.flies && this.terrainAt(Math.floor(u.x), Math.floor(u.y)) === T.FORD ? 0.7 : 1) * (u.boost > 0 ? 1.4 : 1) * (u.slowT > 0 ? 0.55 : 1);
     let step = speed * dt;
     u.run += step; // chargers hit harder after a run-up
     while (step > 0 && u.path.length) {
@@ -464,10 +466,11 @@ export class World {
     if (target.team !== undefined && ELEMENT_BEATS[this.teams[attacker.team].nation.art] === this.teams[target.team].nation.art) dmg *= 1.1;
     target.hp -= dmg;
     if (target.cat === 'unit') target.hurtT = this.time;
-    const ranged = attacker.cat === 'bld' || this.def(attacker.team, attacker.type).attackType === 'ranged';
-    this.events.push({ type: 'hit', from: attacker.id, to: target.id, ranged });
+    const ad2 = attacker.cat === 'unit' ? this.def(attacker.team, attacker.type) : null, siege = !!ad2?.siege;
+    const ranged = attacker.cat === 'bld' || (ad2.attackType === 'ranged' && !siege);
+    this.events.push({ type: 'hit', from: attacker.id, to: target.id, ranged, siege, team: attacker.team });
     // Idle soldiers fight back; workers and healers fight back only when they have nothing else to do.
-    if (target.cat === 'unit' && attacker.cat === 'unit') {
+    if (target.cat === 'unit' && attacker.cat === 'unit' && this.ents.has(attacker.id)) {
       const kind = this.def(target.team, target.type).kind;
       const free = !target.order || (target.order.auto && target.type !== 'worker' && kind !== 'healer');
       if (free && kind !== 'healer') this.setOrder(target, { type: 'attack', target: attacker.id, auto: true });
@@ -489,6 +492,7 @@ export class World {
     for (const u of [...this.units()]) { u.px = u.x; u.py = u.y; this.updateUnit(u, dt, builders); }
     this.separate();
     for (const b of [...this.buildings()]) this.updateBuilding(b, dt);
+    this.updateShots(dt);
   }
 
   updateBuilding(b, dt) {
@@ -530,14 +534,14 @@ export class World {
   updateUnit(u, dt, builders) {
     const d = this.def(u.team, u.type);
     u.cd -= dt; u.boost -= dt;
-    if (u.castCd !== undefined) { u.castCd -= dt; u.traitCd -= dt; u.dodge -= dt; u.roar -= dt; u.rootT -= dt; }
+    if (u.castCd !== undefined) { u.castCd -= dt; u.traitCd -= dt; u.dodge -= dt; u.roar -= dt; u.rootT -= dt; u.slowT = (u.slowT || 0) - dt; }
     if (d.heal) this.mend(u, d, dt);
     if (d.trait) this.trait(u, d, dt);
     // Ravenclaw's twist: units out of combat for a while slowly heal.
     if (d.regen && u.hp < u.maxHp && this.time - u.hurtT > 5) u.hp = Math.min(u.maxHp, u.hp + d.regen * dt);
     const o = u.order;
     if (!o) {
-      if (u.type !== 'worker' && d.kind !== 'healer') { const e = this.nearestEnemy(u, d.sight, true); if (e) this.setOrder(u, { type: 'attack', target: e.id, auto: true }); }
+      if (u.type !== 'worker' && d.kind !== 'healer') { const e = d.siege ? this.siegeTarget(u, d) : this.nearestEnemy(u, d.sight, true); if (e) this.setOrder(u, { type: 'attack', target: e.id, auto: true }); }
       return;
     }
     switch (o.type) {
@@ -574,7 +578,8 @@ export class World {
         }
         if (best) {
           u.facing = Math.atan2(this.center(best)[1] - u.y, this.center(best)[0] - u.x);
-          if (u.cd <= 0) { u.cd = d.cooldown; u.work = 0.01; this.damage(u, best, d.damage); }
+          if (d.siege) this.launch(u, d, best);
+          else if (u.cd <= 0) { u.cd = d.cooldown; u.work = 0.01; this.damage(u, best, d.damage); }
         }
         break;
       }
@@ -621,6 +626,7 @@ export class World {
     const d = this.def(u.team, u.type);
     if (this.approach(u, e, d.range, dt)) {
       u.facing = Math.atan2(this.center(e)[1] - u.y, this.center(e)[0] - u.x);
+      if (d.siege) { this.launch(u, d, e); return; }
       if (u.cd <= 0) {
         u.cd = d.cooldown; u.work = 0.01;
         // Charge: a charger's first hit after a run-up deals double damage.
@@ -706,6 +712,71 @@ export class World {
       u.traitCd = 9; u.facing = face;
       this.events.push({ type: 'trait', id: u.id, team: u.team, trait: d.trait, x: u.x, y: u.y, r: 3.2, face });
     } else u.traitCd = 99; // Entangle works on each strike (see fight)
+  }
+
+  // ---------- siege engines ----------
+  // An idle engine looks for a building to shell first, then for units.
+  siegeTarget(u, d) {
+    let best = null, bd = d.sight + 1;
+    for (const b of this.buildings()) { if (b.team === u.team) continue; const dd = this.distTo(u, b); if (dd < bd) { bd = dd; best = b; } }
+    return best || this.nearestEnemy(u, d.sight, true);
+  }
+  // Fires a lobbed shot at a target's spot; it lands a moment later and bursts there. Engines
+  // cannot fire at anything right beside them.
+  launch(u, d, e) {
+    if (u.cd > 0) return;
+    const [tx, ty] = this.center(e), dist = Math.hypot(tx - u.x, ty - u.y);
+    if (this.distTo(u, e) < d.siege.minRange) return;
+    u.cd = d.cooldown; u.work = 0.01;
+    const time = 0.55 + dist * 0.09;
+    const shot = { team: u.team, from: u.id, x0: u.x, y0: u.y, x: tx, y: ty, t: 0, time, dmg: d.damage, splash: d.siege.splash, effect: d.siege.effect, age: this.teams[u.team].age };
+    this.shots.push(shot);
+    this.events.push({ type: 'launch', id: u.id, team: u.team, effect: shot.effect, x0: u.x, y0: u.y, x: tx, y: ty, time });
+  }
+  updateShots(dt) {
+    if (this.shots.length) {
+      const landed = [];
+      this.shots = this.shots.filter(s => { s.t += dt; if (s.t >= s.time) { landed.push(s); return false; } return true; });
+      for (const s of landed) this.impact(s);
+    }
+    // Burning ground: enemies standing in it take damage every half second.
+    if (this.burns.length) this.burns = this.burns.filter(b => {
+      b.t -= dt; b.tick -= dt;
+      if (b.tick <= 0) {
+        b.tick = 0.5;
+        const by = this.get(b.from) || { cat: 'unit', team: b.team, type: 'siege', id: -1 };
+        for (const e of this.inBurst(b.x, b.y, b.r, b.team)) this.damage(by, e, b.dps * 0.5 * (e.cat === 'bld' ? 0.4 : 2));
+      }
+      return b.t > 0;
+    });
+  }
+  // Enemy units and buildings within r of a point.
+  inBurst(x, y, r, team) {
+    const out = [];
+    for (const e of this.ents.values()) {
+      if (e.team === undefined || e.team === team || e.inside || (e.cat !== 'unit' && e.cat !== 'bld')) continue;
+      const d = e.cat === 'unit' ? Math.hypot(e.x - x, e.y - y) : Math.hypot(Math.max(e.x - x, 0, x - (e.x + e.w)), Math.max(e.y - y, 0, y - (e.y + e.h)));
+      if (d <= r) out.push(e);
+    }
+    return out;
+  }
+  // A shot lands: full damage at the centre, less towards the edge, then the nation's effect.
+  impact(s) {
+    const by = this.get(s.from) || { cat: 'unit', team: s.team, type: 'siege', id: -1 };
+    if (!this.teams[s.team].units.siege) return;
+    for (const e of this.inBurst(s.x, s.y, s.splash, s.team)) {
+      const [cx, cy] = this.center(e), near = e.cat === 'bld' || Math.hypot(cx - s.x, cy - s.y) < 0.6;
+      let dmg = s.dmg * (near ? 1 : 0.6);
+      if (s.effect === 'shatter' && e.cat === 'bld') dmg *= 1.3;
+      this.damage(by, e, dmg);
+      if (e.cat !== 'unit' || !this.ents.has(e.id)) continue;
+      if (s.effect === 'gust') this.knock(e, s.x, s.y, 1.5);
+      if (s.effect === 'soak') e.slowT = 3.5;
+    }
+    // Shatter: stone shards fly out a little further and nick the units there.
+    if (s.effect === 'shatter') for (const e of this.inBurst(s.x, s.y, s.splash + 0.9, s.team)) if (e.cat === 'unit' && this.ents.has(e.id)) this.damage(by, e, s.dmg * 0.25);
+    if (s.effect === 'lava') this.burns.push({ x: s.x, y: s.y, r: s.splash * 0.85, t: 4, tick: 0.5, dps: s.dmg * 0.15, team: s.team, from: s.from });
+    this.events.push({ type: 'impact', team: s.team, effect: s.effect, x: s.x, y: s.y, r: s.splash, age: s.age });
   }
 
   // Mend: a healer heals the most hurt ally within reach.

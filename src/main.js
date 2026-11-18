@@ -190,7 +190,12 @@ class Game {
           audio.speak(u.type === 'hero' ? `Your hero, the ${n}, has arrived!` : `The ${n} has joined you!`, true);
           this.hud.toast(u.type === 'hero' ? `The ${n} is here! Select your hero and tap ${w.def(0, 'hero').cast.name}.` : `The ${n} has joined you. Its ${w.def(0, 'creature').ability.name} works on its own.`);
         } else { audio.sfx('trained'); audio.speak(`${/^[AEIOU]/.test(n) ? 'An' : 'A'} ${n} is ready.`); }
-      } else if (ev.type === 'cast') this.castFx(ev);
+      } else if (ev.type === 'launch') {
+        // A siege engine fires: the shot flies, and lands as the world's own shot does.
+        v.shot(v.toWorld(ev.x0, ev.y0), v.toWorld(ev.x, ev.y), ev.time, ev.effect, w.teams[ev.team].age);
+        if (this.onScreen1(ev.x0, ev.y0)) audio.sfx('launch', 0.15);
+      } else if (ev.type === 'impact') this.impactFx(ev);
+      else if (ev.type === 'cast') this.castFx(ev);
       else if (ev.type === 'trait') this.traitFx(ev);
       else if (ev.type === 'rooted') {
         const t = w.get(ev.id);
@@ -207,12 +212,14 @@ class Game {
         if (ev.cat === 'unit' && ev.team !== 0 && ev.kind === 'hero') this.hud.toast('You defeated the rival hero!', 'good');
       } else if (ev.type === 'hit') {
         const a = w.get(ev.from), t = w.get(ev.to);
-        if (!a || !t) continue;
+        if (!t || (!a && !ev.siege)) continue;
         const [bx, by] = w.center(t);
-        if (ev.ranged) { const [ax, ay] = w.center(a); v.arrow(v.toWorld(ax, ay), v.toWorld(bx, by)); }
-        else if (t.cat === 'bld' && Math.random() < 0.3) { const [x, z] = v.toWorld(bx, by); v.dust({ x, z }, 2, t.w * TILE * 0.8); }
-        if (this.onScreen1(bx, by)) audio.sfx(ev.ranged ? 'arrow' : 'clash', 0.09);
-        if (t.team === 0 && a.team !== 0 && this.world.time - this.alertT > 20) {
+        if (!ev.siege) {
+          if (ev.ranged) { const [ax, ay] = w.center(a); v.arrow(v.toWorld(ax, ay), v.toWorld(bx, by)); }
+          else if (t.cat === 'bld' && Math.random() < 0.3) { const [x, z] = v.toWorld(bx, by); v.dust({ x, z }, 2, t.w * TILE * 0.8); }
+          if (this.onScreen1(bx, by)) audio.sfx(ev.ranged ? 'arrow' : 'clash', 0.09);
+        } else if (t.cat === 'bld') { const [x, z] = v.toWorld(bx, by); v.dust({ x, z }, 3, t.w * TILE * 0.8); }
+        if (t.team === 0 && ev.team !== 0 && this.world.time - this.alertT > 20) {
           this.alertT = this.world.time;
           this.pings.push({ x: bx, y: by, t: 1 });
           if (!this.onScreen1(bx, by) || !this.hud.alertOn) {
@@ -284,6 +291,17 @@ class Game {
       if (ev.team === 0) audio.say('cast', ev.ability, true);
     }
   }
+  // A siege shot lands: a burst of the nation's element, with its own effect.
+  impactFx(ev) {
+    const v = this.view, [x, z] = v.toWorld(ev.x, ev.y), R = ev.r * TILE;
+    if (!this.onScreen1(ev.x, ev.y)) return;
+    const el = { gust: 'air', soak: 'water', lava: 'fire', shatter: 'earth' }[ev.effect], col = { gust: '#f2c040', soak: '#2f8fe0', lava: '#ff5a1f', shatter: '#8d877c' }[ev.effect];
+    v.magic.emit(el, x, z, { n: 26, radius: R * 0.4, speed: 1.6, life: 1, size: 1.1 });
+    v.magic.ring(x, z, { color: col, from: 0.2, to: R * (ev.effect === 'gust' ? 1.4 : 1), time: 0.6, width: 0.14, solid: true });
+    if (ev.effect === 'shatter') v.dust({ x, z }, 6, R);
+    if (ev.effect === 'soak') v.magic.emit('water', x, z, { n: 24, radius: R * 0.7, speed: 0.6, life: 0.9, size: 1 });
+    audio.sfx('boom', 0.12);
+  }
   // Creature abilities on the map.
   traitFx(ev) {
     const v = this.view, [x, z] = v.toWorld(ev.x, ev.y);
@@ -307,12 +325,15 @@ class Game {
     if (this.auraT > 0) return;
     this.auraT = 0.22;
     const v = this.view;
+    // Ground left burning by molten shot.
+    for (const b of this.world.burns) if (this.onScreen1(b.x, b.y)) { const [x, z] = v.toWorld(b.x, b.y); v.magic.emit('fire', x, z, { n: 3, radius: b.r * TILE * 0.8, speed: 0.4, life: 0.8, size: 0.9 }); }
     for (const u of this.world.units()) {
-      if (!(u.rootT > 0 || u.roar > 0 || u.dodge > 0) || !this.onScreen1(u.x, u.y)) continue;
+      if (!(u.rootT > 0 || u.roar > 0 || u.dodge > 0 || u.slowT > 0) || !this.onScreen1(u.x, u.y)) continue;
       const [x, z] = v.toWorld(u.x, u.y);
       if (u.rootT > 0) v.magic.emit('earth', x, z, { n: 2, radius: 0.3, speed: 0.3, life: 0.8, size: 0.7, up: 0.3 });
       if (u.roar > 0) v.magic.emit('fire', x, z, { n: 1, y: 0.6, radius: 0.25, speed: 0.4, life: 0.7, size: 0.6 });
       if (u.dodge > 0) v.magic.emit('air', x, z, { n: 1, radius: 0.3, speed: 0.5, life: 0.8, size: 0.6 });
+      if (u.slowT > 0) v.magic.emit('water', x, z, { n: 1, y: 0.9, radius: 0.2, speed: 0.2, life: 0.6, size: 0.6 });
     }
   }
 

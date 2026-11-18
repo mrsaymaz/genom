@@ -63,6 +63,15 @@ Signature creature: Tank, trained at the Beast Pen, one at a time (3 population)
 | Arcane | Stormhide Bear | The bear grows into a storm: plates of amber honeycomb on its back, crystals crackling with lightning and a small storm cloud riding between its shoulders. |
 | Celestial | Starhide Bear | A great cloud-white and gold bear with a mane of amber stars, a gold brow plate and wings of wind, padding on puffs of cloud. |
 
+Siege engine: Long-range wind cannon, built at the Workshop from the Arcane Age (3 population). Arcane stats: 260 HP, 34 attack, range 8 tiles, a burst 1.5 tiles wide, cost 200 Lumber, 150 Gold. It cannot fire at anything within 2 tiles; spear fighters, scouts and chargers tear into it, arrows do little. Its shot: **Gust Shot**, its blasts of wind throw enemy units back from where they land.
+
+### Siege engine
+
+| Age | Name | Look |
+|---|---|---|
+| Arcane | Gust Cannon | A honeycomb gun carriage on four spoked wheels with a striped sail, a great leather bellows and a brass horn for a barrel, fanned by a spinning wind rose; a beekeeper works the bellows. |
+| Celestial | Storm Engine | A gun carriage riding on a bank of cloud, with a storm cloud caught in a gold cage, a lightning-rod barrel and a blazing amber star; it fires bolts of wind and lightning. |
+
 ### Worker
 
 | Age | Name | Look |
@@ -132,6 +141,15 @@ Signature creature: Flying support, trained at the Beast Pen, one at a time (3 p
 | Mythic | Tide Raven | An eagle-sized raven with deep-blue feathers, a hooked beak, a crest of living water like a crown of glass, cyan wing tips and tail streamers of flowing water. |
 | Arcane | Glass Raven | A larger raven with feathers edged in clear glass, a bronze-and-glass crest and a small armillary ring turning around its body, trailing streamers of water. |
 | Celestial | Moon Raven | A great night-blue raven with silver-edged wings, a crescent crest and a full moon glowing on its breast, trailing moonlit water. |
+
+Siege engine: Water-orb thrower, built at the Workshop from the Arcane Age (3 population). Arcane stats: 260 HP, 40 attack, range 7 tiles, a burst 1.9 tiles wide, cost 200 Lumber, 150 Gold. It cannot fire at anything within 2 tiles; spear fighters, scouts and chargers tear into it, arrows do little. Its shot: **Soak**, its orbs of water burst wide and soak enemy units, slowing them for a few seconds.
+
+### Siege engine
+
+| Age | Name | Look |
+|---|---|---|
+| Arcane | Tide Engine | A bronze cart carrying a great glass tank of water, with a pump and a bronze throwing arm that hurls glowing orbs of water; a small armillary turns on its frame. |
+| Celestial | Moon Engine | A silver ballista shaped like a great crescent bow on a pearl platform, firing glowing moon orbs, while a small orrery turns above it. |
 
 ### Worker
 
@@ -203,6 +221,15 @@ Signature creature: Striker, trained at the Beast Pen, one at a time (3 populati
 | Arcane | Magma Lion | A heavier lion armoured in basalt plates with rivers of magma between them, a mane of tall flames and gold bands on its legs. |
 | Celestial | Sun Lion | A golden lion with a mane of sun rays and a sun disc blazing behind its head, on burning paws. |
 
+Siege engine: Molten mortar, built at the Workshop from the Arcane Age (3 population). Arcane stats: 260 HP, 46 attack, range 6.5 tiles, a burst 1.5 tiles wide, cost 200 Lumber, 150 Gold. It cannot fire at anything within 2 tiles; spear fighters, scouts and chargers tear into it, arrows do little. Its shot: **Lava Splash**, its balls of molten rock leave the ground burning for a few seconds.
+
+### Siege engine
+
+| Age | Name | Look |
+|---|---|---|
+| Arcane | Magma Mortar | A squat basalt mortar on a stone sled, banded in gold with a lion face, its bore glowing with magma beside a stack of molten shot. |
+| Celestial | Sun Cannon | A gold cannon on a stepped sun platform, with a great mirror dish behind it that focuses sunlight through a solar lens into blazing sunballs. |
+
 ### Worker
 
 | Age | Name | Look |
@@ -272,6 +299,15 @@ Signature creature: Controller, trained at the Beast Pen, one at a time (3 popul
 | Mythic | Rootcoil Serpent | A great moss-scaled serpent with leaves along its spine, a leaf frill behind its head, stone horns, glowing green eyes and rune rings around its body. |
 | Arcane | Runecoil Serpent | A longer serpent with stone plates carved with glowing runes, rune stones floating along its back and a frill of stone and moss. |
 | Celestial | Bloomcoil Serpent | A vast serpent in living green with star blossoms opening along its back, a frill of glowing petals and an emerald crown of horns. |
+
+Siege engine: Boulder catapult, built at the Workshop from the Arcane Age (3 population). Arcane stats: 340 HP, 40 attack, range 7 tiles, a burst 1.5 tiles wide, cost 200 Lumber, 150 Gold. It cannot fire at anything within 2 tiles; spear fighters, scouts and chargers tear into it, arrows do little. Its shot: **Shatter**, its boulders crack stone: they hit buildings even harder and spray shards around them.
+
+### Siege engine
+
+| Age | Name | Look |
+|---|---|---|
+| Arcane | Root Catapult | A catapult grown from living wood: a bent root throwing arm with a mossy boulder, rune stones for its counterweight and wheels of woven roots. |
+| Celestial | Earthshaker | A trebuchet of living trees in bloom, slinging a great rune boulder wrapped in roots that shakes the ground where it lands, with an emerald counterweight. |
 
 ### Worker
 

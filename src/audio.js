@@ -138,6 +138,9 @@ export class Audio {
       flame: () => { this.noise({ t: 0.8, v: 0.3, f: 900, q: 0.5 }); this.tone({ f: 140, f2: 90, type: 'sawtooth', t: 0.5, v: 0.05 }); },
       roots: () => { for (let i = 0; i < 4; i++) this.noise({ t: 0.08, v: 0.25, f: 500 + i * 120, q: 4, delay: i * 0.07 }); this.tone({ f: 90, f2: 60, type: 'triangle', t: 0.4, v: 0.2 }); },
       ready: () => [880, 1320].forEach((f, i) => this.tone({ f, type: 'sine', t: 0.25, v: 0.08, delay: i * 0.07 })),
+      // Siege engines: a deep launch thump, and a boom where the shot lands.
+      launch: () => { this.tone({ f: 90, f2: 50, type: 'triangle', t: 0.3, v: 0.3 }); this.noise({ t: 0.25, v: 0.25, f: 400, q: 0.7, type: 'lowpass' }); },
+      boom: () => { this.noise({ t: 0.7, v: 0.4, f: 220, q: 0.6, type: 'lowpass' }); this.tone({ f: 70, f2: 40, type: 'sine', t: 0.5, v: 0.35 }); },
       // The last age: a higher, longer crown of bells over the ascension.
       crown: () => { [1047, 1319, 1568, 2093, 2637, 3136].forEach((f, i) => this.tone({ f, type: 'sine', t: 1.6, v: 0.06, delay: i * 0.11 })); [523.3, 659.3, 784, 1047].forEach(f => this.tone({ f, type: 'triangle', t: 3.6, v: 0.08, delay: 0.7 })); },
       whoosh: () => { this.noise({ t: 0.5, v: 0.18, f: 900, q: 1.2 }); this.tone({ f: 300, f2: 900, type: 'sine', t: 0.45, v: 0.05 }); },

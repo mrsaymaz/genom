@@ -352,7 +352,7 @@ test("creatures beat the next element's creature by the element cycle", () => {
   assert.ok(Math.abs(hp - snake.hp - 16.5) < 0.01, 'fire beats earth: x1.5 and the element edge');
 });
 
-test('the ages go on to Arcane (needs a Sanctum) and Celestial (needs a Beast Pen), and saves keep them', () => {
+test('the ages go on to Arcane (needs a Sanctum) and Celestial (needs a Workshop), and saves keep them', () => {
   const w = new World({ teams: ['ravenclaw', 'hufflepuff'] });
   const tc = [...w.buildings(0)].find(b => b.type === 'towncenter');
   w.teams[0].res = { food: 9000, lumber: 9000, gold: 9000 };
@@ -370,8 +370,8 @@ test('the ages go on to Arcane (needs a Sanctum) and Celestial (needs a Beast Pe
   assert.equal(w.def(0, 'hero').name, 'Glass Navigator', 'the hero takes its Arcane form');
   assert.ok(hero.maxHp > 280);
   assert.equal(w.def(0, 'hero').cast.cooldown, 30, 'abilities recharge faster each age');
-  assert.equal(w.canAgeUp(0).needs, 'pen');
-  place('pen');
+  assert.equal(w.canAgeUp(0).needs, 'workshop');
+  place('workshop');
   assert.ok(w.startAgeUp(tc.id));
   w.cast(hero.id);
   const b = World.load(JSON.parse(JSON.stringify(w.save())));
@@ -385,12 +385,92 @@ test('the ages go on to Arcane (needs a Sanctum) and Celestial (needs a Beast Pe
   assert.ok(Math.abs(b.get(hero.id).castCd - w.get(hero.id).castCd) < 1e-6, 'the cooldown survives a save');
 });
 
-test('the rival builds a Sanctum and a Beast Pen, trains its hero and creature, and reaches the Celestial Age', () => {
+test('the rival builds a Sanctum, a Beast Pen and a Workshop, trains its hero, creature and siege, and reaches the Celestial Age', () => {
   const w = new World({ pace: 'challenge' }), ai = new RivalAI(w, 1);
   const mine = [...w.buildings(0)].find(b => b.type === 'towncenter'); mine.hp = mine.maxHp = 1e9; // an idle player must not lose first
-  let hero = false, creature = false;
-  for (let t = 0; t < 1700 && w.teams[1].age !== 'celestial'; t += 0.05) { ai.update(0.05); w.step(0.05); if (!hero || !creature) for (const u of w.units()) if (u.team === 1) { hero ||= u.type === 'hero'; creature ||= u.type === 'creature'; } }
+  let hero = false, creature = false, siege = false;
+  for (let t = 0; t < 1700 && w.teams[1].age !== 'celestial'; t += 0.05) { ai.update(0.05); w.step(0.05); if (!hero || !creature || !siege) for (const u of w.units()) if (u.team === 1) { hero ||= u.type === 'hero'; creature ||= u.type === 'creature'; siege ||= u.type === 'siege'; } }
   assert.ok(hero, 'the rival trained its hero');
   assert.ok(creature, 'the rival trained its creature');
+  assert.ok(siege, 'the rival built a siege engine');
   assert.equal(w.teams[1].age, 'celestial', `rival age at ${Math.round(w.time)} s`);
+});
+
+// ---------- siege engines ----------
+test('the Workshop is an Arcane Age building that builds siege engines', () => {
+  const { w, tc } = lateWorld('mythic', ['gryffindor', 'hufflepuff']);
+  const spot = () => { for (let y = tc.y - 14; y < tc.y + 10; y++) for (let x = tc.x - 6; x < tc.x + 16; x++) { w.teams[0].age = 'arcane'; const ok = w.canPlace(0, 'workshop', x, y); w.teams[0].age = 'mythic'; if (ok) return [x, y]; } };
+  const [x, y] = spot();
+  assert.equal(w.canPlace(0, 'workshop', x, y), false, 'not in the Mythic Age');
+  assert.equal(w.def(0, 'siege'), undefined, 'no siege before the Arcane Age');
+  w.enterAge(0, 'arcane');
+  const shop = w.addBuilding(0, 'workshop', x, y, true); w.recount();
+  assert.equal(w.def(0, 'siege').name, 'Magma Mortar');
+  assert.ok(w.train(shop.id, 'siege')); assert.ok(w.train(shop.id, 'siege'), 'more than one engine is fine');
+  w.enterAge(0, 'celestial');
+  assert.equal(w.def(0, 'siege').name, 'Sun Cannon');
+});
+
+// Puts an engine of `nation` in front of an enemy house, with an enemy soldier beside the house.
+function siegeRange(nation) {
+  const { w, tc } = lateWorld('arcane', [nation, 'hufflepuff']);
+  const eng = w.spawnUnit(0, 'siege', tc);
+  let house = null;
+  for (let y = 4; y < w.size - 4 && !house; y++) for (let x = 4; x < w.size - 10 && !house; x++) {
+    if (!w.canPlace(1, 'house', x, y)) continue;
+    let clear = true; for (let dx = -7; dx < 0 && clear; dx++) if (w.blocked(x + dx, y)) clear = false;
+    if (clear && Math.hypot(x - tc.x, y - tc.y) > 8) house = w.addBuilding(1, 'house', x, y, true);
+  }
+  eng.x = eng.px = house.x - 5; eng.y = eng.py = house.y + 0.5;
+  const foe = w.spawnUnit(1, 'spearman', house); foe.x = foe.px = house.x - 0.4; foe.y = foe.py = house.y + 1;
+  w.orderHold([foe.id]); // it stays beside the house
+  w.drainEvents();
+  return { w, eng, house, foe };
+}
+const fire = (w, eng, target) => { w.orderAttack([eng.id], target.id); for (let i = 0; i < 40; i++) w.step(0.05); };
+
+test('siege shots fly, burst where they land and wreck buildings, but hurt units less', () => {
+  const { w, eng, house, foe } = siegeRange('gryffindor');
+  const hp = house.hp, fhp = foe.hp;
+  w.orderAttack([eng.id], house.id); w.step(0.05);
+  assert.equal(w.shots.length, 1, 'a shot is in flight');
+  assert.equal(house.hp, hp, 'no damage until it lands');
+  for (let i = 0; i < 30; i++) w.step(0.05);
+  assert.ok(hp - house.hp > 46 * 3, `the house takes heavy damage (${Math.round(hp - house.hp)})`);
+  assert.ok(foe.hp < fhp && fhp - foe.hp < 30, 'the soldier beside it is caught in the burst, lightly');
+  assert.ok(w.drainEvents().some(e => e.type === 'impact' && e.effect === 'lava'));
+});
+
+test('siege engines cannot fire at anything right beside them, and soldiers tear into them', () => {
+  const { w, eng, foe } = siegeRange('slytherin');
+  foe.x = eng.x + 1; foe.y = eng.y;
+  w.orderAttack([eng.id], foe.id); for (let i = 0; i < 20; i++) w.step(0.05);
+  assert.equal(w.shots.length, 0, 'too close to fire');
+  const hp = eng.hp; w.damage(foe, eng, 10);
+  assert.ok(Math.abs(hp - eng.hp - 16) < 0.01, 'spear fighters deal x1.6 to engines');
+});
+
+test('each nation\'s shot does its own thing: gust, soak, lava and shatter', () => {
+  let r = siegeRange('hufflepuff'); let d0 = Math.hypot(r.foe.x - r.house.x - 1, r.foe.y - r.house.y - 1);
+  fire(r.w, r.eng, r.house);
+  assert.ok(Math.hypot(r.foe.x - r.house.x - 1, r.foe.y - r.house.y - 1) > d0 + 0.5 || !r.w.get(r.foe.id), 'Gust Shot throws units back');
+  r = siegeRange('ravenclaw'); fire(r.w, r.eng, r.house);
+  assert.ok(r.foe.slowT > 0, 'Soak slows units');
+  r = siegeRange('gryffindor'); fire(r.w, r.eng, r.house);
+  assert.ok(r.w.burns.length === 1, 'Lava Splash leaves the ground burning');
+  const hp = r.house.hp; for (let i = 0; i < 20; i++) r.w.step(0.05);
+  assert.ok(r.house.hp < hp, 'and the fire keeps burning');
+  // Shatter: the same shot hits a building 30% harder.
+  r = siegeRange('slytherin'); const h0 = r.house.hp; fire(r.w, r.eng, r.house);
+  assert.ok(h0 - r.house.hp > 40 * 3.2 * 1.25, 'Shatter cracks buildings harder');
+});
+
+test('shots in flight and burning ground survive a save', () => {
+  const r = siegeRange('gryffindor');
+  r.w.orderAttack([r.eng.id], r.house.id); r.w.step(0.05);
+  const b = World.load(JSON.parse(JSON.stringify(r.w.save())));
+  assert.equal(b.shots.length, 1);
+  for (let i = 0; i < 30; i++) { r.w.step(0.05); b.step(0.05); }
+  assert.equal(Math.round(b.get(r.house.id).hp), Math.round(r.house.hp));
+  assert.equal(b.burns.length, r.w.burns.length);
 });

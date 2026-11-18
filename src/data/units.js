@@ -106,7 +106,7 @@ export const ROSTER = {
       ['Starwing Rider', 'A rider in gold armour and a winged helm on a royal honeybee with a gold crown and four starlit wings, trailing a puff of cloud, carrying a star-tipped lance.'],
     ],
     hero: [['Wind Warden', 'A tall leader in a long honey cloak and a crown of amber hexes, holding a staff topped by a spinning wind rose with a floating amber crystal.'], ['Storm Warden', 'A leader in a storm-grey and honey cloak, with a crown of floating amber hexes, holding a staff wrapped in a small storm cloud where lightning flickers in the amber.'], ['Sky Warden', 'A leader who stands on a cloud with great white wings, in a cloud-white robe banded with gold, crowned with gold hexes under a blazing amber star, while a constellation ring turns around them and a gold wind rose tops the staff.']],
-    siege: ['Gust Cannon', 'Storm Engine'],
+    siege: ['Gust Cannon', 'Storm Engine'], // see SIEGE
   },
   water: {
     worker: [
@@ -249,6 +249,46 @@ export const CREATURES = {
       ['Rootcoil Serpent', 'A great moss-scaled serpent with leaves along its spine, a leaf frill behind its head, stone horns, glowing green eyes and rune rings around its body.'],
       ['Runecoil Serpent', 'A longer serpent with stone plates carved with glowing runes, rune stones floating along its back and a frill of stone and moss.'],
       ['Bloomcoil Serpent', 'A vast serpent in living green with star blossoms opening along its back, a frill of glowing petals and an emerald crown of horns.'],
+    ],
+  },
+};
+
+// Siege engines: trained at the Workshop from the Arcane Age, two forms (Arcane, Celestial).
+// Every engine is slow, fires a long, lobbed shot that bursts where it lands, wrecks buildings
+// and is weak up close (it cannot fire at anything right beside it). Each nation's shot does its
+// own thing when it lands. Stats are for the Arcane Age.
+export const SIEGE_BASE = { hp: 260, attack: 40, range: 7, minRange: 2, cooldown: 4.2, speed: 1.15, sight: 8, cost: { lumber: 200, gold: 150 }, time: 40, pop: 3, splash: 1.5 };
+export const SIEGE = {
+  air: {
+    role: 'Long-range wind cannon', stats: { attack: 34, range: 8, speed: 1.35 },
+    trait: { id: 'gust', name: 'Gust Shot', text: 'Its blasts of wind throw enemy units back from where they land.' },
+    forms: [
+      ['Gust Cannon', 'A honeycomb gun carriage on four spoked wheels with a striped sail, a great leather bellows and a brass horn for a barrel, fanned by a spinning wind rose; a beekeeper works the bellows.'],
+      ['Storm Engine', 'A gun carriage riding on a bank of cloud, with a storm cloud caught in a gold cage, a lightning-rod barrel and a blazing amber star; it fires bolts of wind and lightning.'],
+    ],
+  },
+  water: {
+    role: 'Water-orb thrower', stats: { splash: 1.9 },
+    trait: { id: 'soak', name: 'Soak', text: 'Its orbs of water burst wide and soak enemy units, slowing them for a few seconds.' },
+    forms: [
+      ['Tide Engine', 'A bronze cart carrying a great glass tank of water, with a pump and a bronze throwing arm that hurls glowing orbs of water; a small armillary turns on its frame.'],
+      ['Moon Engine', 'A silver ballista shaped like a great crescent bow on a pearl platform, firing glowing moon orbs, while a small orrery turns above it.'],
+    ],
+  },
+  fire: {
+    role: 'Molten mortar', stats: { attack: 46, range: 6.5 },
+    trait: { id: 'lava', name: 'Lava Splash', text: 'Its balls of molten rock leave the ground burning for a few seconds.' },
+    forms: [
+      ['Magma Mortar', 'A squat basalt mortar on a stone sled, banded in gold with a lion face, its bore glowing with magma beside a stack of molten shot.'],
+      ['Sun Cannon', 'A gold cannon on a stepped sun platform, with a great mirror dish behind it that focuses sunlight through a solar lens into blazing sunballs.'],
+    ],
+  },
+  earth: {
+    role: 'Boulder catapult', stats: { hp: 340, speed: 1.0 },
+    trait: { id: 'shatter', name: 'Shatter', text: 'Its boulders crack stone: they hit buildings even harder and spray shards around them.' },
+    forms: [
+      ['Root Catapult', 'A catapult grown from living wood: a bent root throwing arm with a mossy boulder, rune stones for its counterweight and wheels of woven roots.'],
+      ['Earthshaker', 'A trebuchet of living trees in bloom, slinging a great rune boulder wrapped in roots that shakes the ground where it lands, with an emerald counterweight.'],
     ],
   },
 };

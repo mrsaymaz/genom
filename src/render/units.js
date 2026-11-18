@@ -63,7 +63,7 @@ export class UnitMeshes {
       // Flyers (the Tide Raven) hover and glide; everyone else bobs as they walk.
       const bob = def?.flies ? 1.05 + Math.sin(time * 2.4 + u.id) * 0.12 : moving ? Math.abs(Math.sin(time * (u.boost > 0 ? 13 : 9) + u.id)) * 0.06 : 0;
       const swing = (!moving && u.order && ['gather', 'build'].includes(u.order.type)) ? Math.sin(u.work * Math.PI * 2) * 0.35 : (u.cd > 0 && u.work > 0 && !moving ? Math.max(0, u.cd / 1.3) * 0.4 : 0);
-      d.position.set(wx, bob + pop * 0.25, wz); d.rotation.set(swing * 0.6, Math.atan2(Math.cos(u.facing), Math.sin(u.facing)) + pop * 6.28, 0, 'YXZ'); d.scale.setScalar(1.05 * (1 + pop * 0.35)); d.updateMatrix();
+      d.position.set(wx, bob + pop * 0.25, wz); d.rotation.set(swing * 0.6, Math.atan2(Math.cos(u.facing), Math.sin(u.facing)) + pop * 6.28, 0, 'YXZ'); d.scale.setScalar((def?.kind === 'siege' ? 1.3 : 1.05) * (1 + pop * 0.35)); d.updateMatrix();
       m.lit.setMatrixAt(m.lit.count++, d.matrix);
       if (m.glow) m.glow.setMatrixAt(m.glow.count++, d.matrix);
       if (u.carry && u.carry.amt > 1 && this.carry[u.carry.type]) {

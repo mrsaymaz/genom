@@ -3,7 +3,7 @@
 // so the docs, the page and the game always show the same units.
 // Run: node tools/gen-units.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
-import { AGES, AGE_NAMES, LINES, SPECIALS, ROSTER, HEROES, CREATURES, UNIT_TWISTS, NATION_ORDER, NATION_INFO } from '../src/data/units.js';
+import { AGES, AGE_NAMES, LINES, SPECIALS, ROSTER, HEROES, CREATURES, SIEGE, SIEGE_BASE, UNIT_TWISTS, NATION_ORDER, NATION_INFO } from '../src/data/units.js';
 
 const strip = src => src.replace(/^export (const|function|let) /gm, '$1 ');
 const fmtCost = c => Object.entries(c).map(([k, v]) => `${v} ${k[0].toUpperCase() + k.slice(1)}`).join(', ');
@@ -34,7 +34,7 @@ function roster() {
     for (const line of ['worker', 'infantry', 'ranged', 'special']) L.push(`| ${line === 'special' ? sp.label : LINES[line].label} | ${r[line].map(x => x[0]).join(' | ')} |`);
     L.push(`| Hero | — | ${r.hero.map(x => x[0]).join(' | ')} |`);
     L.push(`| Signature creature | — | ${CREATURES[n].forms.map(x => x[0]).join(' | ')} |`);
-    L.push(`| Siege | — | — | ${r.siege.join(' | ')} |`);
+    L.push(`| Siege | — | — | ${SIEGE[n].forms.map(x => x[0]).join(' | ')} |`);
     L.push('');
     L.push(`Hero: ${HEROES[n].role}. Ability **${HEROES[n].ability.name}** (tap the button; it recharges in 35, 30 and 25 s in the Mythic, Arcane and Celestial Ages): ${HEROES[n].ability.text}`, '');
     L.push('### Hero', '', '| Age | Name | Look |', '|---|---|---|');
@@ -44,6 +44,11 @@ function roster() {
     L.push(`Signature creature: ${cr.role}, trained at the Beast Pen, one at a time (${cr.pop} population). Mythic stats: ${cb.hp} HP, ${cb.attack} ${cr.attackType} attack, cost ${fmtCost(cr.cost)}${cr.flies ? '; it flies over water and buildings' : ''}. Ability **${cr.trait.name}** (works on its own): ${cr.trait.text}`, '');
     L.push('### Signature creature', '', '| Age | Name | Look |', '|---|---|---|');
     cr.forms.forEach(([name, desc], i) => L.push(`| ${AGE_NAMES[AGES[i + 1]]} | ${name} | ${desc} |`));
+    L.push('');
+    const sg = SIEGE[n], sb = { ...SIEGE_BASE, ...sg.stats };
+    L.push(`Siege engine: ${sg.role}, built at the Workshop from the Arcane Age (${sb.pop} population). Arcane stats: ${sb.hp} HP, ${sb.attack} attack, range ${sb.range} tiles, a burst ${sb.splash} tiles wide, cost ${fmtCost(sb.cost)}. It cannot fire at anything within ${sb.minRange} tiles; spear fighters, scouts and chargers tear into it, arrows do little. Its shot: **${sg.trait.name}**, ${sg.trait.text.charAt(0).toLowerCase() + sg.trait.text.slice(1)}`, '');
+    L.push('### Siege engine', '', '| Age | Name | Look |', '|---|---|---|');
+    sg.forms.forEach(([name, desc], i) => L.push(`| ${AGE_NAMES[AGES[i + 2]]} | ${name} | ${desc} |`));
     L.push('');
     for (const line of ['worker', 'infantry', 'ranged', 'special']) {
       L.push(`### ${line === 'special' ? sp.label : LINES[line].label}`, '');
@@ -57,7 +62,7 @@ function roster() {
 
 // ---------- the concept page ----------
 function page(age) {
-  const ai = AGES.indexOf(age), AGE = AGE_NAMES[age], lines = ai ? ['worker', 'infantry', 'ranged', 'special', 'hero', 'creature'] : ['worker', 'infantry', 'ranged', 'special'];
+  const ai = AGES.indexOf(age), AGE = AGE_NAMES[age], lines = ai >= 2 ? ['worker', 'infantry', 'ranged', 'special', 'hero', 'creature', 'siege'] : ai ? ['worker', 'infantry', 'ranged', 'special', 'hero', 'creature'] : ['worker', 'infantry', 'ranged', 'special'];
   const models = strip(readFileSync('src/render/unit-models.js', 'utf8'));
   const data = strip(readFileSync('src/data/units.js', 'utf8'));
   return `<title>${AGE} Age Units</title>
@@ -159,7 +164,7 @@ td.na { color: var(--muted); }
       <h1>${AGE} Age Units</h1>
       <button id="motion" type="button" aria-pressed="false">Pause turntable</button>
     </div>
-    <p class="lead">${ai ? `Each nation's units after the age-up to the ${AGE} Age: every line keeps its outline but gains the materials of the nation's ${AGE} buildings, ${ai === 1 ? 'and the first hero and the signature creature join them' : ai === 3 ? 'and the hero and the creature take their final forms. These are the strongest units in the game' : 'and the hero and the creature take new forms'}. Switch ages to compare. These are the game's own low-poly models.` : `Each nation's four Dark Age units: a worker, a spear fighter, a ranged fighter and one special unit that fits its element. Every line transforms in each new age, as the buildings do. These are the game's own low-poly models, so what you see here is what students will command.`}</p>
+    <p class="lead">${ai ? `Each nation's units after the age-up to the ${AGE} Age: every line keeps its outline but gains the materials of the nation's ${AGE} buildings, ${ai === 1 ? 'and the first hero and the signature creature join them' : ai === 3 ? 'and the hero, the creature and the siege engine take their final forms. These are the strongest units in the game' : 'and the hero and the creature take new forms, while the Workshop builds the first siege engines'}. Switch ages to compare. These are the game's own low-poly models.` : `Each nation's four Dark Age units: a worker, a spear fighter, a ranged fighter and one special unit that fits its element. Every line transforms in each new age, as the buildings do. These are the game's own low-poly models, so what you see here is what students will command.`}</p>
     <div class="controls">
 ${ai ? `      <div><span class="clbl">Age</span><span class="seg" role="group" aria-label="Age">${AGES.slice(0, ai + 1).reverse().map((a, i) => `<button type="button" data-age="${a}" aria-pressed="${i === 0}">${AGE_NAMES[a]}</button>`).join('')}</span></div>
 ` : ''}      <div><span class="clbl">View</span><span class="seg" role="group" aria-label="View"><button type="button" data-view="color" aria-pressed="true">Colour</button><button type="button" data-view="sil" aria-pressed="false">Silhouette</button></span></div>
@@ -243,6 +248,21 @@ ${models}
         var ab0 = card.querySelector(".ability"); ab0.hidden = false; ab0.innerHTML = "<b>" + hd.ability.name + " (tap to use):</b> " + hd.ability.text;
         return;
       }
+      if (line === "siege") {
+        var sg = SIEGE[n], sb = Object.assign({}, SIEGE_BASE, sg.stats), sk = function (key) { return (AGE_SCALE[state.age] || AGE_SCALE.arcane)[key] / AGE_SCALE.arcane[key]; };
+        var si = ai - 2;
+        card.querySelector(".eyebrow").textContent = "Siege · " + sg.role + " · Workshop";
+        card.querySelector(".fp").textContent = sb.pop + " population";
+        card.querySelector("h2").textContent = si >= 0 ? sg.forms[si][0] : "No siege yet";
+        card.querySelector(".desc").textContent = si >= 0 ? sg.forms[si][1] : "Siege engines join from the Arcane Age, built at the Workshop.";
+        card.querySelector(".role").textContent = "Lobs a long shot that bursts where it lands. Wrecks buildings; cannot fire at anything right beside it.";
+        var sc2 = {}; Object.keys(sb.cost).forEach(function (r2) { sc2[r2] = Math.round(sb.cost[r2] * sk("cost") / 5) * 5; });
+        card.querySelector(".stats").innerHTML = [["HP", Math.round(sb.hp * sk("hp"))], ["Attack", Math.round(sb.attack * sk("attack") * 10) / 10 + " siege"], ["Range", sb.minRange + " to " + sb.range + " tiles"], ["Speed", speedWord(sb.speed) + " (" + sb.speed + ")"], ["Burst", (sb.splash + Math.max(0, si) * 0.3).toFixed(1) + " tiles"], ["Train", sb.time + " s"], ["Cost", costText(sc2), "wide"]].map(function (x) { return '<div' + (x[2] ? ' class="wide"' : "") + '><dt>' + x[0] + "</dt><dd>" + x[1] + "</dd></div>"; }).join("");
+        card.querySelector(".strong").textContent = "Buildings and towers";
+        card.querySelector(".weak").textContent = "Spear fighters, scouts and chargers up close";
+        var ab2 = card.querySelector(".ability"); ab2.hidden = false; ab2.innerHTML = "<b>" + sg.trait.name + ":</b> " + sg.trait.text;
+        return;
+      }
       if (line === "creature") {
         var cr = CREATURES[n], cs = AGE_SCALE[state.age] || AGE_SCALE.mythic, cm = AGE_SCALE.mythic, BEATS = { fire: "earth", earth: "air", air: "water", water: "fire" };
         var prey = BEATS[n], foe = Object.keys(BEATS).filter(function (k) { return BEATS[k] === n; })[0], fi = Math.max(0, ai - 1);
@@ -279,7 +299,7 @@ ${models}
     var rowsH = LADDER_LINES.map(function (l) { return "<tr><td>" + (l === "special" ? sp.label : LINES[l].label) + "</td>" + r[l].map(function (x, i) { return '<td class="' + now(i) + '">' + x[0] + "</td>"; }).join("") + "</tr>"; });
     rowsH.push('<tr><td>Hero</td><td class="' + now(0) + ' na">—</td>' + r.hero.map(function (h, i) { return '<td class="' + now(i + 1) + '">' + h[0] + "</td>"; }).join("") + "</tr>");
     rowsH.push('<tr><td>Creature</td><td class="' + now(0) + ' na">—</td>' + CREATURES[n].forms.map(function (c, i) { return '<td class="' + now(i + 1) + '">' + c[0] + "</td>"; }).join("") + "</tr>");
-    rowsH.push('<tr><td>Siege</td><td class="' + now(0) + ' na">—</td><td class="' + now(1) + ' na">—</td>' + r.siege.map(function (h, i) { return '<td class="' + now(i + 2) + '">' + h + "</td>"; }).join("") + "</tr>");
+    rowsH.push('<tr><td>Siege</td><td class="' + now(0) + ' na">—</td><td class="' + now(1) + ' na">—</td>' + SIEGE[n].forms.map(function (h, i) { return '<td class="' + now(i + 2) + '">' + h[0] + "</td>"; }).join("") + "</tr>");
     document.getElementById("ladder").innerHTML = "<thead>" + head + "</thead><tbody>" + rowsH.join("") + "</tbody>";
   }
 
@@ -375,7 +395,7 @@ ${models}
   // world unit is about 21.7 points. Drawn here at the same scale with the game's camera.
   function drawField() {
     var PPU = 390 / 18, cols = LINE_ORDER.length, rows = 4, gap = 4.4, rowGap = 3.7;
-    var cssW = cols > 4 ? 660 : 560, cssH = 300, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var cssW = cols > 6 ? 740 : cols > 4 ? 660 : 560, cssH = 300, dpr = Math.min(window.devicePixelRatio || 1, 2);
     var cv = document.getElementById("field-cv"), field = document.getElementById("field");
     cv.width = cssW * dpr; cv.height = cssH * dpr; cv.style.width = cssW + "px"; cv.style.height = cssH + "px";
     field.style.width = cssW + "px";

@@ -207,6 +207,22 @@ export class View {
     this.scene.add(m);
     this.fx.push({ m, t: 0, dur: 0.35, from, to, kind: 'arrow' });
   }
+  // A siege shot: a glowing ball (or a boulder) lobbed high from the engine to where it lands.
+  shot(from, to, time, effect, age) {
+    const late = age === 'celestial';
+    const look = {
+      gust: [new THREE.OctahedronGeometry(0.22, 0), late ? '#fff6cf' : '#ffe08a'],
+      soak: [new THREE.SphereGeometry(0.2, 10, 8), late ? '#eef5ff' : '#5fd0ff'],
+      lava: [new THREE.SphereGeometry(0.2, 10, 8), late ? '#ffe08a' : '#ff7a1f'],
+      shatter: [new THREE.DodecahedronGeometry(0.22, 0), null],
+    }[effect] || [new THREE.SphereGeometry(0.18, 8, 6), '#ffffff'];
+    const mat = look[1] ? new THREE.MeshBasicMaterial({ color: lin(look[1]) }) : new THREE.MeshStandardMaterial({ color: lin('#8d877c'), flatShading: true, emissive: lin(late ? '#2fae68' : '#1a3a20'), emissiveIntensity: 0.6 });
+    const m = new THREE.Mesh(look[0], mat);
+    m.castShadow = true;
+    this.scene.add(m);
+    const el = { gust: 'air', soak: 'water', lava: 'fire', shatter: 'earth' }[effect];
+    this.fx.push({ m, t: 0, dur: time, from, to, kind: 'shot', el, peak: 1.6 + Math.hypot(to[0] - from[0], to[1] - from[1]) * 0.18, trail: 0 });
+  }
   dust(pos, n = 6, spread = 0.6) {
     for (let i = 0; i < n; i++) {
       const m = new THREE.Mesh(new THREE.SphereGeometry(0.25 + Math.random() * 0.25, 6, 4), this.dustMat.clone());
@@ -258,6 +274,10 @@ export class View {
         const x = e.from[0] + (e.to[0] - e.from[0]) * k, z = e.from[1] + (e.to[1] - e.from[1]) * k;
         e.m.position.set(x, 0.9 + Math.sin(k * Math.PI) * 0.8, z);
         e.m.rotation.set(0, -Math.atan2(e.to[1] - e.from[1], e.to[0] - e.from[0]), (0.5 - k) * 1.2);
+      } else if (e.kind === 'shot') {
+        const x = e.from[0] + (e.to[0] - e.from[0]) * k, z = e.from[1] + (e.to[1] - e.from[1]) * k;
+        e.m.position.set(x, 0.9 + Math.sin(k * Math.PI) * e.peak, z); e.m.rotation.set(time * 6, time * 4, 0);
+        if (e.el && (e.trail -= dt) <= 0) { e.trail = 0.05; this.magic.emit(e.el, x, z, { n: 1, y: e.m.position.y - 0.1, radius: 0.05, speed: 0.15, life: 0.5, size: 0.7, up: 0.1 }); }
       } else { e.m.position.y += e.vy * dt; e.m.scale.setScalar(1 + k * 1.5); e.m.material.opacity = 0.6 * (1 - k); }
       return true;
     });

@@ -46,6 +46,7 @@ export class RivalAI {
     if (sanctum.some(b => b.built) && !w.hasUnique(team, 'hero')) return w.def(team, 'hero').cost;
     if (!pen.length) return CONFIG.buildings.pen.cost;
     if (pen.some(b => b.built) && !w.hasUnique(team, 'creature')) return w.def(team, 'creature').cost;
+    if (this.t.age !== 'mythic' && !this.mine('workshop').length) return CONFIG.buildings.workshop.cost;
     return null;
   }
 
@@ -123,6 +124,7 @@ export class RivalAI {
     if (t.age !== 'dark' && !this.saving()) {
       if (!this.mine('sanctum').length) this.tryBuild('sanctum', cx - 3, cy + 3);
       else if (!this.mine('pen').length && this.mine('sanctum').some(b => b.built)) this.tryBuild('pen', cx + 3, cy - 3);
+      else if (t.age !== 'mythic' && !this.mine('workshop').length && this.mine('pen').some(b => b.built)) this.tryBuild('workshop', cx - 3, cy - 3);
     }
   }
 
@@ -142,6 +144,9 @@ export class RivalAI {
       const b = this.mine(bt).find(x => x.built);
       if (b && !w.hasUnique(this.team, type)) w.train(b.id, type);
     }
+    // Two siege engines from the Workshop, to break the player's buildings.
+    const shop = this.mine('workshop').find(x => x.built);
+    if (shop && !this.saving() && !shop.queue.length && this.units('siege').length < 2 && !(this.goal() && !w.canAfford(this.team, this.goal()))) w.train(shop.id, 'siege');
     this.useHero();
     const soldiers = this.units().filter(u => u.type !== 'worker');
     // Defend: enemies near home draw every idle soldier.
@@ -188,8 +193,9 @@ export class RivalAI {
     if (w.time >= this.p.aiAges[w.nextAge(this.team)] && w.canAgeUp(this.team).ok) { w.startAgeUp(this.home.id); return; }
     const cost = CONFIG.ageUp[w.nextAge(this.team)].cost, r = this.t.res;
     const onGold = this.units('worker').filter(u => w.get(u.order?.target)?.kind === 'gold' || u.carry?.type === 'gold');
-    if (r.gold < cost.gold && onGold.length < 4) {
-      const pick = this.units('worker').find(u => w.get(u.order?.target)?.kind === 'tree');
+    // Short of gold: move woodcutters to the mine (and farmers too, once the food is there).
+    if (r.gold < cost.gold && onGold.length < 4 + 2 * CONFIG.ages.indexOf(this.t.age)) {
+      const pick = this.units('worker').find(u => w.get(u.order?.target)?.kind === 'tree') || (r.food >= cost.food ? this.units('worker').find(u => { const tg = w.get(u.order?.target); return tg && (tg.kind === 'berries' || tg.cat === 'bld'); }) : null);
       const [cx, cy] = w.center(this.home), mine = w.nearestResource(cx, cy, 'gold', 30);
       if (pick && mine) w.orderGather([pick.id], mine.id);
     }

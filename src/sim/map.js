@@ -61,15 +61,15 @@ export function generateMap(size, seed) {
     return true;
   };
   const B = bases[0];
-  // Home gold mine, berries and two groves.
-  place('gold', B.x - 3, B.y - 6, 2, 2, 900);
+  // Home gold mine (enough for all four ages), berries and two groves.
+  place('gold', B.x - 3, B.y - 6, 2, 2, 1500);
   for (const [dx, dy] of [[7, 1], [8, 2], [7, 3], [8, 0], [9, 3], [8, 4]]) place('berries', B.x + dx, B.y + dy, 1, 1, 150);
   const grove = (cx, cy, rad, n) => { for (let k = 0; k < n * 4 && n > 0; k++) { const a = r() * Math.PI * 2, d = Math.sqrt(r()) * rad; if (place('tree', Math.round(cx + Math.cos(a) * d), Math.round(cy + Math.sin(a) * d), 1, 1, 90)) n--; } };
   grove(B.x - 3, B.y + 7, 3.4, 22);
   grove(B.x + 8, B.y + 8, 3.0, 18);
   grove(B.x - 4, B.y - 1, 2.0, 7);
   // Contested middle gold, near the side fords.
-  place('gold', fords[0][0] - 6, fords[0][1] + 3, 2, 2, 1200);
+  place('gold', fords[0][0] - 6, fords[0][1] + 3, 2, 2, 1800);
   // Scattered groves and rocky outcrops across the meadow.
   for (let g = 0; g < 7; g++) { const cx = 2 + r() * (size - 4), cy = 2 + r() * (size - 4); if (cy - cx > 6) grove(cx, cy, 2 + r() * 2, 6 + Math.floor(r() * 8)); }
   for (let k = 0; k < 9; k++) {

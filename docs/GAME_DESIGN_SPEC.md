@@ -211,5 +211,5 @@ One panel that fits a phone without scrolling (as solMaxima's opening screen):
 10. ~~Map settings~~: the tutorial and all three arenas are invented landscapes; their themes are still to design.
 11. League game ID and the exact win rule.
 12. Rival draw weights (section 7) or uniform draws with AI skill only.
-13. ~~Units roster~~: four lines per nation (Worker, Infantry, Ranged and an element special: Air scouts, Water healers, Fire chargers, Earth guardians) that transform every age, plus a hero and the signature creature from the Mythic Age and siege from the Arcane Age (`UNIT_ROSTER.md`). Dark Age models drafted; awaiting review.
+13. ~~Units roster~~: four lines per nation (Worker, Infantry, Ranged and an element special: Air scouts, Water healers, Fire chargers, Earth guardians) that transform every age, plus a hero and the signature creature from the Mythic Age and siege from the Arcane Age (`UNIT_ROSTER.md`). The Dark Age units are in the game, with counters, the element edge and the four special abilities.
 14. Scope for v1: suggested all four nations, the tutorial and Arena 1 first.

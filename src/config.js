@@ -29,16 +29,13 @@ export const CONFIG = {
     house: { name: 'House', role: 'house', size: 2, hp: 550, bt: 20, cost: { lumber: 30 }, pop: 10 },
     farm: { name: 'Farm', role: 'farm', size: 3, hp: 300, bt: 25, cost: { lumber: 60 }, walkable: true, farm: true },
     storehouse: { name: 'Storehouse', role: 'store', size: 2, hp: 600, bt: 30, cost: { lumber: 80 }, drop: ['lumber', 'gold', 'food'] },
-    barracks: { name: 'Barracks', role: 'barracks', size: 3, hp: 1200, bt: 45, cost: { lumber: 150 }, trains: ['spearman', 'archer'] },
+    barracks: { name: 'Barracks', role: 'barracks', size: 3, hp: 1200, bt: 45, cost: { lumber: 150 }, trains: ['spearman', 'archer', 'special'] },
     watchtower: { name: 'Watchtower', role: 'tower', size: 2, hp: 800, bt: 40, cost: { lumber: 100, gold: 50 }, attack: { range: 7, damage: 7, cooldown: 1.5 } },
   },
   buildOrder: ['house', 'farm', 'storehouse', 'barracks', 'watchtower'],
 
-  units: {
-    worker: { name: 'Worker', hp: 25, speed: 2.3, damage: 2, range: 0.9, cooldown: 1.4, sight: 4, cost: { food: 50 }, time: 12, carry: 10 },
-    spearman: { name: 'Spearman', hp: 55, speed: 2.1, damage: 7, range: 0.95, cooldown: 1.2, sight: 6, cost: { food: 60, lumber: 20 }, time: 18, bonusVsBuilding: 1.5 },
-    archer: { name: 'Archer', hp: 35, speed: 2.2, damage: 5, range: 4.5, cooldown: 1.6, sight: 7, cost: { food: 40, lumber: 35, gold: 15 }, time: 20 },
-  },
+  // Unit stats come from the roster in src/data/units.js (each nation has its own units).
+
 
   // Gathering per second while working; amounts per resource node.
   gather: { lumber: 0.75, gold: 0.6, food: 0.85, farm: 0.6 },

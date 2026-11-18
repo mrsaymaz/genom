@@ -152,3 +152,48 @@ test('the Town bell shelters workers, the Town Center hits harder, and the all-c
   assert.equal(w.sheltered(tc).length, 0);
   assert.ok(workers.every(u => u.order?.type === 'gather' && u.order.target === tree.id), 'everyone went back to the trees');
 });
+
+test('each nation trains its own units, with its own names and twists', () => {
+  const w = new World({ teams: ['ravenclaw', 'slytherin'] });
+  assert.equal(w.def(0, 'spearman').name, 'Shell Guard');
+  assert.equal(w.def(1, 'special').name, 'Stonewarden');
+  assert.equal(w.def(0, 'special').kind, 'healer');
+  assert.equal(w.def(1, 'special').pop, 2, 'a guardian takes two population');
+  assert.ok(w.def(1, 'spearman').hp > w.def(0, 'spearman').hp, 'Earth units are tougher');
+  const tc = [...w.buildings(1)][0];
+  const before = w.teams[1].pop;
+  w.spawnUnit(1, 'special', tc);
+  assert.equal(w.teams[1].pop, before + 2);
+});
+
+test('the healer mends a hurt ally, and the guardian shrugs off melee hits', () => {
+  const w = new World({ teams: ['ravenclaw', 'slytherin'] });
+  const tc = [...w.buildings(0)][0];
+  const healer = w.spawnUnit(0, 'special', tc), guard = w.spawnUnit(0, 'spearman', tc);
+  guard.x = healer.x + 1; guard.y = healer.y; guard.hp = 20; guard.hurtT = w.time;
+  run(w, 3);
+  assert.ok(guard.hp >= 26, `healed to ${guard.hp}`);
+  // A spear against a guardian does half damage, then the counter bonus applies.
+  const g2 = w.spawnUnit(1, 'special', tc), sp = w.spawnUnit(0, 'spearman', tc);
+  const hp = g2.hp;
+  w.damage(sp, g2, 10);
+  assert.ok(Math.abs(hp - g2.hp - 10 * 0.5) < 0.01, `guardian took ${hp - g2.hp}`);
+});
+
+test('chargers hit twice as hard after a run-up, and scouts speed away after a hit', () => {
+  const w = new World({ teams: ['gryffindor', 'hufflepuff'] });
+  const tc = [...w.buildings(0)][0];
+  const rider = w.spawnUnit(0, 'special', tc), target = w.spawnUnit(1, 'archer', tc);
+  target.x = rider.x + 6; target.y = rider.y; target.px = target.x; target.py = target.y;
+  w.setOrder(target, { type: 'hold' });
+  const events = [];
+  w.orderAttack([rider.id], target.id);
+  for (let t = 0; t < 6 && !events.some(e => e.type === 'charge'); t += 0.05) { w.step(0.05); events.push(...w.drainEvents()); }
+  assert.ok(events.some(e => e.type === 'charge'), 'the first hit was a charge');
+  const scout = w.spawnUnit(1, 'special', tc), dummy = w.spawnUnit(0, 'worker', tc);
+  dummy.x = scout.x + 0.5; dummy.y = scout.y;
+  w.setOrder(dummy, { type: 'hold' });
+  w.orderAttack([scout.id], dummy.id);
+  for (let t = 0; t < 3 && scout.boost <= 0; t += 0.05) w.step(0.05);
+  assert.ok(scout.boost > 0, 'Tailwind is active after the hit');
+});

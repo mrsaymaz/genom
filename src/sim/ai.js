@@ -91,7 +91,10 @@ export class RivalAI {
     const w = this.w, t = this.t;
     const rax = this.mine('barracks').find(b => b.built);
     if (rax && w.time >= this.nextTrain && rax.queue.length < 2) {
-      const type = this.units('spearman').length > this.units('archer').length * 1.5 && w.canAfford(this.team, CONFIG.units.archer.cost) ? 'archer' : 'spearman';
+      // Keep a mix: about half spears, then ranged units and the nation's special.
+      const mix = { spearman: 0.45, archer: 0.3, special: 0.25 };
+      const type = Object.keys(mix).filter(t => w.canAfford(this.team, w.def(this.team, t).cost))
+        .sort((a, b) => this.units(a).length / mix[a] - this.units(b).length / mix[b])[0] || 'spearman';
       if (w.train(rax.id, type)) this.nextTrain = w.time + this.p.aiTrainEvery;
     }
     const soldiers = this.units().filter(u => u.type !== 'worker');

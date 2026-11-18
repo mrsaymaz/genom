@@ -416,7 +416,10 @@ function unitStats(nation, line, age = 'dark') {
 // Units face +Z and stand on y = 0. A standard figure is about 1.15 tall.
 // This file is shared by the game and the concept pages (tools/gen-units.mjs inlines it).
 
-function unitKit(THREE) {
+// detail: 1 for close-ups (the concept pages); the game uses less, since units are only about
+// 20 screen points tall on a phone and fewer triangles keep big armies smooth.
+function unitKit(THREE, { detail = 1 } = {}) {
+  const sg = (n, min = 4) => Math.max(min, Math.round(n * detail));
   const lit = [], glow = [];
   const stack = [new THREE.Matrix4()];
   const col = new THREE.Color();
@@ -451,18 +454,18 @@ function unitKit(THREE) {
     },
     pop() { if (stack.length > 1) stack.pop(); },
     box(w, h, d, p, c, o = {}) { put(new THREE.BoxGeometry(w, h, d), c, { ...o, p }); },
-    cyl(rt, rb, h, p, c, o = {}) { put(new THREE.CylinderGeometry(rt, rb, h, o.seg || 8, 1, !!o.open, o.t0 || 0, o.arc || Math.PI * 2), c, { ...o, p }); },
+    cyl(rt, rb, h, p, c, o = {}) { put(new THREE.CylinderGeometry(rt, rb, h, sg(o.seg || 8, 5), 1, !!o.open, o.t0 || 0, o.arc || Math.PI * 2), c, { ...o, p }); },
     hex(r, h, p, c, o = {}) { put(new THREE.CylinderGeometry(r, r, h, 6), c, { ...o, p }); },
-    ball(r, p, c, o = {}) { put(new THREE.SphereGeometry(r, o.ws || 10, o.hs || 8, o.ps || 0, o.pl || Math.PI * 2, o.t0 || 0, o.tl || Math.PI), c, { ...o, p }); },
+    ball(r, p, c, o = {}) { put(new THREE.SphereGeometry(r, sg(o.ws || 10, 6), sg(o.hs || 8, 4), o.ps || 0, o.pl || Math.PI * 2, o.t0 || 0, o.tl || Math.PI), c, { ...o, p }); },
     // A hood: a sphere open at the front so the face shows.
-    hood(r, p, c, o = {}) { const open = o.open || 0.95; put(new THREE.SphereGeometry(r, 12, 10, Math.PI / 2 + open, Math.PI * 2 - open * 2, 0, o.tl || Math.PI * 0.62), c, { ...o, p }); },
-    cone(r, h, p, c, o = {}) { put(new THREE.ConeGeometry(r, h, o.seg || 8), c, { ...o, p }); },
-    torus(R, r, p, c, o = {}) { put(new THREE.TorusGeometry(R, r, o.rs || 6, o.ts || 16, o.arc || Math.PI * 2), c, { ...o, p }); },
+    hood(r, p, c, o = {}) { const open = o.open || 0.95; put(new THREE.SphereGeometry(r, sg(12, 7), sg(10, 5), Math.PI / 2 + open, Math.PI * 2 - open * 2, 0, o.tl || Math.PI * 0.62), c, { ...o, p }); },
+    cone(r, h, p, c, o = {}) { put(new THREE.ConeGeometry(r, h, o.seg && o.seg <= 6 ? o.seg : sg(o.seg || 8, 5)), c, { ...o, p }); },
+    torus(R, r, p, c, o = {}) { put(new THREE.TorusGeometry(R, r, sg(o.rs || 6, 3), sg(o.ts || 16, 8), o.arc || Math.PI * 2), c, { ...o, p }); },
     ico(r, p, c, o = {}) { put(new THREE.IcosahedronGeometry(r, o.d || 0), c, { ...o, p }); },
     dodeca(r, p, c, o = {}) { put(new THREE.DodecahedronGeometry(r, 0), c, { ...o, p }); },
     octa(r, p, c, o = {}) { put(new THREE.OctahedronGeometry(r, 0), c, { ...o, p }); },
     // Profile points run from bottom to top so the faces point outwards.
-    lathe(pts, p, c, o = {}) { const q = pts[0][1] > pts[pts.length - 1][1] ? [...pts].reverse() : pts; put(new THREE.LatheGeometry(q.map(([x, y]) => new THREE.Vector2(x, y)), o.seg || 10), c, { ...o, p }); },
+    lathe(pts, p, c, o = {}) { const q = pts[0][1] > pts[pts.length - 1][1] ? [...pts].reverse() : pts; put(new THREE.LatheGeometry(q.map(([x, y]) => new THREE.Vector2(x, y)), sg(o.seg || 10, 6)), c, { ...o, p }); },
     // A tapered rod from a to b (limbs, shafts, strings).
     rod(a, b, r1, c, o = {}) {
       const A = v3(a), Bv = v3(b), d = Bv.clone().sub(A), len = d.length();

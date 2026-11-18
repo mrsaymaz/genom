@@ -162,7 +162,7 @@ class Game {
         if (b) { v.syncBuilding(b); if (b.team === 0) { this.hud.toast(`${CONFIG.buildings[b.type].name} complete.`); audio.sfx('built'); audio.say('built', b.type, true); } }
       } else if (ev.type === 'trained' && ev.team === 0) {
         const u = w.get(ev.id);
-        if (u) { audio.sfx('trained'); audio.say('trained', u.type); }
+        if (u) { const n = w.def(0, u.type).name; audio.sfx('trained'); audio.speak(`${/^[AEIOU]/.test(n) ? 'An' : 'A'} ${n} is ready.`); }
       } else if (ev.type === 'deposit' && ev.team === 0) {
         const u = w.get(ev.id);
         if (u && this.onScreen1(u.x, u.y)) audio.sfx('deposit', 0.15);
@@ -443,7 +443,7 @@ class Game {
   // Queues one unit, or up to `count` (hold a train button to queue five). With several
   // buildings selected, each unit goes to the one with the shortest queue.
   trainUnit(bids, type, count = 1) {
-    const w = this.world, d = CONFIG.units[type];
+    const w = this.world, d = w.def(0, type);
     const list = [].concat(bids).map(id => w.get(id)).filter(b => b && b.built && CONFIG.buildings[b.type].trains?.includes(type));
     if (!list.length) return;
     let n = 0;

@@ -15,7 +15,6 @@ export const LINES = {
   attack: ['Charge!', 'Attack!', 'For our team!', 'Follow me!'],
   hold: ['We will stay here.', 'Holding this place.'],
   built: { house: 'The house is ready.', farm: 'The farm is ready.', storehouse: 'The storehouse is ready.', barracks: 'The barracks are ready.', watchtower: 'The watchtower is ready.' },
-  trained: { worker: 'A new worker is ready.', spearman: 'A spearman is ready.', archer: 'An archer is ready.' },
   underAttack: ['We are under attack!', 'Enemies are here!'],
   wave: ['The enemy army is coming!'],
   bell: ['Everybody, go inside!'],
@@ -64,12 +63,21 @@ export class Audio {
     if (!urgent && (now - this.lastLine < 2200 || this.speech.speaking)) return;
     const table = LINES[key], text = sub !== undefined ? table?.[sub] : pick(table);
     if (!text) return;
+    this.utter(text, urgent, key.startsWith('select') || key === 'move' ? 1.15 : 1);
+  }
+  // Any line of text, for example "A Hive Guard is ready."
+  speak(text, urgent = false) {
+    if (!this.speech || this.settings.muted || this.settings.voice <= 0) return;
+    if (!urgent && (performance.now() - this.lastLine < 2200 || this.speech.speaking)) return;
+    this.utter(text, urgent, 1);
+  }
+  utter(text, urgent, pitch) {
     if (urgent) this.speech.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = this.voice?.lang || 'en-GB'; if (this.voice) u.voice = this.voice;
-    u.volume = this.settings.voice; u.rate = 1.02; u.pitch = key.startsWith('select') || key === 'move' ? 1.15 : 1;
+    u.volume = this.settings.voice; u.rate = 1.02; u.pitch = pitch;
     this.speech.speak(u);
-    this.lastLine = now;
+    this.lastLine = performance.now();
   }
 
   // ---------- synthesised effects ----------

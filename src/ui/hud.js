@@ -1,7 +1,7 @@
 // The heads-up display: resource bar, objectives, minimap, selection panel, command card,
 // quick-select buttons, toasts and the drag box. Plain DOM over the 3D canvas.
 import { CONFIG } from '../config.js';
-import { ICONS } from './icons.js';
+import { ICONS, unitIcon } from './icons.js';
 import { T } from '../sim/map.js';
 import { ActionRing } from './ring.js';
 import { TILE } from '../render/art.js';
@@ -177,15 +177,16 @@ export class HUD {
       const key = 'multi' + JSON.stringify(counts);
       if (key !== this.panelKey) {
         this.panelKey = key;
-        this.panel.innerHTML = `<div class="multi">${Object.entries(counts).map(([k, v]) => `<button class="chip" data-type="${k}">${ICONS[k]}<b>${v}</b></button>`).join('')}</div>`;
+        const iconOf = k => { const e = ents.find(x => x.type === k); return e.cat === 'unit' ? unitIcon(w.def(e.team, k)) : ICONS[k]; };
+        this.panel.innerHTML = `<div class="multi">${Object.entries(counts).map(([k, v]) => `<button class="chip" data-type="${k}" title="${ents.find(x => x.type === k).cat === 'unit' ? w.def(0, k).name : ''}">${iconOf(k)}<b>${v}</b></button>`).join('')}</div>`;
         this.panel.querySelectorAll('.chip').forEach(b => { b.onclick = () => g.narrowTo(b.dataset.type); });
       }
       return;
     }
     const e = ents[0];
     const own = e.team === 0;
-    const name = e.cat === 'res' ? { tree: 'Tree', gold: 'Gold Mine', berries: 'Berry Bush' }[e.kind] : (e.cat === 'bld' ? CONFIG.buildings[e.type].name : CONFIG.units[e.type].name);
-    const icon = e.cat === 'res' ? ICONS[{ tree: 'lumber', gold: 'gold', berries: 'food' }[e.kind]] : ICONS[e.type];
+    const name = e.cat === 'res' ? { tree: 'Tree', gold: 'Gold Mine', berries: 'Berry Bush' }[e.kind] : (e.cat === 'bld' ? CONFIG.buildings[e.type].name : w.def(e.team, e.type).name);
+    const icon = e.cat === 'res' ? ICONS[{ tree: 'lumber', gold: 'gold', berries: 'food' }[e.kind]] : e.cat === 'unit' ? unitIcon(w.def(e.team, e.type)) : ICONS[e.type];
     const key = `one${e.id}`;
     if (key !== this.panelKey) {
       this.panelKey = key;
@@ -212,11 +213,11 @@ export class HUD {
     const qk = q.map(x => x.type).join(',');
     if (qk !== this.queueKey) {
       this.queueKey = qk;
-      this.pQueue.innerHTML = q.map((x, i) => `<button class="qitem" data-i="${i}" title="Cancel">${ICONS[x.type]}${i === 0 ? '<s><i></i></s>' : ''}</button>`).join('');
+      this.pQueue.innerHTML = q.map((x, i) => `<button class="qitem" data-i="${i}" title="Cancel">${unitIcon(w.def(e.team, x.type))}${i === 0 ? '<s><i></i></s>' : ''}</button>`).join('');
       this.pQueue.querySelectorAll('.qitem').forEach(b => { b.onclick = () => g.cancelTraining(e.id, +b.dataset.i); });
     }
     if (q.length) {
-      const first = q[0], p = Math.min(1, first.t / CONFIG.units[first.type].time);
+      const first = q[0], p = Math.min(1, first.t / w.def(e.team, first.type).time);
       const bar = this.pQueue.querySelector('s i'); if (bar) bar.style.width = `${p * 100}%`;
       const t = w.teams[0];
       this.pStatus.textContent = first.blocked && t.pop >= t.popCap ? 'Need more houses for population' : status;
@@ -258,7 +259,7 @@ export class HUD {
       if (!b.built) items = [{ id: 'cc', icon: ICONS.cancel, label: 'Cancel', cls: 'stop', hint: 'Cancel construction (refund)', act: () => g.cancelConstruction(b.id) }];
       else {
         items = (d.trains || []).map(type => {
-          const u = CONFIG.units[type];
+          const u = w.def(0, type);
           let n = 0, prog = 0, room = false;
           for (const e of ents) {
             n += e.queue.filter(q => q.type === type).length;
@@ -267,7 +268,7 @@ export class HUD {
             if (first && first.type === type) prog = Math.max(prog, Math.min(1, first.t / u.time));
           }
           return {
-            id: 't' + type, icon: ICONS[type], label: u.name, cost: u.cost, hint: `Train a ${u.name}. Hold to queue five.`,
+            id: 't' + type, icon: unitIcon(u), label: u.short, cost: u.cost, hint: `Train a ${u.name}${u.ability ? ` (${u.ability.name}: ${u.ability.text})` : ''}. Hold to queue five.`,
             poor: !w.canAfford(0, u.cost) || !room, badge: n, progress: prog,
             act: () => g.trainUnit(ids, type), hold: () => g.trainUnit(ids, type, 5),
           };
@@ -309,7 +310,8 @@ export class HUD {
     if (!(ents.length && ents.every(e => e.cat === 'unit' ) && ents.some(e => e.type === 'worker'))) this.wheelAt = null;
 
     if (ring && (ring.anchor[0] < -40 || ring.anchor[0] > v.w + 40 || ring.anchor[1] < -40 || ring.anchor[1] > v.h + 40)) ring = null;
-    if (ring) this.ring.show(ring.anchor, ring.items, { ...ring.opts, bounds }); else this.ring.hide();
+    // Rings on the map stay clear of the info panel at the bottom of the screen.
+    if (ring) this.ring.show(ring.anchor, ring.items, { ...ring.opts, bounds: { ...bounds, bottom: this.panel.classList.contains('hidden') ? 4 : (compact ? 96 : 108) } }); else this.ring.hide();
     if (thumb) {
       // The thumb zone: buttons in a quarter circle around the bottom-right corner.
       const corner = [v.w - 10, v.h - 10];

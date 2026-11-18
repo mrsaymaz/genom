@@ -67,6 +67,7 @@ svg { width: 22px; height: 22px; flex: none; }
 .rbtn .face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-radius: 50%; background: rgba(24, 28, 34, 0.92); border: 2px solid rgba(255, 255, 255, 0.28); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35); animation: pop 0.22s cubic-bezier(.3, 1.6, .5, 1) backwards; animation-delay: inherit; }
 .rbtn .face svg { width: 26px; height: 26px; }
 .rbtn .lbl { font-size: 9.5px; line-height: 1; color: var(--ink2); white-space: nowrap; }
+.rbtn .lbl.long { font-size: 8.5px; letter-spacing: -0.02em; }
 .rbtn::before { content: ""; position: absolute; inset: -4px; border-radius: 50%; background: conic-gradient(var(--gold) calc(var(--p, 0) * 1turn), transparent 0); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3.5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3.5px)); }
 .rbtn .tag { position: absolute; left: 50%; top: 100%; transform: translate(-50%, 2px); display: flex; gap: 4px; padding: 2px 6px; border-radius: 8px; background: rgba(24, 28, 34, 0.88); font-size: 10.5px; line-height: 1.1; white-space: nowrap; }
 .cost { display: inline-flex; align-items: center; gap: 1px; }

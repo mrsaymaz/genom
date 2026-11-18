@@ -9,6 +9,11 @@ export const ICONS = {
   worker: svg('<circle cx="10" cy="6.5" r="3.2" fill="currentColor"/><path d="M4 21c0-5 2.5-8.5 6-8.5s6 3.5 6 8.5z" fill="currentColor"/><path d="M15 4l5 5M18 3l-4 4 3 3 4-4" stroke="currentColor" stroke-width="1.8" fill="none"/>'),
   spearman: svg('<circle cx="10" cy="7" r="3.2" fill="currentColor"/><path d="M4 21c0-5 2.5-8.5 6-8.5s6 3.5 6 8.5z" fill="currentColor"/><path d="M19 2v20" stroke="currentColor" stroke-width="1.8"/><path d="M19 1l2 4h-4z" fill="currentColor"/>'),
   archer: svg('<circle cx="9" cy="7" r="3.2" fill="currentColor"/><path d="M3 21c0-5 2.5-8.5 6-8.5s6 3.5 6 8.5z" fill="currentColor"/><path d="M16 3c5 4 5 14 0 18" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M16 3v18" stroke="currentColor" stroke-width=".9"/>'),
+  // The four element specials.
+  scout: svg('<circle cx="8" cy="9" r="2.8" fill="currentColor"/><path d="M4 21l2.5-6 3 1.5L8 21zM6.5 14.5l3-2.5 3 2-1.5 2zM10 13l3.5-4" stroke="currentColor" stroke-width="1.6" fill="currentColor" stroke-linejoin="round"/><path d="M18 2l4 4-4 4-4-4z" fill="currentColor"/><path d="M13.5 9.5l3-2" stroke="currentColor" stroke-width="1"/>'),
+  healer: svg('<path d="M12 2.5C9 7 6 10.5 6 14a6 6 0 0012 0c0-3.5-3-7-6-11.5z" fill="currentColor"/><path d="M12 11v6M9 14h6" stroke="#1b2128" stroke-width="2" stroke-linecap="round" opacity=".55"/>'),
+  charger: svg('<circle cx="11" cy="4.5" r="2.3" fill="currentColor"/><path d="M8 11l2-4h3l1 4z" fill="currentColor"/><path d="M3 13c0-2 2-3 5-3h7c3 0 5 1.5 6 3.5l1 1.5-2 .5-1.5-1H19v5h-2v-4H8v4H6v-4H4.5z" fill="currentColor"/><path d="M20.5 15l1.5 2" stroke="currentColor" stroke-width="1.4"/><path d="M14 9l8-5" stroke="currentColor" stroke-width="1.6"/>'),
+  guardian: svg('<path d="M5 4h14l1 5-1 9-7 4-7-4-1-9z" fill="currentColor"/><path d="M12 8c-2 2-2 5 0 8 2-3 2-6 0-8z" fill="#1b2128" opacity=".5"/>'),
   towncenter: svg('<path d="M3 11l9-7 9 7" fill="currentColor"/><rect x="5" y="11" width="14" height="10" fill="currentColor"/><rect x="10" y="15" width="4" height="6" fill="#1b2128"/>'),
   house: svg('<path d="M4 12l8-7 8 7z" fill="currentColor"/><rect x="6" y="12" width="12" height="8" fill="currentColor"/><rect x="10.5" y="15" width="3" height="5" fill="#1b2128"/>'),
   farm: svg('<path d="M3 20h18" stroke="currentColor" stroke-width="1.6"/><g fill="currentColor"><path d="M6 20v-7l1.5-3 1.5 3v7z"/><path d="M11 20v-9l1.5-3 1.5 3v9z"/><path d="M16 20v-7l1.5-3 1.5 3v7z"/></g>'),
@@ -41,3 +46,6 @@ export const EMBLEMS = {
   fire: svg('<path d="M12 2c1 4 6 6 6 12a6 6 0 01-12 0c0-3 2-5 3-6 0 3 1 4 2.5 4.5C11 10 10 6 12 2z" fill="currentColor"/>'),
   earth: svg('<path d="M12 21V11" stroke="currentColor" stroke-width="2"/><path d="M12 12C6 12 4 7 4 4c5 0 8 3 8 8zM12 15c5 0 8-3 8-8-4 0-8 2-8 8z" fill="currentColor"/>'),
 };
+
+// The icon for a unit type of a team (the special has one icon per kind).
+export const unitIcon = def => ICONS[def.type === 'special' ? def.kind : def.type] || ICONS.army;

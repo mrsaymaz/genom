@@ -33,7 +33,7 @@ function buildGuide(g, type) {
 function trainGuide(g, type, unit) {
   const b = mine(g, type);
   if (!b) return {};
-  if (g.sel.includes(b.id)) return { ui: `[data-id="t${unit}"]`, hint: `Tap the ${CONFIG.units[unit].name} button on the ${CONFIG.buildings[type].name}.` };
+  if (g.sel.includes(b.id)) return { ui: `[data-id="t${unit}"]`, hint: `Tap the ${g.world.def(0, unit).name} button on the ${CONFIG.buildings[type].name}.` };
   return { at: b, hint: `Tap your ${CONFIG.buildings[type].name}.` };
 }
 
@@ -73,7 +73,7 @@ export const STEPS = [
     guide: g => { const b = mine(g, 'barracks'); return b && !b.built ? { at: b, hint: 'The Barracks are going up. More workers build faster.' } : buildGuide(g, 'barracks'); },
   },
   {
-    title: 'Train three soldiers', hint: 'Tap the Barracks, then tap Spearman or Archer on it. Hold a button to queue five.',
+    title: 'Train three soldiers', hint: 'Tap the Barracks, then tap a soldier button on it. Hold a button to queue five.',
     done: g => soldiers(g.world, 0) >= 3,
     guide: g => trainGuide(g, 'barracks', 'spearman'),
   },

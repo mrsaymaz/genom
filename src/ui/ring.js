@@ -22,9 +22,19 @@ export class ActionRing {
     if (!anchor || !items.length) { this.hide(); return; }
     const key = items.map(i => i.id).join('|');
     if (key !== this.key) this.build(key, items);
-    const { radius, center = -90, bounds } = opts;
-    const step = opts.step ?? Math.max(38, (2 * Math.asin(Math.min(1, (BTN / 2 + 18) / radius)) * 180) / Math.PI);
-    const n = items.length, start = center - ((n - 1) * step) / 2;
+    const { center = -90, bounds } = opts;
+    // Space buttons so neither the buttons nor their cost tags touch (a tag with three costs is wide).
+    const tags = Math.max(0, ...items.map(i => Object.keys(i.cost || {}).length));
+    const half = Math.max(BTN / 2 + 18, [0, 34, 50, 66][tags] + 4);
+    const n = items.length;
+    let radius = opts.radius, step = opts.step;
+    if (step === undefined) {
+      // Spread at most 270 degrees; if the buttons need more room, grow the ring instead.
+      const want = Math.max(38, (2 * Math.asin(Math.min(1, half / radius)) * 180) / Math.PI);
+      step = n > 1 ? Math.min(want, 270 / (n - 1)) : want;
+      radius = Math.max(radius, half / Math.sin((step * Math.PI) / 360));
+    }
+    const start = center - ((n - 1) * step) / 2;
     items.forEach((it, i) => {
       const b = this.btns.get(it.id);
       if (!b) return;
@@ -48,7 +58,7 @@ export class ActionRing {
       el.className = `rbtn ${it.cls || ''}`;
       el.dataset.id = it.id;
       el.style.animationDelay = `${i * 30}ms`;
-      el.innerHTML = `<span class="face">${it.icon}<span class="lbl">${it.label}</span></span>${it.cost ? `<span class="tag">${costHtml(it.cost)}</span>` : ''}<i class="badge"></i>`;
+      el.innerHTML = `<span class="face">${it.icon}<span class="lbl${it.label.length > 9 ? ' long' : ''}">${it.label}</span></span>${it.cost ? `<span class="tag">${costHtml(it.cost)}</span>` : ''}<i class="badge"></i>`;
       el.title = it.hint || it.label;
       const b = { el, badge: el.querySelector('.badge'), it, held: false, timer: 0 };
       // Tap to act; hold to run the item's hold action (for example, queue five).

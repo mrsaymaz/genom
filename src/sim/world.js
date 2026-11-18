@@ -3,6 +3,7 @@
 import { CONFIG } from '../config.js';
 import { generateMap, T } from './map.js';
 import { findPath } from './path.js';
+import { unitDefs, roleOf, COUNTER, BLD_DAMAGE, ELEMENT_BEATS } from './units.js';
 
 const UNIT_R = 0.32;
 
@@ -24,6 +25,7 @@ export class World {
       res: { food: CONFIG.start.food, lumber: CONFIG.start.lumber, gold: CONFIG.start.gold },
       pop: 0, popCap: 0,
       stats: { gathered: { food: 0, lumber: 0, gold: 0 }, trained: 0, lost: 0, killed: 0, built: 0, razed: 0 },
+      units: unitDefs(CONFIG.teams[key].art),
     }));
     for (const r of this.map.resources) this.addResource(r);
     this.map.bases.forEach((b, i) => {
@@ -57,15 +59,19 @@ export class World {
     return e;
   }
 
+  // A unit type's stats for a team: each nation has its own units (src/data/units.js).
+  def(team, type) { return this.teams[team].units[type]; }
+
   spawnUnit(team, type, near) {
-    const d = CONFIG.units[type];
+    const d = this.def(team, type);
     const spot = this.freeTileNear(near) || [near.x, near.y];
     const e = {
       id: this.nextId++, cat: 'unit', type, team, x: spot[0] + 0.5, y: spot[1] + 0.5, px: spot[0] + 0.5, py: spot[1] + 0.5,
       hp: d.hp, maxHp: d.hp, order: null, path: null, carry: null, cd: 0, facing: 0, work: 0, prev: null, repath: 0,
+      run: 0, boost: 0, healCd: 0, hurtT: -99,
     };
     this.ents.set(e.id, e);
-    this.teams[team].pop++;
+    this.teams[team].pop += d.pop;
     this.events.push({ type: 'spawn', id: e.id });
     return e;
   }
@@ -74,7 +80,7 @@ export class World {
     if (!this.ents.has(e.id)) return;
     this.ents.delete(e.id);
     if (e.cat !== 'unit') this.mark(e, 0);
-    if (e.cat === 'unit') this.teams[e.team].pop--;
+    if (e.cat === 'unit') this.teams[e.team].pop -= this.def(e.team, e.type).pop;
     this.events.push({ type: 'removed', id: e.id, cat: e.cat, kind: e.kind || e.type, team: e.team });
     if (e.cat === 'bld') {
       for (const u of this.allUnits()) if (u.inside === e.id) this.leaveShelter(u, e);
@@ -159,7 +165,7 @@ export class World {
   train(bid, type) {
     const b = this.get(bid);
     if (!b || !b.built || b.queue.length >= 5) return false;
-    const d = CONFIG.units[type];
+    const d = this.def(b.team, type);
     if (!CONFIG.buildings[b.type].trains?.includes(type) || !this.canAfford(b.team, d.cost)) return false;
     this.pay(b.team, d.cost);
     b.queue.push({ type, t: 0 });
@@ -169,7 +175,7 @@ export class World {
   cancel(bid, i) {
     const b = this.get(bid);
     if (!b || !b.queue[i]) return;
-    this.refund(b.team, CONFIG.units[b.queue[i].type].cost);
+    this.refund(b.team, this.def(b.team, b.queue[i].type).cost);
     b.queue.splice(i, 1);
   }
 
@@ -274,7 +280,7 @@ export class World {
     Object.assign(w, { time: data.time, nextId: data.nextId, winner: data.winner, events: [] });
     data.teams.forEach((t, i) => { Object.assign(w.teams[i], { res: t.res, stats: t.stats, bell: t.bell }); });
     for (const t of w.teams) t.pop = 0;
-    for (const u of w.allUnits()) w.teams[u.team].pop++;
+    for (const u of w.allUnits()) w.teams[u.team].pop += w.def(u.team, u.type).pop;
     w.recount();
     return w;
   }
@@ -309,8 +315,9 @@ export class World {
   // Moves along the path; returns true when the path is finished.
   follow(u, dt) {
     if (!u.path || !u.path.length) return true;
-    const speed = CONFIG.units[u.type].speed * (this.terrainAt(Math.floor(u.x), Math.floor(u.y)) === T.FORD ? 0.7 : 1);
+    const speed = this.def(u.team, u.type).speed * (this.terrainAt(Math.floor(u.x), Math.floor(u.y)) === T.FORD ? 0.7 : 1) * (u.boost > 0 ? 1.4 : 1);
     let step = speed * dt;
+    u.run += step; // chargers hit harder after a run-up
     while (step > 0 && u.path.length) {
       const [wx, wy] = u.path[0];
       const dx = wx - u.x, dy = wy - u.y, d = Math.hypot(dx, dy);
@@ -375,16 +382,29 @@ export class World {
   farmTaken(f, except) { for (const u of this.units()) if (u !== except && u.order?.type === 'gather' && u.order.target === f.id) return true; return false; }
 
   // ---------- combat ----------
+  // Counters, the element cycle and a few abilities shape the damage of every hit.
   damage(attacker, target, amount) {
     if (!this.ents.has(target.id)) return;
     let dmg = amount;
-    if (target.cat === 'bld') dmg *= attacker.cat === 'unit' ? ({ spearman: 1.5, archer: 0.35, worker: 0.5 }[attacker.type] ?? 1) : 0.5;
+    const ar = attacker.cat === 'unit' ? roleOf(this.def(attacker.team, attacker.type)) : 'building';
+    if (target.cat === 'bld') dmg *= attacker.cat === 'unit' ? (BLD_DAMAGE[ar] ?? 1) : 0.5;
+    else if (attacker.cat === 'unit') {
+      const td = this.def(target.team, target.type), tr = roleOf(td);
+      dmg *= COUNTER[ar]?.[tr] ?? 1;
+      // Stone Skin: guardians take half damage from melee attacks.
+      if (td.kind === 'guardian' && this.def(attacker.team, attacker.type).attackType === 'melee') dmg *= 0.5;
+    }
+    // The element cycle: Fire > Earth > Air > Water > Fire, a small extra edge.
+    if (target.team !== undefined && ELEMENT_BEATS[this.teams[attacker.team].nation.art] === this.teams[target.team].nation.art) dmg *= 1.1;
     target.hp -= dmg;
-    this.events.push({ type: 'hit', from: attacker.id, to: target.id, ranged: (attacker.cat === 'bld' || attacker.type === 'archer') });
-    // Idle soldiers fight back; workers fight back only when they have nothing else to do.
+    if (target.cat === 'unit') target.hurtT = this.time;
+    const ranged = attacker.cat === 'bld' || this.def(attacker.team, attacker.type).attackType === 'ranged';
+    this.events.push({ type: 'hit', from: attacker.id, to: target.id, ranged });
+    // Idle soldiers fight back; workers and healers fight back only when they have nothing else to do.
     if (target.cat === 'unit' && attacker.cat === 'unit') {
-      const free = !target.order || (target.order.auto && target.type !== 'worker');
-      if (free) this.setOrder(target, { type: 'attack', target: attacker.id, auto: true });
+      const kind = this.def(target.team, target.type).kind;
+      const free = !target.order || (target.order.auto && target.type !== 'worker' && kind !== 'healer');
+      if (free && kind !== 'healer') this.setOrder(target, { type: 'attack', target: attacker.id, auto: true });
     }
     if (target.hp <= 0) {
       this.teams[attacker.team].stats.killed += target.cat === 'unit' ? 1 : 0;
@@ -409,10 +429,10 @@ export class World {
     const d = CONFIG.buildings[b.type];
     if (!b.built) return;
     if (b.queue.length) {
-      const q = b.queue[0], ud = CONFIG.units[q.type], t = this.teams[b.team];
+      const q = b.queue[0], ud = this.def(b.team, q.type), t = this.teams[b.team];
       if (q.t < ud.time) q.t += dt;
       if (q.t >= ud.time) {
-        if (t.pop < t.popCap) {
+        if (t.pop + ud.pop <= t.popCap) {
           const u = this.spawnUnit(b.team, q.type, b);
           t.stats.trained++;
           b.queue.shift();
@@ -438,11 +458,14 @@ export class World {
   }
 
   updateUnit(u, dt, builders) {
-    const d = CONFIG.units[u.type];
-    u.cd -= dt;
+    const d = this.def(u.team, u.type);
+    u.cd -= dt; u.boost -= dt;
+    if (d.heal) this.mend(u, d, dt);
+    // Ravenclaw's twist: units out of combat for a while slowly heal.
+    if (d.regen && u.hp < u.maxHp && this.time - u.hurtT > 5) u.hp = Math.min(u.maxHp, u.hp + d.regen * dt);
     const o = u.order;
     if (!o) {
-      if (u.type !== 'worker') { const e = this.nearestEnemy(u, d.sight, true); if (e) this.setOrder(u, { type: 'attack', target: e.id, auto: true }); }
+      if (u.type !== 'worker' && d.kind !== 'healer') { const e = this.nearestEnemy(u, d.sight, true); if (e) this.setOrder(u, { type: 'attack', target: e.id, auto: true }); }
       return;
     }
     switch (o.type) {
@@ -471,6 +494,7 @@ export class World {
       case 'hold': {
         // Hold position: strike anything that comes within reach, but never step away.
         let best = null, bd = d.range + 0.05;
+        if (d.kind === 'healer') break;
         for (const e of this.ents.values()) {
           if (e.team === undefined || e.team === u.team || e.inside || (e.cat !== 'unit' && e.cat !== 'bld')) continue;
           const dd = this.distTo(u, e);
@@ -522,11 +546,38 @@ export class World {
   }
 
   fight(u, e, dt) {
-    const d = CONFIG.units[u.type];
+    const d = this.def(u.team, u.type);
     if (this.approach(u, e, d.range, dt)) {
       u.facing = Math.atan2(this.center(e)[1] - u.y, this.center(e)[0] - u.x);
-      if (u.cd <= 0) { u.cd = d.cooldown; u.work = 0.01; this.damage(u, e, d.damage); }
+      if (u.cd <= 0) {
+        u.cd = d.cooldown; u.work = 0.01;
+        // Charge: a charger's first hit after a run-up deals double damage.
+        const charged = d.kind === 'charger' && u.run >= 2.5;
+        this.damage(u, e, d.damage * (charged ? 2 : 1));
+        if (charged) this.events.push({ type: 'charge', id: u.id });
+        // Tailwind: a scout speeds away after landing a hit.
+        if (d.kind === 'scout') u.boost = 3;
+        u.run = 0;
+      }
     }
+  }
+
+  // Mend: a healer heals the most hurt ally within reach.
+  mend(u, d, dt) {
+    u.healCd -= dt;
+    if (u.healCd > 0) return;
+    let best = null, low = 1;
+    for (const a of this.units()) {
+      if (a.team !== u.team || a === u || a.hp >= a.maxHp) continue;
+      if (Math.hypot(a.x - u.x, a.y - u.y) > d.range) continue;
+      const f = a.hp / a.maxHp;
+      if (f < low) { low = f; best = a; }
+    }
+    if (!best) { u.healCd = 0.3; return; }
+    best.hp = Math.min(best.maxHp, best.hp + d.heal);
+    u.healCd = 1; u.work = 0.01;
+    u.facing = Math.atan2(best.y - u.y, best.x - u.x);
+    this.events.push({ type: 'heal', from: u.id, to: best.id });
   }
 
   gather(u, o, dt) {
@@ -541,7 +592,7 @@ export class World {
     }
     o.kind = kindOf(r);
     const type = r.cat === 'bld' ? 'food' : (r.kind === 'tree' ? 'lumber' : r.kind === 'gold' ? 'gold' : 'food');
-    const cap = CONFIG.units.worker.carry;
+    const cap = this.def(u.team, 'worker').carry;
     if (u.carry && (u.carry.type !== type || u.carry.amt >= cap)) { this.setOrder(u, { type: 'return', then: r.id }); return; }
     const inRange = r.cat === 'bld' ? this.distTo(u, r) <= 0.05 || this.approach(u, r, 0.05, dt) : this.approach(u, r, 0.8, dt);
     if (!inRange) return;

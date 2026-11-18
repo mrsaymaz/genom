@@ -54,6 +54,7 @@ class Game {
     this.sel = []; this.placing = null; this.rallyMode = false; this.amoveMode = false; this.focus = null;
     this.paused = false; this.over = false; this.pings = [];
     this.calmFor = 0; this.raided = false; this.alertT = 0; this.saveT = 0; this.workT = 0;
+    this.hudLayout = store.get('genom.hudLayout', 'beside');
     this.hud = new HUD($('#hud'), this);
     this.tutorial = new Tutorial(this);
     if (saved) { this.tutorial.i = saved.tutorial; this.raided = saved.raided; this.calmFor = saved.calmFor; }
@@ -593,6 +594,11 @@ function settingsUi() {
   voice.oninput = () => audio.set('voice', voice.value / 100);
   voice.onchange = () => audio.say('selectWorker', undefined, true);
   mute.onchange = () => { audio.set('muted', mute.checked); paintMute(); };
+  const lay = $('#set-layout');
+  lay.querySelectorAll('button').forEach(b => {
+    b.onclick = () => { store.set('genom.hudLayout', b.dataset.l); if (game) { game.hudLayout = b.dataset.l; game.hud.setLayout(b.dataset.l); } lay.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); };
+    b.classList.toggle('on', b.dataset.l === store.get('genom.hudLayout', 'beside'));
+  });
   const q = $('#set-quality');
   q.querySelectorAll('button').forEach(b => {
     b.onclick = () => {

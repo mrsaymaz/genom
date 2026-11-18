@@ -47,25 +47,31 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .icon-btn i:empty { display: none; }
 .icon-btn.dim { opacity: 0.5; }
 
-/* Resources: a banner hanging from the top edge, with one token per resource. */
-.hud-top { position: absolute; top: 0; right: calc(10px + var(--sr)); display: flex; align-items: center; gap: 2px; padding: calc(4px + var(--st)) 4px 5px 6px; border-top: 0; border-radius: 0 0 16px 16px; }
-.tok { position: relative; display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 10px; background: rgba(0, 0, 0, 0.22); font: 700 15px var(--text); color: var(--ink); }
-.tok + .tok { margin-left: 3px; }
-.tok svg { width: 18px; height: 18px; }
+/* Resources: a slim tray of tokens (bottom row, or a tab down the left edge). The tokens have no
+   boxes of their own; small diamonds in the nation's accent separate them. */
+.tray { position: absolute; display: flex; align-items: center; height: 34px; padding: 0 8px; border-radius: 17px; }
+.tok { position: relative; display: flex; align-items: center; gap: 3px; padding: 0 7px; height: 100%; background: transparent; font: 700 15px var(--text); color: var(--ink); }
+.tok + .tok::before { content: ""; position: absolute; left: -2px; top: 50%; width: 4px; height: 4px; background: var(--acc); opacity: 0.7; transform: translateY(-50%) rotate(45deg); }
+.tok svg { width: 17px; height: 17px; }
 .tok b { min-width: 2.2ch; font-variant-numeric: tabular-nums; }
 .tok:active { transform: scale(0.95); }
-.tok.pop { flex-direction: row; padding-bottom: 7px; }
 .tok.pop svg { color: var(--acc); }
-.tok .fill { position: absolute; left: 8px; right: 8px; bottom: 3px; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.15); overflow: hidden; }
-.tok .fill s { display: block; height: 100%; background: var(--acc); }
-.tok.pop.warn b { color: var(--bad); }
-.tok.pop.warn .fill s { background: var(--bad); }
+.tok.pop.warn b, .tok.pop.warn svg { color: var(--bad); }
 .tok.short { animation: short 0.5s ease; }
-@keyframes short { 0%, 100% { transform: none; } 20% { transform: translateX(-4px); background: rgba(255, 90, 70, 0.55); } 40% { transform: translateX(4px); } 60% { transform: translateX(-3px); background: rgba(255, 90, 70, 0.45); } 80% { transform: translateX(2px); } }
-.gain { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); font: 800 13px var(--text); color: var(--good); text-shadow: 0 1px 2px #000; pointer-events: none; animation: gain 1.3s ease-out forwards; }
-@keyframes gain { from { opacity: 0; transform: translate(-50%, 4px); } 15% { opacity: 1; } to { opacity: 0; transform: translate(-50%, 22px); } }
-.hud-top .icon-btn { width: 32px; height: 32px; border-radius: 10px; background: transparent; }
-.hud-top .icon-btn svg { width: 19px; height: 19px; }
+@keyframes short { 0%, 100% { transform: none; } 20% { transform: translateX(-4px); color: var(--bad); } 40% { transform: translateX(4px); } 60% { transform: translateX(-3px); color: var(--bad); } 80% { transform: translateX(2px); } }
+.gain { position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%); font: 800 13px var(--text); color: var(--good); text-shadow: 0 1px 2px #000; pointer-events: none; animation: gain 1.3s ease-out forwards; }
+@keyframes gain { from { opacity: 0; transform: translate(-50%, 4px); } 15% { opacity: 1; } to { opacity: 0; transform: translate(-50%, -20px); } }
+/* The side tab: tokens stacked down the left edge, above the minimap. */
+.layout-side .tray { left: calc(10px + var(--sl)); bottom: calc(var(--mm) + 16px + var(--sb)); flex-direction: column; align-items: stretch; height: auto; padding: 6px 2px; border-radius: 14px; }
+.layout-side .tok { height: 32px; padding: 0 6px; }
+.layout-side .tok + .tok::before { left: 50%; top: -2px; transform: translateX(-50%) rotate(45deg); }
+.layout-side .gain { left: 100%; bottom: auto; top: 50%; transform: translateY(-50%); animation-name: gain-side; }
+@keyframes gain-side { from { opacity: 0; transform: translate(2px, -50%); } 15% { opacity: 1; } to { opacity: 0; transform: translate(18px, -50%); } }
+
+/* Sound and pause: two small round buttons at the top right. */
+.sys { position: absolute; top: calc(6px + var(--st)); right: calc(8px + var(--sr)); display: flex; gap: 6px; }
+.sys .icon-btn { width: 34px; height: 34px; border-radius: 50%; }
+.sys .icon-btn svg { width: 18px; height: 18px; }
 
 /* Goals: a quest scroll hanging from the top-left; tap it to unroll the full goal. */
 .quest { position: absolute; top: 0; left: calc(10px + var(--sl)); display: grid; justify-items: start; gap: 6px; }
@@ -78,7 +84,8 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .quest-body { width: 250px; padding: 9px 12px; border-radius: 14px; }
 .quest-body b { display: block; font: 600 15px/1.2 var(--display); color: var(--acc); }
 .quest-body p { margin: 3px 0 0; font-size: 13px; color: var(--ink2); }
-.quest.closed .quest-body { display: none; }
+.quest.closed .quest-body, .quest.closed .scroll .n, .quest.closed .scroll b { display: none; }
+.quest.closed .scroll { padding-right: 6px; }
 .quest.pulse .scroll { animation: pulse 1.2s ease; }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(242, 192, 64, 0.8); } 100% { box-shadow: 0 0 0 14px rgba(242, 192, 64, 0); } }
 .stamp { position: absolute; left: 8px; top: calc(4px + var(--st)); width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: var(--good); color: #0e2a14; animation: stamp 1.4s ease forwards; }
@@ -103,7 +110,7 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .quick .icon-btn svg { width: 58%; height: 58%; }
 
 /* The selection badge: a round portrait with a health ring, a status icon, a short name. */
-.panel { position: absolute; left: calc(var(--mm) * 4 / 3 + 22px + var(--sl)); bottom: calc(8px + var(--sb)); display: flex; align-items: center; gap: 8px; max-width: min(320px, calc(100% - var(--mm) * 4 / 3 - 120px - var(--sl) - var(--sr))); padding: 5px 12px 5px 5px; border-radius: 40px; }
+.panel { position: absolute; transition: left 0.15s, bottom 0.15s; display: flex; align-items: center; gap: 8px; max-width: min(320px, calc(100% - var(--mm) * 4 / 3 - 120px - var(--sl) - var(--sr))); padding: 5px 12px 5px 5px; border-radius: 40px; }
 .pic { --tc: #888; position: relative; width: 54px; height: 54px; flex: none; }
 .pic .hp { --p: 1; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(var(--good) calc(var(--p) * 1turn), rgba(255, 255, 255, 0.14) 0); }
 .pic .hp.low { background: conic-gradient(var(--bad) calc(var(--p) * 1turn), rgba(255, 255, 255, 0.14) 0); }
@@ -129,7 +136,7 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .chip b { position: absolute; right: -4px; bottom: -4px; min-width: 20px; padding: 0 4px; border-radius: 10px; background: #1d222a; border: 2px solid var(--fr-edge); font: 800 11px/16px var(--text); }
 
 /* Alerts drop in as a ribbon at the top centre. */
-.alert { position: absolute; top: calc(48px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 2; display: flex; align-items: center; gap: 6px; max-width: calc(100% - 40px - var(--sl) - var(--sr)); padding: 4px 22px; clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%, 12px 50%); border-radius: 0; animation: drop 0.3s ease; }
+.alert { position: absolute; top: calc(8px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 2; display: flex; align-items: center; gap: 6px; max-width: calc(100% - 40px - var(--sl) - var(--sr)); padding: 4px 22px; clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%, 12px 50%); border-radius: 0; animation: drop 0.3s ease; }
 .alert .ai { width: 26px; height: 26px; flex: none; display: grid; place-items: center; border-radius: 50%; background: rgba(0, 0, 0, 0.3); color: var(--acc); }
 .alert .ai svg { width: 16px; height: 16px; }
 .alert.bad .ai { color: var(--bad); animation: throb 1s ease infinite; }
@@ -142,15 +149,17 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .alert.good button:not(.x), .alert.bell button:not(.x) { background: #2f7d48; }
 .alert button.x { padding: 5px; background: transparent; color: var(--mute); }
 @keyframes drop { from { transform: translate(-50%, -12px); opacity: 0; } }
-.alert:not(.hidden) ~ .toasts { top: calc(92px + var(--st)); }
+.alert:not(.hidden) ~ .toasts { top: calc(54px + var(--st)); }
 
 /* Tablets and computers: a larger HUD for a larger screen. */
 @media (min-height: 600px) {
   :root { --mm: 150px; }
-  .tok { font-size: 18px; padding: 5px 10px; }
+  .tray { height: 44px; padding: 0 10px; border-radius: 22px; }
+  .tok { font-size: 19px; padding: 0 9px; gap: 4px; }
   .tok svg { width: 22px; height: 22px; }
-  .hud-top .icon-btn { width: 38px; height: 38px; }
-  .hud-top .icon-btn svg { width: 22px; height: 22px; }
+  .layout-side .tok { height: 40px; }
+  .sys .icon-btn { width: 42px; height: 42px; }
+  .sys .icon-btn svg { width: 22px; height: 22px; }
   .scroll .prog { width: 40px; height: 40px; }
   .scroll .prog svg { width: 22px; height: 22px; }
   .scroll b { font-size: 18px; }
@@ -173,12 +182,10 @@ body.installing #rotate { display: none !important; } /* the install guide is re
   .qitem svg { width: 22px; height: 22px; }
   .chip { width: 54px; height: 54px; }
   .chip svg { width: 30px; height: 30px; }
-  .alert { top: calc(60px + var(--st)); }
   .alert .at { font-size: 16px; }
   .alert button { font-size: 15px; padding: 8px 12px; }
   .toast { font-size: 16px; }
-  #hud .toasts { top: calc(64px + var(--st)); }
-  #hud .alert:not(.hidden) ~ .toasts { top: calc(112px + var(--st)); }
+  #hud .alert:not(.hidden) ~ .toasts { top: calc(64px + var(--st)); }
 }
 
 /* Pop-up action rings on the map, and the thumb buttons stacked at the bottom right. */
@@ -209,7 +216,7 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .thumb .rbtn { width: 64px; height: 64px; }
 @keyframes pop { from { transform: scale(0.2); opacity: 0; } }
 
-.toasts { position: absolute; top: calc(50px + var(--st)); left: 50%; transform: translateX(-50%); width: min(460px, calc(100% - 40px)); display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none !important; }
+.toasts { position: absolute; top: calc(10px + var(--st)); left: 50%; transform: translateX(-50%); width: min(460px, calc(100% - 40px)); display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none !important; }
 .toast { max-width: 100%; padding: 7px 14px; border-radius: 12px; background: var(--panel-solid); border: 1px solid var(--line); font-size: 14px; text-align: center; transition: opacity 0.5s, transform 0.5s; }
 .toast.bad { border-color: var(--bad); color: #ffd4cf; }
 .toast.hint { border-color: var(--gold); color: #fff3c8; }
@@ -305,6 +312,7 @@ h2 { margin: 0; font: 600 13px var(--display); color: var(--ink2); text-transfor
 .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .seg button { min-height: 44px; border-radius: 12px; background: var(--btn); font: 600 16px var(--display); border: 2px solid transparent; }
 .seg button.on { border-color: var(--gold); color: var(--gold); }
+.seg.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
 .stats div { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .stats span { display: flex; align-items: center; gap: 4px; color: var(--ink2); }
@@ -319,14 +327,14 @@ h2 { margin: 0; font: 600 13px var(--display); color: var(--ink2); text-transfor
 /* Phones sideways: a compact HUD, so the map stays visible. */
 @media (max-height: 430px) {
   :root { --mm: 86px; }
-  .hud-top { padding: calc(3px + var(--st)) 3px 4px 4px; border-radius: 0 0 13px 13px; }
-  .tok { padding: 3px 6px; gap: 3px; font-size: 13px; border-radius: 8px; }
-  .tok + .tok { margin-left: 2px; }
-  .tok svg { width: 15px; height: 15px; }
-  .tok.pop { padding-bottom: 6px; }
-  .tok .fill { left: 6px; right: 6px; bottom: 2px; height: 2px; }
-  .hud-top .icon-btn { width: 26px; height: 26px; }
-  .hud-top .icon-btn svg { width: 16px; height: 16px; }
+  .tray { height: 28px; padding: 0 5px; border-radius: 14px; }
+  .tok { padding: 0 5px; gap: 2px; font-size: 12.5px; }
+  .tok svg { width: 14px; height: 14px; }
+  .layout-side .tray { bottom: calc(var(--mm) + 12px + var(--sb)); padding: 4px 1px; border-radius: 11px; }
+  .layout-side .tok { height: 25px; }
+  .sys { top: calc(4px + var(--st)); gap: 5px; }
+  .sys .icon-btn { width: 28px; height: 28px; }
+  .sys .icon-btn svg { width: 15px; height: 15px; }
   .scroll { padding: calc(3px + var(--st)) 10px 4px 4px; gap: 5px; border-radius: 0 0 13px 13px; }
   .scroll .prog { width: 26px; height: 26px; }
   .scroll .prog svg { width: 15px; height: 15px; }
@@ -360,7 +368,8 @@ h2 { margin: 0; font: 600 13px var(--display); color: var(--ink2); text-transfor
   .rbtn .tag { font-size: 9.5px; padding: 1px 5px; }
   .toast { font-size: 12px; padding: 5px 10px; }
   .marker, .marker svg { width: 30px; height: 30px; }
-  .alert { top: calc(40px + var(--st)); padding: 3px 18px; }
+  .alert { top: calc(4px + var(--st)); padding: 3px 18px; }
+  .alert:not(.hidden) ~ .toasts { top: calc(40px + var(--st)); }
   .alert .ai { width: 22px; height: 22px; }
   .alert .at { font-size: 12.5px; }
   .alert button { padding: 4px 8px; font-size: 12px; }

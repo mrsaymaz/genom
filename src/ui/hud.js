@@ -40,19 +40,23 @@ export class HUD {
     root.className = `nation-${art}`;
     this.art = art;
 
-    // Resources: a hanging banner of tokens (tap a token to find its gatherers).
-    this.top = h('div', 'hud-top frame');
+    // Resources: a slim tray of tokens at the bottom (or a tab down the left edge).
+    // Tap a token to find the workers gathering it.
+    this.tray = h('div', 'tray frame');
     this.res = {}; this.tok = {};
     for (const k of RES) {
       const t = h('button', 'tok', `${ICONS[k]}<b>0</b>`); t.title = `${k[0].toUpperCase() + k.slice(1)}: tap to find the workers gathering it`;
       t.onclick = () => game.selectGatherers?.(k);
-      this.res[k] = t.querySelector('b'); this.tok[k] = t; this.top.append(t);
+      this.res[k] = t.querySelector('b'); this.tok[k] = t; this.tray.append(t);
     }
-    const pop = h('div', 'tok pop', `${ICONS.house}<b>0</b><i class="fill"><s></s></i>`); pop.title = 'Population: build Houses for more';
-    this.res.pop = pop.querySelector('b'); this.popFill = pop.querySelector('.fill s'); this.tok.pop = pop;
-    this.muteBtn = h('button', 'icon-btn'); this.muteBtn.onclick = () => game.toggleMute?.();
-    this.pauseBtn = h('button', 'icon-btn', ICONS.pause); this.pauseBtn.title = 'Pause'; this.pauseBtn.onclick = () => game.togglePause();
-    this.top.append(pop, this.muteBtn, this.pauseBtn);
+    const pop = h('div', 'tok pop', `${ICONS.house}<b>0</b>`); pop.title = 'Population: build Houses for more';
+    this.res.pop = pop.querySelector('b'); this.tok.pop = pop;
+    this.tray.append(pop);
+    // Sound and pause: two small round buttons at the top right.
+    this.top = h('div', 'sys');
+    this.muteBtn = h('button', 'icon-btn frame'); this.muteBtn.onclick = () => game.toggleMute?.();
+    this.pauseBtn = h('button', 'icon-btn frame', ICONS.pause); this.pauseBtn.title = 'Pause'; this.pauseBtn.onclick = () => game.togglePause();
+    this.top.append(this.muteBtn, this.pauseBtn);
     this.paintMute();
 
     // Goals: a quest scroll with a progress ring; tap to unroll the full goal.
@@ -60,6 +64,7 @@ export class HUD {
     this.objHead = h('button', 'scroll frame');
     this.objBody = h('div', 'quest-body frame');
     this.objHead.onclick = () => { this.obj.classList.toggle('closed'); this.objOpenT = this.obj.classList.contains('closed') ? 0 : 6; };
+    this.objHead.title = 'Your goal (tap to read it)';
     this.obj.append(this.objHead, this.objBody);
 
     // The guide's speech bubble, beside the pointer arrow on the map.
@@ -88,7 +93,8 @@ export class HUD {
     this.alertEl = h('div', 'alert hidden'); this.alertOn = false; this.alertT = 0;
     // The tutorial pointer: a bouncing arrow over what to tap next.
     this.marker = h('div', 'marker hidden', ICONS.pointer);
-    root.append(this.top, this.obj, this.quick, this.mini, this.panel, this.boxEl, this.alertEl, this.toasts);
+    root.append(this.top, this.obj, this.quick, this.mini, this.tray, this.panel, this.boxEl, this.alertEl, this.toasts);
+    this.setLayout(game.hudLayout || 'beside');
     // Rings go last so their buttons sit above toasts and panels.
     this.ring = new ActionRing(root, 'on-map');
     this.thumb = new ActionRing(root, 'thumb');
@@ -102,7 +108,6 @@ export class HUD {
     const g = this.g, w = g.world, t = w.teams[0];
     for (const k of RES) this.res[k].textContent = Math.floor(t.res[k]);
     this.res.pop.textContent = `${t.pop}/${t.popCap}`;
-    this.popFill.style.width = `${Math.min(100, (100 * t.pop) / Math.max(1, t.popCap))}%`;
     this.tok.pop.classList.toggle('warn', t.pop >= t.popCap);
     const idle = g.idleWorkers().length, army = g.army().length;
     this.idleBtn.querySelector('i').textContent = idle || '';
@@ -111,11 +116,28 @@ export class HUD {
     this.armyBtn.classList.toggle('dim', !army);
     this.objectives(dt);
     this.selection();
+    this.place();
     this.commands();
     this.pointer();
     if (this.alertOn && this.alertT > 0 && (this.alertT -= dt) <= 0) this.closeAlert();
     this.miniT -= dt;
     if (this.miniT <= 0) { this.miniT = 0.25; this.drawMini(); }
+  }
+
+  // ---------- layout: where the tray and the selection card go ----------
+  // beside: the card slides out to the right of the tray; above: the card sits above the tray;
+  // side: resources are a tab down the left edge and the card sits at the bottom.
+  setLayout(name) { this.layout = name; this.root.classList.remove('layout-beside', 'layout-above', 'layout-side'); this.root.classList.add(`layout-${name}`); this.placeKey = ''; }
+  place() {
+    const q = this.quick, b = parseFloat(getComputedStyle(this.mini).bottom) || 8;
+    const x0 = q.offsetLeft + q.offsetWidth + 8;
+    const key = [this.layout, x0, b, this.tray.offsetWidth, this.tray.offsetHeight].join();
+    if (key === this.placeKey) return;
+    this.placeKey = key;
+    const set = (el, left, bottom) => { el.style.left = `${left}px`; el.style.bottom = `${bottom}px`; };
+    if (this.layout === 'side') { this.tray.style.left = this.tray.style.bottom = ''; set(this.panel, x0, b); }
+    else if (this.layout === 'above') { set(this.tray, x0, b); set(this.panel, x0, b + this.tray.offsetHeight + 6); }
+    else { set(this.tray, x0, b); set(this.panel, x0 + this.tray.offsetWidth + 8, b); }
   }
 
   // ---------- resource tokens ----------
@@ -147,7 +169,7 @@ export class HUD {
     const p = step ? n / tut.total : 1;
     this.objHead.innerHTML = `<span class="prog" style="--p:${p}">${ICONS.scroll}</span><span class="n">${step ? `${n + 1}/${tut.total}` : `${tut.total}/${tut.total}`}</span><b>${step ? step.short : 'All done!'}</b>`;
     this.objBody.innerHTML = step ? `<b>${step.title}</b><p>${step.hint}</p>` : '<b>All goals done!</b><p>Well played! Now win the match.</p>';
-    this.obj.classList.remove('closed'); this.objOpenT = innerHeight < 430 ? 4 : 6;
+    this.obj.classList.remove('closed'); this.objOpenT = innerHeight < 430 ? 4 : 5; // then it folds back to the ring
     this.obj.classList.remove('pulse'); void this.obj.offsetWidth; this.obj.classList.add('pulse');
   }
   // A finished goal: a stamped tick, a fanfare and the reward floating onto the tokens.
@@ -319,7 +341,7 @@ export class HUD {
     const st = this.safeTop ?? (this.safeTop = parseFloat(getComputedStyle(this.top).top) - 6 || 0);
     const sb = this.safeBottom ?? (this.safeBottom = parseFloat(getComputedStyle(this.panel).bottom) - 8 || 0);
     const sr = this.safeRight ?? (this.safeRight = parseFloat(getComputedStyle(this.top).right) - 8 || 0);
-    const bounds = { w: v.w, h: v.h, top: (v.h <= 430 ? 42 : 52) + st, bottom: 8 + sb };
+    const bounds = { w: v.w, h: v.h, top: (v.h <= 430 ? 40 : 50) + st, bottom: 8 + sb };
     const ppu = v.ppu;
     let ring = null, thumb = null;
 
@@ -398,7 +420,8 @@ export class HUD {
 
     if (ring && (ring.anchor[0] < -40 || ring.anchor[0] > v.w + 40 || ring.anchor[1] < -40 || ring.anchor[1] > v.h + 40)) ring = null;
     // Rings on the map stay clear of the info panel at the bottom of the screen.
-    if (ring) this.ring.show(ring.anchor, ring.items, { ...ring.opts, bounds: { ...bounds, bottom: this.panel.classList.contains('hidden') ? bounds.bottom : this.panel.offsetHeight + 16 + sb } }); else this.ring.hide();
+    const low = Math.max(this.panel.classList.contains('hidden') ? 0 : v.h - this.panel.offsetTop, this.layout === 'side' ? 0 : v.h - this.tray.offsetTop);
+    if (ring) this.ring.show(ring.anchor, ring.items, { ...ring.opts, bounds: { ...bounds, bottom: Math.max(bounds.bottom, low + 8) } }); else this.ring.hide();
     if (thumb) {
       // The thumb zone: a column of buttons climbing the right edge from the bottom corner,
       // under the right thumb, beside the info panel.

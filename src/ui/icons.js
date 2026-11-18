@@ -41,6 +41,17 @@ export const ICONS = {
   sanctum: svg('<path d="M3 21h18M4 18h16M5 8h14L12 3z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M6.5 8v10M10 8v10M14 8v10M17.5 8v10" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="5.8" r="1.2" fill="#1b2128"/>'),
   creature: svg('<path d="M4 20c0-5 3-9 8-9s8 4 8 9z" fill="currentColor"/><circle cx="7" cy="8" r="2.4" fill="currentColor"/><circle cx="17" cy="8" r="2.4" fill="currentColor"/><circle cx="12" cy="6.5" r="2.2" fill="currentColor"/><path d="M9 16h.01M15 16h.01" stroke="#1b2128" stroke-width="2.4" stroke-linecap="round"/>'),
   hero: svg('<path d="M12 2l1.8 3.6 4-.6-2.7 3 1.9 3.5-3.6-1.3L12 13.5l-1.4-3.3L7 11.5 8.9 8 6.2 5l4 .6z" fill="currentColor"/><circle cx="12" cy="16" r="2.6" fill="currentColor"/><path d="M6.5 22c0-3 2.4-4.5 5.5-4.5s5.5 1.5 5.5 4.5z" fill="currentColor"/>'),
+  // The four signature creatures.
+  'creature-air': svg('<circle cx="6" cy="6.5" r="3" fill="currentColor"/><circle cx="18" cy="6.5" r="3" fill="currentColor"/><circle cx="12" cy="13" r="8" fill="currentColor"/><ellipse cx="12" cy="16" rx="3.6" ry="2.8" fill="#1b2128" opacity=".35"/><circle cx="12" cy="14.6" r="1.3" fill="#1b2128"/><circle cx="8.7" cy="11" r="1.1" fill="#1b2128"/><circle cx="15.3" cy="11" r="1.1" fill="#1b2128"/>'),
+  'creature-water': svg('<path d="M12 9c-3-4-7-5-11-4 3 1 5 3 6 6 1.5 1 3.5 1.2 5 1.2s3.5-.2 5-1.2c1-3 3-5 6-6-4-1-8 0-11 4z" fill="currentColor"/><ellipse cx="12" cy="13" rx="3" ry="5" fill="currentColor"/><path d="M10 17.5l-2 4M12 18v4.5M14 17.5l2 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 6.5l1.6 1.4-1.6.8z" fill="currentColor"/>'),
+  'creature-fire': svg('<path d="M12 1.5l2 3.2 3.6-1.2-.4 3.8 3.6 1.4-2.6 2.8 2.6 2.8-3.6 1.4.4 3.8-3.6-1.2-2 3.2-2-3.2-3.6 1.2.4-3.8-3.6-1.4 2.6-2.8-2.6-2.8 3.6-1.4-.4-3.8 3.6 1.2z" fill="currentColor"/><circle cx="12" cy="12" r="5.2" fill="#1b2128" opacity=".35"/><circle cx="10" cy="11" r="1" fill="#1b2128"/><circle cx="14" cy="11" r="1" fill="#1b2128"/><path d="M10.5 14.2h3l-1.5 1.4z" fill="#1b2128"/>'),
+  'creature-earth': svg('<path d="M4 20c4 0 4-5 8-5s4 4 7 2" stroke="currentColor" stroke-width="3.2" fill="none" stroke-linecap="round"/><path d="M12 15c-3 0-4-3-2.5-6S13 4 12.5 3" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="14" cy="4" rx="3.4" ry="2.3" fill="currentColor"/><path d="M11.5 2.5L9.5 0.8M14 2l.5-2" stroke="currentColor" stroke-width="1.4"/><circle cx="15" cy="3.6" r=".8" fill="#1b2128"/>'),
+  // The four hero abilities.
+  'ab-updraft': svg('<path d="M12 3l5 5h-3v5h-4V8H7z" fill="currentColor"/><path d="M3 16c3-2 6 2 9 0s6-2 9 0M3 20.5c3-2 6 2 9 0s6-2 9 0" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>'),
+  'ab-hightide': svg('<path d="M2 15c2.5 0 3-5 7-6.5 3-1 6 .5 6 3-1.5-1-3.5-.5-3.5 1.5 0 2 2.5 3 5 2.5 2-.4 3.5-1.5 5.5-1.5V21H2z" fill="currentColor"/><path d="M12 2v4M9.5 4.5L12 7l2.5-2.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>'),
+  'ab-roar': svg('<path d="M9 21c-3-1-5-4-5-7 0-4 4-6 4-11 2 2 3 4 3 6 1-1 1.5-2 1.5-3 2 2 3 5 3 8 0 4-3 7-6.5 7z" fill="currentColor"/><path d="M17 8a6 6 0 010 8M19.5 5.5a10 10 0 010 13" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>'),
+  'ab-snare': svg('<path d="M12 22v-8M12 16c-3 0-5-2-6-5M12 14c3 0 5-2 6-5M6 11c-2 0-3 1-4 3M18 9c2-1 3-3 3-5M6 11c0-2-1-4-3-5M18 9c0-2 1-3 2-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="12" cy="7" r="2.6" fill="currentColor"/>'),
+  ability: svg('<path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="currentColor"/>'),
   back: svg('<path d="M14 5l-7 7 7 7" stroke="currentColor" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
   rally: svg('<path d="M6 21V3" stroke="currentColor" stroke-width="2"/><path d="M6 3h12l-3 4 3 4H6z" fill="currentColor"/>'),
 };
@@ -54,4 +65,4 @@ export const EMBLEMS = {
 };
 
 // The icon for a unit type of a team (the special has one icon per kind).
-export const unitIcon = def => ICONS[def.type === 'special' ? def.kind : def.type] || ICONS.army;
+export const unitIcon = def => ICONS[def.icon] || ICONS[def.type === 'special' ? def.kind : def.type] || ICONS.army;

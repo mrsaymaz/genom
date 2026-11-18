@@ -216,8 +216,9 @@ export class HUD {
       if (x < m || x > v.w - m || y < top || y > v.h - m) {
         // Off screen: the flat arrow on the edge of the screen points the way.
         v.setPointer(null);
-        const ox = v.w / 2, oy = v.h / 2, dx = x - ox, dy = y - oy;
-        const k = Math.min((v.w / 2 - m) / Math.abs(dx || 1e-6), (v.h / 2 - m) / Math.abs(dy || 1e-6));
+        // Keep clear of the thumb buttons down the right edge when they are showing.
+        const mr = this.thumb.key ? m + 70 : m, ox = (v.w - (mr - m)) / 2, oy = v.h / 2, dx = x - ox, dy = y - oy;
+        const k = Math.min((v.w / 2 - mr) / Math.abs(dx || 1e-6), (v.h / 2 - m) / Math.abs(dy || 1e-6));
         x = ox + dx * k; y = Math.max(top, oy + dy * k);
         angle = Math.atan2(dy, dx) * 180 / Math.PI - 90;
         edge = true;
@@ -390,14 +391,16 @@ export class HUD {
             const first = e.queue[0];
             if (first && first.type === type) prog = Math.max(prog, Math.min(1, first.t / u.time));
           }
+          // Heroes and creatures: one at a time.
+          const taken = u.unique && w.hasUnique(0, type) && !n;
+          const hint = u.unique ? (taken ? `Your ${type === 'hero' ? 'hero' : 'creature'}, the ${u.name}, is already with you.` : `Train your ${type === 'hero' ? 'hero' : 'creature'}, the ${u.name} (${u.ability.name}: ${u.ability.text}). One at a time.`)
+            : `Train a ${u.name}${u.ability ? ` (${u.ability.name}: ${u.ability.text})` : ''}. Hold to queue five.`;
           return {
-            id: 't' + type, icon: unitIcon(u), label: u.short, cost: u.cost, hint: `Train a ${u.name}${u.ability ? ` (${u.ability.name}: ${u.ability.text})` : ''}. Hold to queue five.`,
-            poor: !w.canAfford(0, u.cost) || !room, badge: n, progress: prog,
+            id: 't' + type, icon: unitIcon(u), label: u.short, cost: u.cost, hint, cls: u.unique ? 'main' : '', on: taken,
+            poor: !w.canAfford(0, u.cost) || !room || taken, badge: n, progress: prog,
             act: () => g.trainUnit(ids, type), hold: () => g.trainUnit(ids, type, 5),
           };
         });
-        // The Beast Pen and the Sanctum: what they will train, shown honestly as coming soon.
-        if (d.soon) items.push({ id: 'soon', icon: ICONS[b.type === 'pen' ? 'creature' : 'hero'], label: 'Soon', poor: true, hint: d.soon, act: () => this.toast(d.soon) });
         if (d.trains) items.push({ id: 'rally', icon: ICONS.rally, label: 'Rally', hint: 'Set where new units go', act: () => { g.rallyMode = true; this.toast('Tap where new units should go.'); } });
         if (b.type === 'towncenter') {
           // The next age: a button with the research progress on its ring.
@@ -429,7 +432,12 @@ export class HUD {
         ring = { anchor: v.screen(this.wheelAt[0], this.wheelAt[1], 0.5), items, opts: { radius: (compact ? 96 : 110) + Math.max(0, items.length - 6) * (compact ? 9 : 11), center: -90, step: 360 / items.length } };
       } else {
         const soldiers = ents.length > workers.length;
+        // The hero's ability: a big button with its cooldown running round the ring.
+        const hero = ents.find(e => e.type === 'hero'), cast = hero && w.def(0, 'hero').cast;
+        const wait = hero ? Math.max(0, hero.castCd || 0) : 0;
         thumb = { items: [
+          ...(hero ? [{ id: 'cast', icon: ICONS[`ab-${cast.id}`] || ICONS.ability, label: cast.name, cls: wait > 0 ? 'cool' : 'main cast', hint: `${cast.name}: ${cast.text}`,
+            poor: wait > 0, badge: wait > 0 ? Math.ceil(wait) : '', progress: wait > 0 ? 1 - wait / cast.cooldown : 0, act: () => g.castHero(hero.id) }] : []),
           ...(workers.length ? [{ id: 'build', icon: ICONS.build, label: 'Build', cls: 'main', act: () => { const u = workers[0]; this.wheelAt = [u.x, u.y]; } }] : []),
           ...(soldiers ? [
             { id: 'amove', icon: ICONS.amove, label: 'Attack', cls: workers.length ? '' : 'main', hint: 'Attack-move: tap a spot; they fight everything on the way', act: () => { g.amoveMode = true; this.toast('Tap where to attack.'); } },

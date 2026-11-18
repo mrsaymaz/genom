@@ -21,12 +21,21 @@ export function artLibrary() {
 }
 
 // Concept-page table index for each building role.
-const ROLE_INDEX = { house: 0, farm: 1, storehouse: 2, barracks: 3, watchtower: 4, pen: 5, sanctum: 6 };
+const ROLE_INDEX = { house: 0, farm: 1, storehouse: 2, barracks: 3, watchtower: 4, pen: 5, sanctum: 6, workshop: 7 };
 // The concept dioramas are drawn on slabs of these sizes; scale them to the game footprint.
 const SLAB = { 2: 3.2, 3: 4.2, 4: 6.0 };
 
 function sceneFor(team, type, age = 'dark') {
   const lib = artLibrary(), nat = CONFIG.teams[team].art;
+  if (age === 'celestial') {
+    if (type === 'towncenter') return { fn: lib.tcs.CELEST[nat], B: lib.tcs.B };
+    return { fn: lib.bld.CELB[nat][ROLE_INDEX[type]], B: lib.bld.B };
+  }
+  if (age === 'arcane') {
+    // The newer concept versions where a nation has one, otherwise the first Arcane designs.
+    if (type === 'towncenter') return { fn: (lib.tcs.ARCNEW && lib.tcs.ARCNEW[nat]) || lib.tcs.ARCANE[nat], B: lib.tcs.B };
+    return { fn: ((lib.bld.ARCB && lib.bld.ARCB[nat]) || lib.bld.ARC[nat])[ROLE_INDEX[type]], B: lib.bld.B };
+  }
   if (age === 'mythic') {
     if (type === 'towncenter') return { fn: (lib.tcs.MYTHNEW && lib.tcs.MYTHNEW[nat]) || lib.tcs.MYTHIC[nat], B: lib.tcs.B };
     return { fn: lib.bld.MYTHB[nat][ROLE_INDEX[type]], B: lib.bld.B };
@@ -63,6 +72,23 @@ function prepGeometry(o) {
   return g;
 }
 
+// Level of detail: the concept pages are made for close-ups, but on the map a small round part
+// is only a few pixels across, so small spheres get fewer segments (the shape stays the same).
+const sphereCache = new Map(), wsV = new THREE.Vector3();
+function lighten(holder) {
+  holder.traverse(o => {
+    const g = o.geometry, p = g?.parameters;
+    if (!o.isMesh || g.type !== 'SphereGeometry' || p.widthSegments <= 8) return;
+    o.getWorldScale(wsV);
+    const size = p.radius * Math.max(wsV.x, wsV.y, wsV.z);
+    if (size > 0.45) return;
+    const ws = size < 0.2 ? 7 : 10, hs = size < 0.2 ? 5 : 7;
+    const key = [p.radius, ws, hs, p.phiStart, p.phiLength, p.thetaStart, p.thetaLength].join();
+    if (!sphereCache.has(key)) sphereCache.set(key, new THREE.SphereGeometry(p.radius, ws, hs, p.phiStart, p.phiLength, p.thetaStart, p.thetaLength));
+    o.geometry = sphereCache.get(key);
+  });
+}
+
 // Builds one building for a team and returns { group, fx, height }.
 export function makeBuilding(team, type, age = 'dark') {
   const { fn, B } = sceneFor(team, type, age);
@@ -74,6 +100,7 @@ export function makeBuilding(team, type, age = 'dark') {
   const fx = b.fx;
   fx.forEach(f => f(0, 0));
   holder.updateMatrixWorld(true);
+  lighten(holder);
 
   // Drop point lights (glow comes from emissive materials) and anything lying flat on the ground.
   const drop = [];

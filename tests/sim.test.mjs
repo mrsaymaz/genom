@@ -229,7 +229,7 @@ test('a team ages up: units take their Mythic forms and buildings grow stronger'
   assert.equal(tc.maxHp, Math.round(tcHp * 1.2));
   assert.ok(Math.abs(worker.hp / worker.maxHp - 0.5) < 0.01, 'the worker keeps half its health');
   assert.ok(worker.maxHp > 25);
-  assert.equal(w.canAgeUp(0).why, 'max');
+  assert.deepEqual([w.canAgeUp(0).why, w.canAgeUp(0).needs], ['needs', 'sanctum'], 'the Arcane Age needs a Sanctum');
 });
 
 test('the rival ages up on its own', () => {
@@ -251,4 +251,146 @@ test('the Beast Pen and the Sanctum can only be built in the Mythic Age', () => 
   const pen = w.place(0, 'pen', px, py);
   assert.ok(pen, 'built in the Mythic Age');
   assert.equal(w.teams[0].res.gold, 950);
+});
+
+// ---------- heroes, creatures and the later ages ----------
+// A world where team 0 is already in an age with a Sanctum and a Beast Pen standing.
+function lateWorld(age = 'mythic', teams = ['hufflepuff', 'gryffindor']) {
+  const w = new World({ teams });
+  const tc = [...w.buildings(0)].find(b => b.type === 'towncenter');
+  for (const a of ['mythic', 'arcane', 'celestial'].slice(0, ['mythic', 'arcane', 'celestial'].indexOf(age) + 1)) w.enterAge(0, a);
+  w.teams[0].res = { food: 5000, lumber: 5000, gold: 5000 };
+  const spot = type => { for (let y = tc.y - 14; y < tc.y + 10; y++) for (let x = tc.x - 6; x < tc.x + 16; x++) if (w.canPlace(0, type, x, y)) return [x, y]; };
+  const out = { w, tc };
+  for (const type of ['sanctum', 'pen', 'barracks', 'house', 'house']) { const [x, y] = spot(type); out[type] = w.addBuilding(0, type, x, y, true); }
+  w.recount();
+  w.drainEvents();
+  return out;
+}
+// A unit placed right beside another entity (or spawned at a building).
+const unitNear = (w, team, type, at) => { const u = w.spawnUnit(team, type, at); if (at.cat === 'unit') { u.x = u.px = at.x + 0.8; u.y = u.py = at.y; } return u; };
+
+test('the Sanctum trains one hero at a time, and the Beast Pen one creature', () => {
+  const { w, sanctum, pen } = lateWorld('mythic');
+  assert.equal(w.def(0, 'hero').name, 'Wind Warden');
+  assert.equal(w.def(0, 'creature').name, 'Galehide Bear');
+  assert.ok(w.train(sanctum.id, 'hero'));
+  assert.equal(w.train(sanctum.id, 'hero'), false, 'only one hero in training');
+  assert.ok(w.train(pen.id, 'creature'));
+  assert.equal(w.train(pen.id, 'creature'), false, 'only one creature');
+  assert.equal(w.train(pen.id, 'hero'), false, 'the Pen does not train heroes');
+  run(w, 45);
+  const hero = [...w.units()].find(u => u.team === 0 && u.type === 'hero'), bear = [...w.units()].find(u => u.team === 0 && u.type === 'creature');
+  assert.ok(hero && bear, 'both arrived');
+  assert.equal(w.train(sanctum.id, 'hero'), false, 'still one hero while it lives');
+  w.remove(hero);
+  assert.ok(w.train(sanctum.id, 'hero'), 'a fallen hero can be trained again');
+});
+
+test('hero abilities: Updraft lifts, Battle Roar rouses, Root Snare holds, High Tide heals and pushes', () => {
+  // Updraft
+  let { w, tc } = lateWorld('mythic', ['hufflepuff', 'gryffindor']);
+  let hero = unitNear(w, 0, 'hero', tc), friend = unitNear(w, 0, 'spearman', hero);
+  assert.ok(w.cast(hero.id));
+  assert.ok(friend.boost > 5 && friend.dodge > 5, 'friends move faster and dodge arrows');
+  assert.equal(w.cast(hero.id), false, 'then it must recharge');
+  assert.equal(w.canCast(hero).why, 'cooldown');
+  run(w, 36);
+  assert.ok(w.canCast(hero).ok, 'ready again after 35 s');
+  // Battle Roar: roused units hit 35% harder.
+  ({ w, tc } = lateWorld('mythic', ['gryffindor', 'hufflepuff']));
+  hero = unitNear(w, 0, 'hero', tc); friend = unitNear(w, 0, 'spearman', hero);
+  const foe = unitNear(w, 1, 'spearman', tc), foe2 = unitNear(w, 1, 'spearman', tc);
+  w.cast(hero.id);
+  const hp = foe.hp; w.damage(friend, foe, 10); const roused = hp - foe.hp;
+  friend.roar = 0; const hp2 = foe2.hp; w.damage(friend, foe2, 10);
+  assert.ok(Math.abs(roused / (hp2 - foe2.hp) - 1.35) < 0.01);
+  // Root Snare: enemies nearby cannot move.
+  ({ w, tc } = lateWorld('mythic', ['slytherin', 'hufflepuff']));
+  hero = unitNear(w, 0, 'hero', tc);
+  const caught = unitNear(w, 1, 'spearman', hero);
+  caught.x = hero.x + 1.5; caught.y = hero.y; caught.px = caught.x;
+  w.cast(hero.id);
+  assert.ok(caught.rootT > 4, 'held for 5 s');
+  w.orderMove([caught.id], caught.x + 6, caught.y);
+  const x0 = caught.x; for (let i = 0; i < 40; i++) w.step(0.05);
+  assert.ok(Math.abs(caught.x - x0) < 0.3, 'it cannot walk away while rooted');
+  // High Tide: hurt friends heal and enemies are pushed away.
+  ({ w, tc } = lateWorld('mythic', ['ravenclaw', 'hufflepuff']));
+  hero = unitNear(w, 0, 'hero', tc); friend = unitNear(w, 0, 'spearman', hero);
+  friend.hp = friend.maxHp * 0.3;
+  const near = unitNear(w, 1, 'spearman', hero); near.x = hero.x + 1; near.y = hero.y;
+  const d0 = Math.hypot(near.x - hero.x, near.y - hero.y);
+  w.cast(hero.id);
+  assert.ok(friend.hp > friend.maxHp * 0.6, 'healed');
+  assert.ok(Math.hypot(near.x - hero.x, near.y - hero.y) > d0 + 0.5, 'pushed back');
+});
+
+test('creatures: the serpent roots what it bites, the raven heals from above and flies over water', () => {
+  let { w, tc } = lateWorld('mythic', ['slytherin', 'hufflepuff']);
+  const snake = unitNear(w, 0, 'creature', tc), prey = unitNear(w, 1, 'spearman', tc);
+  w.orderAttack([snake.id], prey.id);
+  for (let i = 0; i < 200 && !(prey.rootT > 0); i++) w.step(0.05);
+  assert.ok(prey.rootT > 0, 'Entangle roots the target');
+  ({ w, tc } = lateWorld('mythic', ['ravenclaw', 'hufflepuff']));
+  const raven = unitNear(w, 0, 'creature', tc), hurt = unitNear(w, 0, 'spearman', raven);
+  hurt.x = raven.x; hurt.y = raven.y; hurt.hp = 20;
+  run(w, 3);
+  assert.ok(hurt.hp > 24, 'Healing Rain heals friends beneath it');
+  // It flies straight over the river, where walkers must use a ford.
+  const water = (() => { for (let y = 0; y < w.size; y++) for (let x = 0; x < w.size; x++) if (w.terrainAt(x, y) === T.WATER) return [x, y]; })();
+  w.orderMove([raven.id], water[0], water[1]);
+  run(w, 40);
+  assert.ok(Math.hypot(raven.x - water[0] - 0.5, raven.y - water[1] - 0.5) < 1, 'the raven reaches open water');
+});
+
+test("creatures beat the next element's creature by the element cycle", () => {
+  const { w, tc } = lateWorld('mythic', ['gryffindor', 'slytherin']);
+  w.enterAge(1, 'mythic');
+  const lion = unitNear(w, 0, 'creature', tc), snake = unitNear(w, 1, 'creature', tc);
+  const hp = snake.hp; w.damage(lion, snake, 10);
+  assert.ok(Math.abs(hp - snake.hp - 16.5) < 0.01, 'fire beats earth: x1.5 and the element edge');
+});
+
+test('the ages go on to Arcane (needs a Sanctum) and Celestial (needs a Beast Pen), and saves keep them', () => {
+  const w = new World({ teams: ['ravenclaw', 'hufflepuff'] });
+  const tc = [...w.buildings(0)].find(b => b.type === 'towncenter');
+  w.teams[0].res = { food: 9000, lumber: 9000, gold: 9000 };
+  const place = type => { for (let y = tc.y - 14; y < tc.y + 10; y++) for (let x = tc.x - 6; x < tc.x + 16; x++) if (w.canPlace(0, type, x, y)) return w.addBuilding(0, type, x, y, true); };
+  place('barracks');
+  assert.ok(w.startAgeUp(tc.id)); run(w, 41);
+  assert.equal(w.teams[0].age, 'mythic');
+  assert.equal(w.canAgeUp(0).needs, 'sanctum');
+  const sanctum = place('sanctum');
+  w.train(sanctum.id, 'hero'); run(w, 41);
+  const hero = [...w.units()].find(u => u.type === 'hero');
+  assert.equal(w.def(0, 'hero').name, 'Tide Navigator');
+  assert.ok(w.startAgeUp(tc.id)); run(w, 46);
+  assert.equal(w.teams[0].age, 'arcane');
+  assert.equal(w.def(0, 'hero').name, 'Glass Navigator', 'the hero takes its Arcane form');
+  assert.ok(hero.maxHp > 280);
+  assert.equal(w.def(0, 'hero').cast.cooldown, 30, 'abilities recharge faster each age');
+  assert.equal(w.canAgeUp(0).needs, 'pen');
+  place('pen');
+  assert.ok(w.startAgeUp(tc.id));
+  w.cast(hero.id);
+  const b = World.load(JSON.parse(JSON.stringify(w.save())));
+  run(w, 51); run(b, 51);
+  for (const x of [w, b]) {
+    assert.equal(x.teams[0].age, 'celestial');
+    assert.equal(x.def(0, 'creature').name, 'Moon Raven');
+    assert.equal(x.def(0, 'spearman').name, 'Crescent Guard');
+    assert.equal(x.canAgeUp(0).why, 'max', 'Celestial is the last age');
+  }
+  assert.ok(Math.abs(b.get(hero.id).castCd - w.get(hero.id).castCd) < 1e-6, 'the cooldown survives a save');
+});
+
+test('the rival builds a Sanctum and a Beast Pen, trains its hero and creature, and reaches the Celestial Age', () => {
+  const w = new World({ pace: 'challenge' }), ai = new RivalAI(w, 1);
+  const mine = [...w.buildings(0)].find(b => b.type === 'towncenter'); mine.hp = mine.maxHp = 1e9; // an idle player must not lose first
+  let hero = false, creature = false;
+  for (let t = 0; t < 1700 && w.teams[1].age !== 'celestial'; t += 0.05) { ai.update(0.05); w.step(0.05); if (!hero || !creature) for (const u of w.units()) if (u.team === 1) { hero ||= u.type === 'hero'; creature ||= u.type === 'creature'; } }
+  assert.ok(hero, 'the rival trained its hero');
+  assert.ok(creature, 'the rival trained its creature');
+  assert.equal(w.teams[1].age, 'celestial', `rival age at ${Math.round(w.time)} s`);
 });

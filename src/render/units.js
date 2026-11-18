@@ -35,10 +35,10 @@ export class UnitMeshes {
   prepare(team, age) {
     const sets = { dark: DARK_UNITS, mythic: MYTHIC_UNITS, arcane: ARCANE_UNITS, celestial: CELESTIAL_UNITS }, art = this.teams[team].nation.art;
     for (const type of UNIT_TYPES) {
-      const key = `${type}${team}${age}`;
-      if (this.meshes.has(key)) continue;
+      const key = `${type}${team}${age}`, make = sets[age][art][TYPE_LINE[type]];
+      if (this.meshes.has(key) || !make) continue; // no heroes or creatures in the Dark Age
       const k = unitKit(THREE, { detail: 0.55 });
-      sets[age][art][TYPE_LINE[type]](k);
+      make(k);
       const { lit, glow } = k.build();
       this.meshes.set(key, { lit: this.inst(lit, 80), glow: glow ? this.inst(glow, 80, this.glowMat, false) : null });
     }
@@ -58,15 +58,18 @@ export class UnitMeshes {
       const pop = look?.pop.get(u.id) || 0;
       const x = u.px + (u.x - u.px) * alpha, y = u.py + (u.y - u.py) * alpha;
       const [wx, wz] = toWorld(x, y);
-      const moving = u.path && u.path.length;
-      const bob = moving ? Math.abs(Math.sin(time * (u.boost > 0 ? 13 : 9) + u.id)) * 0.06 : 0;
+      const moving = u.path && u.path.length && !(u.rootT > 0);
+      const def = world.def(u.team, u.type);
+      // Flyers (the Tide Raven) hover and glide; everyone else bobs as they walk.
+      const bob = def?.flies ? 1.05 + Math.sin(time * 2.4 + u.id) * 0.12 : moving ? Math.abs(Math.sin(time * (u.boost > 0 ? 13 : 9) + u.id)) * 0.06 : 0;
       const swing = (!moving && u.order && ['gather', 'build'].includes(u.order.type)) ? Math.sin(u.work * Math.PI * 2) * 0.35 : (u.cd > 0 && u.work > 0 && !moving ? Math.max(0, u.cd / 1.3) * 0.4 : 0);
       d.position.set(wx, bob + pop * 0.25, wz); d.rotation.set(swing * 0.6, Math.atan2(Math.cos(u.facing), Math.sin(u.facing)) + pop * 6.28, 0, 'YXZ'); d.scale.setScalar(1.05 * (1 + pop * 0.35)); d.updateMatrix();
       m.lit.setMatrixAt(m.lit.count++, d.matrix);
       if (m.glow) m.glow.setMatrixAt(m.glow.count++, d.matrix);
       if (u.carry && u.carry.amt > 1 && this.carry[u.carry.type]) {
         const c = this.carry[u.carry.type];
-        d.position.set(wx, 1.32 + bob, wz); // carried loads ride on top, easy to see d.rotation.set(0, Math.atan2(Math.cos(u.facing), Math.sin(u.facing)), 0); d.scale.setScalar(1); d.updateMatrix();
+        // Carried loads ride on top, easy to see.
+        d.position.set(wx, 1.32 + bob, wz); d.rotation.set(0, Math.atan2(Math.cos(u.facing), Math.sin(u.facing)), 0); d.scale.setScalar(1); d.updateMatrix();
         c.setMatrixAt(carryN[u.carry.type]++, d.matrix);
       }
     }

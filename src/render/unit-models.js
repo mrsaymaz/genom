@@ -2028,3 +2028,173 @@ export const CELESTIAL_UNITS = {
     },
   },
 };
+
+// ---------- Signature creatures ----------
+// One creature per nation, in three forms: Mythic (v = 0), Arcane (v = 1) and Celestial (v = 2).
+// Each form keeps the animal's outline and takes the materials of its age. Creatures face +Z.
+function bear(k, v) {
+  const fur = ['#b47a36', '#9a6a30', '#f2ece0'][v], dark = ['#5e3a1c', '#4a2e18', '#b89a5a'][v], belly = ['#e2be86', '#e0bc80', '#fff8ec'][v];
+  const glow = ['#ffe9a0', AIR.glow, AIR.glow][v];
+  if (v === 2) for (const [x, z] of [[0.22, 0.34], [-0.22, 0.34], [0.22, -0.4], [-0.22, -0.4]]) cloud(k, [x * 1.15, 0.06, z * 1.15], 0.55);
+  k.push({ s: 1.12 + v * 0.1 });
+  // Body: a great humped back, a pale belly.
+  k.ball(0.42, [0, 0.78, -0.02], fur, { s: [0.9, 0.8, 1.35], ws: 12 });
+  k.ball(0.34, [0, 0.98, 0.26], fur, { ws: 12 });
+  k.ball(0.36, [0, 0.8, -0.36], fur, { ws: 12 });
+  k.ball(0.27, [0, 0.64, 0.3], belly, { s: [0.9, 0.8, 1.1] });
+  // Head: snout, ears, glowing amber eyes.
+  k.ball(0.23, [0, 1.0, 0.62], fur, { ws: 12 });
+  k.ball(0.12, [0, 0.93, 0.82], belly, { s: [1, 0.85, 1.1] });
+  k.ball(0.045, [0, 0.97, 0.93], '#2a1e18');
+  for (const s of [1, -1]) { k.ball(0.075, [s * 0.16, 1.19, 0.56], fur); k.ball(0.045, [s * 0.16, 1.19, 0.6], dark); k.ball(0.032, [s * 0.09, 1.05, 0.8], glow, { glow: true }); }
+  // Legs and paws.
+  for (const [x, z] of [[0.21, 0.3], [-0.21, 0.3], [0.21, -0.36], [-0.21, -0.36]]) { k.cyl(0.12, 0.135, 0.56, [x, 0.3, z], fur, { seg: 8 }); k.box(0.21, 0.08, 0.25, [x, 0.04, z + 0.04], dark); }
+  // Gold rune stripes on the flanks.
+  for (const s of [1, -1]) for (const z of [-0.2, 0.0, 0.2]) k.box(0.02, 0.2, 0.04, [s * 0.375, 0.82, z], ['#ffc83a', AIR.glow, SKY.gold][v], { r: [0.4, 0, 0], glow: v !== 2 });
+  // Wind crystals along the spine.
+  for (const [z, y, s] of [[0.32, 1.33, 1], [0.12, 1.25, 0.9], [-0.1, 1.15, 0.8], [-0.32, 1.18, 0.7]]) k.octa(0.09 * s, [0, y, z], glow, { s: [0.6, 1.7, 0.6], r: [-0.3, 0, 0], glow: true });
+  // Rings of wind at the paws.
+  for (const x of [0.21, -0.21]) k.torus(0.17, 0.012, [x, 0.12, 0.32], '#fff3c0', { r: [Math.PI / 2, 0, 0], ts: 18, glow: true });
+  if (v === 1) {
+    // Amber honeycomb plates, crackling crystals and a small storm cloud between the shoulders.
+    for (const [x, z] of [[0.13, 0.05], [-0.13, 0.05], [0, -0.12], [0.13, -0.28], [-0.13, -0.28]]) k.hex(0.08, 0.05, [x, 1.11 + (z > 0 ? 0.03 : 0), z], AIR.honey, { r: [-0.15, 0, x * 1.4] });
+    for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; k.ball([0.12, 0.1, 0.09][i % 3], [Math.cos(a) * 0.12, 1.62 + Math.sin(a * 2) * 0.03, 0.25 + Math.sin(a) * 0.1], CLOUD, { ws: 8, hs: 6 }); }
+    k.ball(0.13, [0, 1.66, 0.25], STORM, { ws: 8, hs: 6 });
+    constellation(k, [[0.03, 1.55, 0.3], [0.08, 1.46, 0.32], [0.02, 1.4, 0.33]], BOLT, 0.012);
+    k.octa(0.06, [0, 1.38, 0.32], BOLT, { glow: true });
+  }
+  if (v === 2) {
+    // A mane of amber stars, a gold brow plate and wings of wind.
+    around(9, 0.3, (x, y, a, i) => sparkle(k, [x, 1.0 + y * 0.9, 0.45], i % 2 ? 0.05 : 0.075, AIR.glow));
+    k.box(0.18, 0.05, 0.14, [0, 1.16, 0.7], SKY.gold, { r: [0.5, 0, 0] });
+    sparkle(k, [0, 1.25, 0.72], 0.06, '#fff6cf');
+    for (const s of [1, -1]) wing(k, s, [s * 0.18, 1.18, 0.12], { n: 3, len: 0.6, a0: 0.5, da: 0.35, shrink: 0.1, cols: [SKY.cloud, SKY.shade], tip: AIR.glow, back: -0.5 });
+  }
+  k.pop();
+}
+
+function raven(k, v) {
+  const fea = ['#1f3f7a', '#2a5590', MOON.night][v], edge = [WAT.glow, GLASS, MOON.silver][v];
+  k.push({ s: 1.05 + v * 0.14 });
+  // Body in flight, head and hooked beak (the game lifts it into the air).
+  k.ball(0.2, [0, 0.5, -0.02], fea, { s: [0.85, 0.8, 1.6], ws: 12 });
+  k.ball(0.13, [0, 0.62, 0.3], fea, { ws: 10 });
+  k.cone(0.05, 0.15, [0, 0.6, 0.46], '#e8c070', { r: [Math.PI / 2, 0, 0], seg: 5 });
+  k.cone(0.022, 0.06, [0, 0.56, 0.52], '#c89a40', { r: [Math.PI, 0, 0], seg: 4 });
+  for (const s of [1, -1]) k.ball(0.026, [s * 0.07, 0.65, 0.38], WAT.glow, { glow: true });
+  // The crest: living water, glass with bronze, or a silver crescent.
+  if (v === 2) { crescent(k, [0, 0.82, 0.22], 0.09, 0.016, MOON.silver); k.ball(0.04, [0, 0.82, 0.22], MOON.moon, { glow: true }); }
+  else for (const [z, h, r] of [[0.28, 0.2, 0.3], [0.2, 0.17, 0.6], [0.12, 0.13, 0.9]]) {
+    k.cone(0.04, h, [0, 0.72 + h * 0.3, z], v ? GLASS : '#9fe0f8', { r: [-r, 0, 0], seg: 5 });
+    k.cone(0.02, h * 0.8, [0, 0.72 + h * 0.3, z], v ? WAT.bronze : WAT.glow, { r: [-r, 0, 0], seg: 4, glow: !v });
+  }
+  // Wings spread wide: long feathers sweeping back, glowing at the tips.
+  for (const s of [1, -1]) for (let i = 0; i < 5; i++) {
+    const a = 0.05 + i * 0.16, L = 0.78 - i * 0.07, dir = [s * Math.cos(a), 0.22, -Math.sin(a)];
+    const c = [s * 0.12 + dir[0] * L / 2, 0.56 + dir[1] * L / 2, 0.02 + dir[2] * L / 2];
+    k.octa(L / 2, c, i % 2 ? fea : '#28508f', { s: [1, 0.05, 0.2], r: [0, s > 0 ? a : Math.PI - a, s * 0.22] });
+    k.octa(L * 0.12, [s * 0.12 + dir[0] * L * 0.95, 0.56 + dir[1] * L * 0.95, 0.02 + dir[2] * L * 0.95], edge, { s: [1, 0.4, 0.5], r: [0, s > 0 ? a : Math.PI - a, 0], glow: v !== 1 });
+    if (v === 1 && i < 4) k.octa(L * 0.42, [c[0], c[1] + 0.005, c[2] - 0.035], GLASS, { s: [1, 0.04, 0.08], r: [0, s > 0 ? a : Math.PI - a, s * 0.22] });
+  }
+  // Tail streamers of flowing water.
+  for (const [x, y, z] of [[0, 0.44, -0.78], [0.12, 0.4, -0.7], [-0.12, 0.4, -0.7]]) { k.rod([0, 0.5, -0.28], [x, y, z], 0.018, v === 2 ? MOON.glow : '#4fb6e8', { r2: 0.006, glow: true }); k.ball(0.022, [x, y, z], v === 2 ? MOON.moon : WAT.glow, { glow: true }); }
+  for (const x of [0.05, -0.05]) k.rod([x, 0.4, 0.02], [x, 0.3, -0.06], 0.014, '#c89a40');
+  // Water droplets orbiting the body.
+  around(5, 0.36, (x, z, a, i) => k.ball(0.024, [x, 0.5 + Math.sin(a * 2) * 0.06, z], v === 2 ? MOON.moon : WAT.glow, { glow: true }));
+  if (v === 1) { k.torus(0.34, 0.012, [0, 0.5, 0], WAT.bronze, { r: [Math.PI / 2 - 0.3, 0, 0.2], ts: 24 }); k.torus(0.3, 0.01, [0, 0.5, 0], '#e8c070', { r: [0.4, 0.9, 0], ts: 22 }); }
+  if (v === 2) { k.ball(0.07, [0, 0.47, 0.18], MOON.moon, { glow: true }); k.torus(0.4, 0.007, [0, 0.5, 0], MOON.glow, { r: [Math.PI / 2 - 0.25, 0, 0], ts: 28, glow: true }); }
+  k.pop();
+}
+
+function lion(k, v) {
+  const hide = ['#8a3a20', FIR.basalt, '#e0a440'][v], dark = ['#4a1a10', '#1e1a1c', '#a8701c'][v], muzzle = ['#b8603a', '#4a3a38', '#f4d080'][v];
+  k.push({ s: 1.12 + v * 0.08 });
+  // Body, chest and haunches.
+  k.ball(0.33, [0, 0.6, -0.05], hide, { s: [0.88, 0.8, 1.55], ws: 12 });
+  k.ball(0.3, [0, 0.66, 0.3], hide, { ws: 10 }); k.ball(0.28, [0, 0.62, -0.4], hide, { ws: 10 });
+  // Head, muzzle and golden eyes.
+  k.ball(0.2, [0, 0.95, 0.58], hide, { ws: 12 });
+  k.ball(0.11, [0, 0.88, 0.75], muzzle, { s: [1, 0.85, 1.1] });
+  k.ball(0.035, [0, 0.92, 0.85], '#2a1a12');
+  for (const s of [1, -1]) k.ball(0.03, [s * 0.08, 1.0, 0.74], FIR.hot, { glow: true });
+  // Legs with paws.
+  for (const [x, z] of [[0.17, 0.3], [-0.17, 0.3], [0.17, -0.42], [-0.17, -0.42]]) { k.rod([x, 0.56, z], [x, 0.06, z + 0.02], 0.1, hide, { r2: 0.08 }); k.box(0.15, 0.07, 0.19, [x, 0.035, z + 0.05], dark); }
+  // The tail, curling up to a flame.
+  k.rod([0, 0.74, -0.62], [0, 0.82, -0.85], 0.035, hide); k.rod([0, 0.82, -0.85], [0, 1.0, -0.95], 0.03, hide);
+  k.cone(0.07, 0.2, [0, 1.1, -0.95], FIR.glow, { seg: 5, glow: true }); k.cone(0.04, 0.12, [0, 1.06, -0.94], FIR.hot, { seg: 5, glow: true });
+  if (v < 2) {
+    // A mane of living flame round the head (taller in the Arcane form).
+    const tall = v ? 1.35 : 1;
+    k.ball(0.27, [0, 0.95, 0.46], v ? '#5a1e14' : '#a8341c', { s: [1, 1, 0.8], ws: 10 });
+    around(12, 0.26, (x, y, a, i) => k.cone(0.09, 0.32 * tall * (i % 2 ? 0.75 : 1), [x * 1.05, 0.95 + y * 1.05, 0.44], i % 2 ? FIR.hot : FIR.glow, { seg: 5, glow: true, r: [-0.35, 0, a - Math.PI / 2] }));
+    around(8, 0.17, (x, y, a) => k.cone(0.07, 0.22 * tall, [x, 0.95 + y, 0.36], FIR.red, { seg: 5, r: [-0.5, 0, a - Math.PI / 2] }));
+    for (let i = 0; i < 6; i++) k.cone(0.07, 0.26 * tall, [0, 1.14 - i * 0.05, 0.34 - i * 0.08], i % 2 ? FIR.glow : FIR.hot, { seg: 5, glow: true, r: [-0.6, 0, 0] });
+  }
+  if (v === 0) {
+    // Molten cracks glowing through its hide.
+    for (const s of [1, -1]) for (const [z, y, r] of [[0.15, 0.72, 0.5], [-0.08, 0.66, -0.4], [-0.32, 0.7, 0.3]]) k.box(0.02, 0.16, 0.025, [s * 0.255, y, z], FIR.glow, { r: [r, 0, 0], glow: true });
+  }
+  if (v === 1) {
+    // Basalt plates with rivers of magma between them, and gold bands on the legs.
+    for (const z of [0.26, 0.04, -0.18, -0.4]) { k.box(0.4, 0.07, 0.17, [0, 0.95 - Math.abs(z + 0.07) * 0.2, z], '#3e3a40', { r: [0.1, 0, 0] }); k.box(0.36, 0.015, 0.03, [0, 0.95 - Math.abs(z + 0.07) * 0.2, z - 0.1], FIR.glow, { glow: true }); }
+    for (const [x, z] of [[0.15, 0.3], [-0.15, 0.3], [0.15, -0.42], [-0.15, -0.42]]) k.torus(0.08, 0.018, [x, 0.3, z + 0.01], FIR.gold, { r: [Math.PI / 2, 0, 0] });
+    k.box(0.12, 0.04, 0.12, [0, 1.12, 0.6], FIR.gold, { r: [0.4, 0, 0] });
+  }
+  if (v === 2) {
+    // A mane of sun rays round a sun disc, and burning paws.
+    k.cyl(0.25, 0.25, 0.03, [0, 0.98, 0.42], SUN.gold, { r: [Math.PI / 2, 0, 0], seg: 18 });
+    k.cyl(0.18, 0.18, 0.032, [0, 0.98, 0.415], SUN.white, { r: [Math.PI / 2, 0, 0], seg: 18, glow: true });
+    sunburst(k, [0, 0.98, 0.43], 0.24, 14, 0.2, 0.04, SUN.ray);
+    for (const [x, z] of [[0.15, 0.35], [-0.15, 0.35], [0.15, -0.37], [-0.15, -0.37]]) k.cone(0.06, 0.16, [x, 0.12, z], SUN.flame, { seg: 5, glow: true });
+    k.box(0.1, 0.035, 0.12, [0, 1.13, 0.62], SUN.gold, { r: [0.4, 0, 0] });
+  }
+  k.pop();
+}
+
+function serpent(k, v) {
+  const sc = ['#4f8a3a', '#6e7a5e', '#3f9a58'][v], sc2 = ['#3f7a30', '#59644c', '#2f8a4c'][v];
+  k.push({ s: 1.12 + v * 0.1 });
+  // The body: an S-bend along the ground, then the neck rises at the front.
+  const pts = [];
+  for (let i = 0; i <= 24; i++) {
+    const t = i / 24, r = 0.035 + 0.085 * Math.sin(Math.min(1, t * 1.6) * Math.PI / 2) - (t > 0.75 ? (t - 0.75) * 0.12 : 0);
+    const x = Math.sin(t * Math.PI * 2.4) * 0.38 * (1 - t * 0.75), z = -0.95 + t * 1.35;
+    const y = t < 0.62 ? r : r + Math.pow((t - 0.62) / 0.38, 1.3) * 0.9;
+    pts.push([x, y, z, r]);
+  }
+  pts.forEach(([x, y, z, r], i) => {
+    k.ball(r, [x, y, z], sc, { ws: 9, hs: 7 });
+    if (i) { const p = pts[i - 1]; k.rod([p[0], p[1], p[2]], [x, y, z], p[3], i % 3 ? sc : sc2, { r2: r, seg: 9 }); }
+  });
+  // A paler belly line along the ground.
+  for (let i = 2; i < 16; i += 2) { const [x, y, z, r] = pts[i]; k.ball(r * 0.75, [x, y - r * 0.35, z], ['#b8c878', '#a8a890', '#c8e8a0'][v], { s: [1.15, 0.6, 1.2], ws: 8, hs: 5 }); }
+  // Rune rings round the body.
+  for (const i of [6, 11, 16]) { const [x, y, z, r] = pts[i]; k.torus(r * 1.05, 0.012, [x, y, z], EAR.glow, { ts: 14, glow: true }); }
+  // Along the spine: leaves, rune stones or star blossoms.
+  for (let i = 3; i < 20; i += 3) {
+    const [x, y, z, r] = pts[i];
+    if (v === 0) k.cone(0.05, 0.16, [x, y + r + 0.05, z], i % 2 ? EAR.leaf : EAR.leafL, { seg: 4, s: [1, 1, 0.4], r: [-0.4, 0, 0] });
+    else if (v === 1) { k.box(r * 1.3, 0.05, 0.12, [x, y + r * 0.85, z], EAR.stone); k.octa(0.025, [x, y + r * 0.85 + 0.03, z + 0.03], EAR.glow, { glow: true }); if (i % 6 === 0) runeStone(k, [x, y + r + 0.32, z], 0.8, i); }
+    else blossom(k, [x, y + r * 0.9, z], 0.9, { glow: i % 2 === 1 });
+  }
+  // The head: jaws, glowing eyes, horns and a frill.
+  const [hx, hy, hz] = pts[24];
+  k.push({ p: [hx, hy + 0.02, hz + 0.08] });
+  k.ball(0.14, [0, 0, 0.05], sc, { s: [1.05, 0.62, 1.5], ws: 10 });
+  k.ball(0.09, [0, -0.02, 0.2], sc, { s: [1.0, 0.6, 1.2], ws: 8 });
+  k.box(0.16, 0.035, 0.22, [0, -0.07, 0.14], sc2);
+  k.cone(0.012, 0.06, [0.04, -0.09, 0.26], '#f2ead8', { seg: 4, r: [Math.PI, 0, 0] }); k.cone(0.012, 0.06, [-0.04, -0.09, 0.26], '#f2ead8', { seg: 4, r: [Math.PI, 0, 0] });
+  for (const s of [1, -1]) k.ball(0.03, [s * 0.09, 0.05, 0.12], EAR.glow, { glow: true });
+  const horn = [EAR.stone, EAR.stoneD, BLOOM.emerald][v];
+  for (const s of [1, -1]) { k.cone(0.03, 0.18, [s * 0.08, 0.13, -0.06], horn, { seg: 5, r: [-0.8, 0, -s * 0.3], glow: v === 2 }); if (v === 2) k.cone(0.022, 0.12, [s * 0.03, 0.16, 0.02], horn, { seg: 5, r: [-0.5, 0, -s * 0.15], glow: true }); }
+  for (let i = 0; i < 7; i++) {
+    const a = -1.1 + i * 0.37, col = v === 2 ? (i % 2 ? PETAL_GLOW : BLOOM.petal) : v === 1 ? (i % 2 ? EAR.stone : EAR.moss) : (i % 2 ? EAR.leaf : EAR.leafL);
+    k.octa(0.14, [Math.sin(a) * 0.14, 0.04 + Math.cos(a) * 0.12, -0.12], col, { s: [0.3, 1, 0.05], r: [-0.3, 0, -a], glow: v === 2 && i % 2 === 1 });
+  }
+  k.pop();
+  k.pop();
+}
+
+// The creatures join each age's set of units.
+const CREATURE_FN = { air: bear, water: raven, fire: lion, earth: serpent };
+[MYTHIC_UNITS, ARCANE_UNITS, CELESTIAL_UNITS].forEach((set, v) => { for (const n of Object.keys(CREATURE_FN)) set[n].creature = k => CREATURE_FN[n](k, v); });

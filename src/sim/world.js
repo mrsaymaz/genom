@@ -5,6 +5,8 @@ import { generateMap, T } from './map.js';
 import { findPath } from './path.js';
 import { unitDefs, roleOf, COUNTER, BLD_DAMAGE, ELEMENT_BEATS } from './units.js';
 
+const AGE_I = { dark: 0, mythic: 1, arcane: 2, celestial: 3 };
+
 const UNIT_R = 0.32;
 
 export class World {
@@ -69,6 +71,9 @@ export class World {
       id: this.nextId++, cat: 'unit', type, team, x: spot[0] + 0.5, y: spot[1] + 0.5, px: spot[0] + 0.5, py: spot[1] + 0.5,
       hp: d.hp, maxHp: d.hp, order: null, path: null, carry: null, cd: 0, facing: 0, work: 0, prev: null, repath: 0,
       run: 0, boost: 0, healCd: 0, hurtT: -99,
+      // Hero and creature abilities, and what they leave on others: arrows dodged, a battle roar,
+      // roots holding a unit in place.
+      castCd: 0, traitCd: 2, dodge: 0, roar: 0, rootT: 0,
     };
     this.ents.set(e.id, e);
     this.teams[team].pop += d.pop;
@@ -165,11 +170,18 @@ export class World {
     return b;
   }
 
+  // Heroes and creatures are unique: one in the field or in training at a time.
+  hasUnique(team, type) {
+    for (const u of this.allUnits()) if (u.team === team && u.type === type) return true;
+    for (const b of this.buildings(team)) if (b.queue.some(q => q.type === type)) return true;
+    return false;
+  }
   train(bid, type) {
     const b = this.get(bid);
     if (!b || !b.built || b.queue.length >= 5) return false;
     const d = this.def(b.team, type);
-    if (!CONFIG.buildings[b.type].trains?.includes(type) || !this.canAfford(b.team, d.cost)) return false;
+    if (!d || !CONFIG.buildings[b.type].trains?.includes(type) || !this.canAfford(b.team, d.cost)) return false;
+    if (d.unique && this.hasUnique(b.team, type)) return false;
     this.pay(b.team, d.cost);
     b.queue.push({ type, t: 0 });
     return true;
@@ -348,7 +360,9 @@ export class World {
   }
 
   pathTo(u, goals) {
-    const p = findPath(this.size, (x, y) => this.blocked(x, y), Math.floor(u.x), Math.floor(u.y), goals);
+    // Flying units (the Tide Raven) go over water, rocks and buildings.
+    const flies = this.def(u.team, u.type).flies;
+    const p = findPath(this.size, flies ? (x, y) => !this.inside(x, y) : (x, y) => this.blocked(x, y), Math.floor(u.x), Math.floor(u.y), goals);
     u.path = p ? p.map(([x, y]) => [x + 0.5, y + 0.5]) : [];
     // Already on a goal tile but off its centre: finish the last half-step.
     if (p && !p.length) { const cx = Math.floor(u.x) + 0.5, cy = Math.floor(u.y) + 0.5; if (Math.hypot(cx - u.x, cy - u.y) > 0.05) u.path = [[cx, cy]]; }
@@ -358,7 +372,9 @@ export class World {
   // Moves along the path; returns true when the path is finished.
   follow(u, dt) {
     if (!u.path || !u.path.length) return true;
-    const speed = this.def(u.team, u.type).speed * (this.terrainAt(Math.floor(u.x), Math.floor(u.y)) === T.FORD ? 0.7 : 1) * (u.boost > 0 ? 1.4 : 1);
+    if (u.rootT > 0) return false; // held by roots
+    const d = this.def(u.team, u.type);
+    const speed = d.speed * (!d.flies && this.terrainAt(Math.floor(u.x), Math.floor(u.y)) === T.FORD ? 0.7 : 1) * (u.boost > 0 ? 1.4 : 1);
     let step = speed * dt;
     u.run += step; // chargers hit harder after a run-up
     while (step > 0 && u.path.length) {
@@ -434,9 +450,16 @@ export class World {
     else if (attacker.cat === 'unit') {
       const td = this.def(target.team, target.type), tr = roleOf(td);
       dmg *= COUNTER[ar]?.[tr] ?? 1;
+      const ad = this.def(attacker.team, attacker.type);
       // Stone Skin: guardians take half damage from melee attacks.
-      if (td.kind === 'guardian' && this.def(attacker.team, attacker.type).attackType === 'melee') dmg *= 0.5;
+      if (td.kind === 'guardian' && ad.attackType === 'melee') dmg *= 0.5;
+      // Updraft: lifted units dodge half of every arrow.
+      if (target.dodge > 0 && ad.attackType === 'ranged') dmg *= 0.5;
+      // Signature creatures follow the element cycle among themselves, strongly.
+      if (ar === 'creature' && tr === 'creature' && ELEMENT_BEATS[this.teams[attacker.team].nation.art] === this.teams[target.team].nation.art) dmg *= 1.5;
     }
+    // Battle Roar: roused units hit harder.
+    if (attacker.cat === 'unit' && attacker.roar > 0) dmg *= 1.35;
     // The element cycle: Fire > Earth > Air > Water > Fire, a small extra edge.
     if (target.team !== undefined && ELEMENT_BEATS[this.teams[attacker.team].nation.art] === this.teams[target.team].nation.art) dmg *= 1.1;
     target.hp -= dmg;
@@ -507,7 +530,9 @@ export class World {
   updateUnit(u, dt, builders) {
     const d = this.def(u.team, u.type);
     u.cd -= dt; u.boost -= dt;
+    if (u.castCd !== undefined) { u.castCd -= dt; u.traitCd -= dt; u.dodge -= dt; u.roar -= dt; u.rootT -= dt; }
     if (d.heal) this.mend(u, d, dt);
+    if (d.trait) this.trait(u, d, dt);
     // Ravenclaw's twist: units out of combat for a while slowly heal.
     if (d.regen && u.hp < u.maxHp && this.time - u.hurtT > 5) u.hp = Math.min(u.maxHp, u.hp + d.regen * dt);
     const o = u.order;
@@ -601,12 +626,86 @@ export class World {
         // Charge: a charger's first hit after a run-up deals double damage.
         const charged = d.kind === 'charger' && u.run >= 2.5;
         this.damage(u, e, d.damage * (charged ? 2 : 1));
+        // Entangle: the Rootcoil Serpent's strike roots its target.
+        if (d.trait === 'entangle' && e.cat === 'unit' && this.ents.has(e.id)) { e.rootT = 3; e.path = null; this.events.push({ type: 'rooted', id: e.id, by: u.id }); }
         if (charged) this.events.push({ type: 'charge', id: u.id });
         // Tailwind: a scout speeds away after landing a hit.
         if (d.kind === 'scout') u.boost = 3;
         u.run = 0;
       }
     }
+  }
+
+  // ---------- heroes and creatures ----------
+  // Units of one side within r tiles of a point (sheltering workers are safe inside).
+  near(x, y, r, team, enemies) {
+    const out = [];
+    for (const v of this.units()) if ((enemies ? v.team !== team : v.team === team) && Math.hypot(v.x - x, v.y - y) <= r) out.push(v);
+    return out;
+  }
+  // Pushes a unit up to `dist` tiles away from a point, stopping at anything solid.
+  knock(v, x, y, dist) {
+    const dx = v.x - x, dy = v.y - y, d = Math.hypot(dx, dy) || 1, flies = this.def(v.team, v.type).flies;
+    for (let k = 0; k < Math.round(dist * 5); k++) {
+      const nx = v.x + dx / d * 0.2, ny = v.y + dy / d * 0.2;
+      if (!flies && this.blocked(Math.floor(nx), Math.floor(ny))) break;
+      if (!this.inside(Math.floor(nx), Math.floor(ny))) break;
+      v.x = nx; v.y = ny;
+    }
+    v.path = null; v.repath = 0;
+  }
+  // Can this hero use its ability now? Returns { ok, why, wait }.
+  canCast(u) {
+    const d = u && this.def(u.team, u.type);
+    if (!d?.cast) return { ok: false, why: 'none' };
+    if (u.castCd > 0) return { ok: false, why: 'cooldown', wait: u.castCd };
+    return { ok: true };
+  }
+  // A hero's ability, centred on the hero: Updraft, High Tide, Battle Roar or Root Snare.
+  cast(id) {
+    const u = this.get(id);
+    if (!this.canCast(u).ok) return false;
+    const d = this.def(u.team, u.type), c = d.cast, r = c.radius;
+    const allies = this.near(u.x, u.y, r, u.team, false), foes = this.near(u.x, u.y, r * 0.9, u.team, true);
+    let n = 0;
+    if (c.id === 'updraft') for (const a of allies) { a.boost = 6; a.dodge = 6; n++; }
+    else if (c.id === 'hightide') {
+      for (const a of allies) { a.hp = Math.min(a.maxHp, a.hp + a.maxHp * 0.35); n++; }
+      for (const f of foes) { this.knock(f, u.x, u.y, 2.4); this.damage(u, f, d.damage * 0.8); }
+    } else if (c.id === 'roar') for (const a of allies) { a.roar = 8; n++; }
+    else if (c.id === 'snare') for (const f of foes) { f.rootT = 5; f.path = null; this.damage(u, f, d.damage * 0.6); n++; }
+    u.castCd = c.cooldown; u.work = 0.01;
+    this.events.push({ type: 'cast', id: u.id, team: u.team, ability: c.id, x: u.x, y: u.y, r, n, hit: foes.map(f => f.id) });
+    return true;
+  }
+  // Creature abilities work on their own.
+  trait(u, d, dt) {
+    if (u.traitCd > 0) return;
+    if (d.trait === 'galeSlam') {
+      // Gale Slam: a gust bursts from its paws when enemies crowd it.
+      const foes = this.near(u.x, u.y, 2.3, u.team, true);
+      if (!foes.length) { u.traitCd = 0.5; return; }
+      for (const f of foes) { this.damage(u, f, d.damage * 0.7); if (this.ents.has(f.id)) this.knock(f, u.x, u.y, 1.6); }
+      u.traitCd = 8;
+      this.events.push({ type: 'trait', id: u.id, team: u.team, trait: d.trait, x: u.x, y: u.y, r: 2.3 });
+    } else if (d.trait === 'healingRain') {
+      // Healing Rain: friends beneath it heal a little every second.
+      let healed = 0;
+      for (const a of this.near(u.x, u.y, 2.6, u.team, false)) if (a.hp < a.maxHp) { a.hp = Math.min(a.maxHp, a.hp + 3 * d.scale); healed++; }
+      u.traitCd = 1;
+      if (healed) this.events.push({ type: 'trait', id: u.id, team: u.team, trait: d.trait, x: u.x, y: u.y, r: 2.6 });
+    } else if (d.trait === 'fireRoar') {
+      // Fire Roar: a cone of fire in front of it while it fights.
+      const tgt = u.order?.type === 'attack' || u.order?.type === 'amove' ? this.nearestEnemy(u, 2.6, true) : null;
+      if (!tgt) { u.traitCd = 0.5; return; }
+      const face = Math.atan2(tgt.y - u.y, tgt.x - u.x);
+      for (const f of this.near(u.x, u.y, 3.2, u.team, true)) {
+        let da = Math.atan2(f.y - u.y, f.x - u.x) - face; da = Math.atan2(Math.sin(da), Math.cos(da));
+        if (Math.abs(da) < 0.6) this.damage(u, f, d.damage * 0.9);
+      }
+      u.traitCd = 9; u.facing = face;
+      this.events.push({ type: 'trait', id: u.id, team: u.team, trait: d.trait, x: u.x, y: u.y, r: 3.2, face });
+    } else u.traitCd = 99; // Entangle works on each strike (see fight)
   }
 
   // Mend: a healer heals the most hurt ally within reach.
@@ -677,6 +776,7 @@ export class World {
     const list = [...this.units()];
     for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
       const a = list[i], b = list[j];
+      if (this.def(a.team, a.type).flies || this.def(b.team, b.type).flies) continue;
       const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy), min = UNIT_R * 1.7;
       if (d >= min || d < 1e-6) continue;
       const push = (min - d) / 2 * 0.5, nx = dx / d, ny = dy / d;

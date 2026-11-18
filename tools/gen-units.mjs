@@ -33,12 +33,17 @@ function roster() {
     L.push('| Line | Dark | Mythic | Arcane | Celestial |', '|---|---|---|---|---|');
     for (const line of ['worker', 'infantry', 'ranged', 'special']) L.push(`| ${line === 'special' ? sp.label : LINES[line].label} | ${r[line].map(x => x[0]).join(' | ')} |`);
     L.push(`| Hero | — | ${r.hero.map(x => x[0]).join(' | ')} |`);
-    L.push(`| Signature creature | — | ${CREATURES[n]} | Elder form | Celestial form |`);
+    L.push(`| Signature creature | — | ${CREATURES[n].forms.map(x => x[0]).join(' | ')} |`);
     L.push(`| Siege | — | — | ${r.siege.join(' | ')} |`);
     L.push('');
-    L.push(`Hero: ${HEROES[n].role}. Ability **${HEROES[n].ability.name}**: ${HEROES[n].ability.text}`, '');
+    L.push(`Hero: ${HEROES[n].role}. Ability **${HEROES[n].ability.name}** (tap the button; it recharges in 35, 30 and 25 s in the Mythic, Arcane and Celestial Ages): ${HEROES[n].ability.text}`, '');
     L.push('### Hero', '', '| Age | Name | Look |', '|---|---|---|');
     r.hero.forEach(([name, desc], i) => L.push(`| ${AGE_NAMES[AGES[i + 1]]} | ${name} | ${desc} |`));
+    L.push('');
+    const cr = CREATURES[n], cb = cr.base;
+    L.push(`Signature creature: ${cr.role}, trained at the Beast Pen, one at a time (${cr.pop} population). Mythic stats: ${cb.hp} HP, ${cb.attack} ${cr.attackType} attack, cost ${fmtCost(cr.cost)}${cr.flies ? '; it flies over water and buildings' : ''}. Ability **${cr.trait.name}** (works on its own): ${cr.trait.text}`, '');
+    L.push('### Signature creature', '', '| Age | Name | Look |', '|---|---|---|');
+    cr.forms.forEach(([name, desc], i) => L.push(`| ${AGE_NAMES[AGES[i + 1]]} | ${name} | ${desc} |`));
     L.push('');
     for (const line of ['worker', 'infantry', 'ranged', 'special']) {
       L.push(`### ${line === 'special' ? sp.label : LINES[line].label}`, '');
@@ -52,7 +57,7 @@ function roster() {
 
 // ---------- the concept page ----------
 function page(age) {
-  const ai = AGES.indexOf(age), AGE = AGE_NAMES[age], lines = ai ? ['worker', 'infantry', 'ranged', 'special', 'hero'] : ['worker', 'infantry', 'ranged', 'special'];
+  const ai = AGES.indexOf(age), AGE = AGE_NAMES[age], lines = ai ? ['worker', 'infantry', 'ranged', 'special', 'hero', 'creature'] : ['worker', 'infantry', 'ranged', 'special'];
   const models = strip(readFileSync('src/render/unit-models.js', 'utf8'));
   const data = strip(readFileSync('src/data/units.js', 'utf8'));
   return `<title>${AGE} Age Units</title>
@@ -154,7 +159,7 @@ td.na { color: var(--muted); }
       <h1>${AGE} Age Units</h1>
       <button id="motion" type="button" aria-pressed="false">Pause turntable</button>
     </div>
-    <p class="lead">${ai ? `Each nation's units after the age-up to the ${AGE} Age: every line keeps its outline but gains the materials of the nation's ${AGE} buildings, ${ai === 1 ? 'and the first hero joins them' : ai === 3 ? 'and the hero takes its final form. These are the strongest units in the game' : 'and the hero takes a new form'}. Switch ages to compare. These are the game's own low-poly models.` : `Each nation's four Dark Age units: a worker, a spear fighter, a ranged fighter and one special unit that fits its element. Every line transforms in each new age, as the buildings do. These are the game's own low-poly models, so what you see here is what students will command.`}</p>
+    <p class="lead">${ai ? `Each nation's units after the age-up to the ${AGE} Age: every line keeps its outline but gains the materials of the nation's ${AGE} buildings, ${ai === 1 ? 'and the first hero and the signature creature join them' : ai === 3 ? 'and the hero and the creature take their final forms. These are the strongest units in the game' : 'and the hero and the creature take new forms'}. Switch ages to compare. These are the game's own low-poly models.` : `Each nation's four Dark Age units: a worker, a spear fighter, a ranged fighter and one special unit that fits its element. Every line transforms in each new age, as the buildings do. These are the game's own low-poly models, so what you see here is what students will command.`}</p>
     <div class="controls">
 ${ai ? `      <div><span class="clbl">Age</span><span class="seg" role="group" aria-label="Age">${AGES.slice(0, ai + 1).reverse().map((a, i) => `<button type="button" data-age="${a}" aria-pressed="${i === 0}">${AGE_NAMES[a]}</button>`).join('')}</span></div>
 ` : ''}      <div><span class="clbl">View</span><span class="seg" role="group" aria-label="View"><button type="button" data-view="color" aria-pressed="true">Colour</button><button type="button" data-view="sil" aria-pressed="false">Silhouette</button></span></div>
@@ -211,6 +216,8 @@ ${models}
   var state = { n: "air", sil: false, paused: false, age: PAGE_AGE };
   var BY_HASH = {}; NATION_ORDER.forEach(function (n) { BY_HASH[NATION_INFO[n].hash] = n; });
   var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+  // Hero and creature costs grow with each age, as in the game.
+  var grownCost = function (c, age) { var k = (AGE_SCALE[age] || AGE_SCALE.mythic).cost / AGE_SCALE.mythic.cost, o = {}; Object.keys(c).forEach(function (r) { o[r] = Math.round(c[r] * k / 5) * 5; }); return o; };
   var costText = function (c) { return Object.keys(c).map(function (k) { return c[k] + " " + cap(k); }).join(" · "); };
   var speedWord = function (v) { return v >= 3.2 ? "Very fast" : v >= 2.6 ? "Fast" : v >= 2.0 ? "Normal" : "Slow"; };
 
@@ -230,10 +237,25 @@ ${models}
         card.querySelector("h2").textContent = ai ? r.hero[ai - 1][0] : "No hero yet";
         card.querySelector(".desc").textContent = ai ? r.hero[ai - 1][1] : "Heroes join from the Mythic Age, trained at the Sanctum.";
         card.querySelector(".role").textContent = "Leads the army. Strong but costly; only one can be alive at a time.";
-        card.querySelector(".stats").innerHTML = [["HP", hb.hp], ["Attack", hb.attack + (hd.range > 1.5 ? " ranged" : " melee")], ["Range", hd.range > 1.5 ? hd.range + " tiles" : "Melee"], ["Speed", speedWord(hb.speed) + " (" + hb.speed + ")"], ["Sight", hd.sight + " tiles"], ["Train", hd.time + " s"], ["Cost", costText(hd.cost), "wide"]].map(function (x) { return '<div' + (x[2] ? ' class="wide"' : "") + '><dt>' + x[0] + "</dt><dd>" + x[1] + "</dd></div>"; }).join("");
+        card.querySelector(".stats").innerHTML = [["HP", hb.hp], ["Attack", hb.attack + (hd.range > 1.5 ? " ranged" : " melee")], ["Range", hd.range > 1.5 ? hd.range + " tiles" : "Melee"], ["Speed", speedWord(hb.speed) + " (" + hb.speed + ")"], ["Sight", hd.sight + " tiles"], ["Train", hd.time + " s"], ["Cost", costText(grownCost(hd.cost, state.age)), "wide"]].map(function (x) { return '<div' + (x[2] ? ' class="wide"' : "") + '><dt>' + x[0] + "</dt><dd>" + x[1] + "</dd></div>"; }).join("");
         card.querySelector(".strong").textContent = "Every line, one at a time";
         card.querySelector(".weak").textContent = "Being surrounded";
-        var ab0 = card.querySelector(".ability"); ab0.hidden = false; ab0.innerHTML = "<b>" + hd.ability.name + ":</b> " + hd.ability.text;
+        var ab0 = card.querySelector(".ability"); ab0.hidden = false; ab0.innerHTML = "<b>" + hd.ability.name + " (tap to use):</b> " + hd.ability.text;
+        return;
+      }
+      if (line === "creature") {
+        var cr = CREATURES[n], cs = AGE_SCALE[state.age] || AGE_SCALE.mythic, cm = AGE_SCALE.mythic, BEATS = { fire: "earth", earth: "air", air: "water", water: "fire" };
+        var prey = BEATS[n], foe = Object.keys(BEATS).filter(function (k) { return BEATS[k] === n; })[0], fi = Math.max(0, ai - 1);
+        var cbs = { hp: Math.round(cr.base.hp * cs.hp / cm.hp), attack: Math.round(cr.base.attack * cs.attack / cm.attack * 10) / 10, speed: cr.base.speed };
+        card.querySelector(".eyebrow").textContent = "Creature · " + cr.role + " · Beast Pen";
+        card.querySelector(".fp").textContent = cr.pop + " population";
+        card.querySelector("h2").textContent = ai ? cr.forms[ai - 1][0] : "No creature yet";
+        card.querySelector(".desc").textContent = ai ? cr.forms[ai - 1][1] : "The signature creature joins from the Mythic Age, trained at the Beast Pen.";
+        card.querySelector(".role").textContent = "The nation's signature creature: only one at a time. Strong against the next element's creature." + (cr.flies ? " It flies over water and buildings." : "");
+        card.querySelector(".stats").innerHTML = [["HP", cbs.hp], ["Attack", cbs.attack + " " + cr.attackType], ["Range", cr.base.range > 1.5 ? cr.base.range + " tiles" : "Melee"], ["Speed", speedWord(cbs.speed) + " (" + cbs.speed + ")"], ["Sight", cr.base.sight + " tiles"], ["Train", cr.time + " s"], ["Cost", costText(grownCost(cr.cost, state.age)), "wide"]].map(function (x) { return '<div' + (x[2] ? ' class="wide"' : "") + '><dt>' + x[0] + "</dt><dd>" + x[1] + "</dd></div>"; }).join("");
+        card.querySelector(".strong").textContent = CREATURES[prey].forms[fi][0];
+        card.querySelector(".weak").textContent = CREATURES[foe].forms[fi][0] + " and spear fighters";
+        var ab1 = card.querySelector(".ability"); ab1.hidden = false; ab1.innerHTML = "<b>" + cr.trait.name + " (works on its own):</b> " + cr.trait.text;
         return;
       }
       var def = line === "special" ? sp : LINES[line], st = unitStats(n, line, state.age);
@@ -256,7 +278,7 @@ ${models}
     var head = "<tr><th>Line</th>" + AGES.map(function (a, i) { return '<th class="' + now(i) + '">' + AGE_NAMES[a] + "</th>"; }).join("") + "</tr>";
     var rowsH = LADDER_LINES.map(function (l) { return "<tr><td>" + (l === "special" ? sp.label : LINES[l].label) + "</td>" + r[l].map(function (x, i) { return '<td class="' + now(i) + '">' + x[0] + "</td>"; }).join("") + "</tr>"; });
     rowsH.push('<tr><td>Hero</td><td class="' + now(0) + ' na">—</td>' + r.hero.map(function (h, i) { return '<td class="' + now(i + 1) + '">' + h[0] + "</td>"; }).join("") + "</tr>");
-    rowsH.push('<tr><td>Creature</td><td class="' + now(0) + ' na">—</td><td class="' + now(1) + '">' + CREATURES[n] + '</td><td class="' + now(2) + '">Elder form</td><td class="' + now(3) + '">Celestial form</td></tr>');
+    rowsH.push('<tr><td>Creature</td><td class="' + now(0) + ' na">—</td>' + CREATURES[n].forms.map(function (c, i) { return '<td class="' + now(i + 1) + '">' + c[0] + "</td>"; }).join("") + "</tr>");
     rowsH.push('<tr><td>Siege</td><td class="' + now(0) + ' na">—</td><td class="' + now(1) + ' na">—</td>' + r.siege.map(function (h, i) { return '<td class="' + now(i + 2) + '">' + h + "</td>"; }).join("") + "</tr>");
     document.getElementById("ladder").innerHTML = "<thead>" + head + "</thead><tbody>" + rowsH.join("") + "</tbody>";
   }
@@ -365,6 +387,7 @@ ${models}
       LINE_ORDER.forEach(function (l, c) {
         var g = unitGroup(n, l, PAGE_AGE);
         g.position.copy(right.clone().multiplyScalar((c - (cols - 1) / 2 + 0.35) * gap)).add(down.clone().multiplyScalar((r - (rows - 1) / 2) * rowGap));
+        if (l === "creature" && CREATURES[n].flies) g.position.y += 1; // the raven flies
         g.rotation.y = 0.55; all.add(g);
       });
     });

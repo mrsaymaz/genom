@@ -13,6 +13,19 @@ const easeOut = t => 1 - Math.pow(1 - t, 3);
 const back = t => { const c = 1.9; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
 const clamp = t => Math.max(0, Math.min(1, t));
 const AGE_NUM = { dark: 1, mythic: 2, arcane: 3, celestial: 4 };
+// Each age's ceremony is grander than the last: deeper dusk, more shockwave rings, a bigger burst;
+// the Arcane Age adds a crown of orbiting stars, the Celestial Age a night sky and falling stars.
+const GRAND = {
+  mythic: { rings: 2, burst: 160, stars: 40, dusk: 0.42, sky: [0.12, 0.16, 0.32], pillar: 26, sub: n => `${n} grows stronger!` },
+  arcane: { rings: 3, burst: 220, stars: 70, dusk: 0.5, sky: [0.16, 0.1, 0.32], pillar: 32, orbit: true, sub: n => `${n} learns new magic!` },
+  celestial: { rings: 4, burst: 300, stars: 110, dusk: 0.66, sky: [0.03, 0.05, 0.16], pillar: 40, orbit: true, starfall: true, sub: n => `${n} reaches the stars!` },
+};
+// What is new in each age, said once the ceremony ends.
+const NEWS = {
+  mythic: 'New: build a Sanctum for your hero and a Beast Pen for your creature.',
+  arcane: g => `Your hero and creature take new forms.${[...g.world.buildings(0)].some(b => b.type === 'pen') ? '' : ' Build a Beast Pen to reach the Celestial Age.'}`,
+  celestial: 'The final age! Every unit, hero and creature is at its strongest.',
+};
 
 // Builds the next-age art of a team's buildings ahead of time (a few per frame during research).
 export function prepareArts(game, team, age) {
@@ -29,7 +42,7 @@ export class Ascension {
   constructor(game, team, age, { cinematic = true } = {}) {
     this.g = game; this.team = team; this.age = age; this.cinematic = cinematic;
     const w = game.world, v = game.view, t = w.teams[team];
-    this.el = t.nation.art; this.E = ELEMENTS[this.el]; this.color = t.nation.color;
+    this.el = t.nation.art; this.E = ELEMENTS[this.el]; this.color = t.nation.color; this.G = GRAND[age] || GRAND.mythic;
     this.t = 0; this.done = false; this.blocking = cinematic;
     const old = CONFIG.ages[CONFIG.ages.indexOf(age) - 1] || 'dark';
     this.tc = [...w.buildings(team)].find(b => b.type === 'towncenter');
@@ -73,11 +86,13 @@ export class Ascension {
     el.querySelector('.emb').innerHTML = EMBLEMS[nat.art];
     el.querySelector('.k').textContent = `Age ${AGE_NUM[this.age]} of 4`;
     el.querySelector('h1').textContent = `The ${CONFIG.ageUp[this.age]?.name || this.age}`;
-    el.querySelector('.s').textContent = `${nat.name} grows stronger!`;
-    el.className = 'on';
+    el.querySelector('.s').textContent = this.G.sub(nat.name);
+    // Four marks for the four ages, lit up to this one.
+    el.querySelector('.pips').innerHTML = CONFIG.ages.map((a, i) => `<i class="${i < AGE_NUM[this.age] ? 'lit' : ''}${i === AGE_NUM[this.age] - 1 ? ' now' : ''}"></i>`).join('');
+    el.className = `on age-${this.age}`;
     el.onpointerdown = e => { e.stopPropagation(); if (this.t > 0.6) this.skip(); };
     document.getElementById('app').classList.add('cinema');
-    this.pillar = v.magic.pillar(this.ox, this.oz, { color: this.E.a, radius: 1.6, height: 26 });
+    this.pillar = v.magic.pillar(this.ox, this.oz, { color: this.E.a, radius: 1.6, height: this.G.pillar });
     g.audio?.sfx('ascend');
   }
 
@@ -104,14 +119,16 @@ export class Ascension {
     v.target.set(x, 0, z); v.zoom = zoom; v.updateCamera();
     // Light: dusk while the power gathers, a flash, then a bright new day.
     const dim = clamp(t / 1.0) * (1 - clamp((t - 1.4) / 0.2)), flash = Math.exp(-Math.max(0, t - 1.4) * 3) * (t >= 1.4 ? 1 : 0), after = clamp((t - 1.6) / 2) * (1 - clamp((t - 6) / 1.5));
-    const k = 1 - 0.42 * dim + 0.9 * flash + 0.15 * after;
+    const G = this.G, k = 1 - G.dusk * dim + 0.9 * flash + 0.15 * after;
     v.hemi.intensity = this.light0.hemi * k; v.sun.intensity = this.light0.sun * (k - 0.1 * dim);
-    v.scene.background.copy(this.light0.bg).lerp(v.scene.background.clone().setRGB(0.12, 0.16, 0.32), dim * 0.55);
+    v.scene.background.copy(this.light0.bg).lerp(v.scene.background.clone().setRGB(...G.sky), dim * (0.55 + G.dusk * 0.4));
     if (v.scene.fog) v.scene.fog.color.copy(v.scene.background);
     // Power gathering at the Town Center: a vortex and a growing pillar of light.
     if (t < 1.5) {
       v.magic.emit(this.el, this.ox, this.oz, { n: Math.ceil(70 * dt), radius: 2.4, speed: 1.3, life: 1.6, size: 1.2 });
       this.pillar.opacity = 0.75 * clamp(t / 1.2); this.pillar.width = 0.3 + 0.7 * clamp(t / 1.3);
+      // A crown of stars circling high above the Town Center as the power gathers.
+      if (G.orbit) for (let i = 0; i < 3; i++) { const a = t * 3.2 + i * 2.09, r = 3.2 - t * 0.8; v.magic.emit(this.el, this.ox + Math.cos(a) * r, this.oz + Math.sin(a) * r, { n: Math.random() < dt * 30 ? 1 : 0, y: 2.6 + t, radius: 0.1, speed: 0.15, life: 0.9, size: 1, shape: 'star', up: 0.2 }); }
     } else {
       const k2 = clamp((t - 1.4) / 1.8);
       this.pillar.opacity = 0.7 * (1 - k2) * (1 - k2); this.pillar.width = 1 + k2 * 0.9;
@@ -120,6 +137,12 @@ export class Ascension {
       this.titled = true;
       el.classList.add('title', 'flash');
       g.audio?.speak(`Welcome to the ${CONFIG.ageUp[this.age]?.name || 'new age'}!`, true);
+      if (G.starfall) g.audio?.sfx('crown');
+    }
+    // The Celestial Age: stars fall all over the land while it changes.
+    if (G.starfall && t > 1.5 && t < 6) for (let i = 0; i < 2; i++) if (Math.random() < dt * 14) {
+      const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * this.speed * 3.8;
+      v.magic.emit(this.el, this.ox + Math.cos(a) * r, this.oz + Math.sin(a) * r, { n: 1, y: 7 + Math.random() * 4, radius: 0.1, speed: 1.2, life: 1.6, size: 1.2, shape: 'star', up: -1.2 });
     }
     if (!this.out && t >= 6.9) { this.out = true; el.classList.add('out'); document.getElementById('app').classList.remove('cinema'); }
   }
@@ -136,10 +159,11 @@ export class Ascension {
     if (!b || !v.blds.has(b.id)) return;
     if (big && this.cinematic) {
       // The Town Center: the big moment.
-      v.magic.emit(this.el, it.x, it.z, { n: 160, radius: 2.2, speed: 2.2, life: 2.2, size: 1.5 });
-      v.magic.emit(this.el, it.x, it.z, { n: 40, radius: 1.2, speed: 3, life: 1.8, size: 1.3, shape: 'star' });
+      const G = this.G;
+      v.magic.emit(this.el, it.x, it.z, { n: G.burst, radius: 2.2, speed: 2.2, life: 2.2, size: 1.5 });
+      v.magic.emit(this.el, it.x, it.z, { n: G.stars, radius: 1.2, speed: 3, life: 1.8, size: 1.3, shape: 'star' });
       v.magic.ring(it.x, it.z, { color: this.E.b, from: 1, to: this.speed * 4.4, time: 3.4, width: 0.05 });
-      setTimeout(() => !this.done && v.magic.ring(it.x, it.z, { color: this.E.a, from: 1, to: this.speed * 4, time: 3.2, width: 0.12 }), 220);
+      for (let i = 1; i < G.rings; i++) setTimeout(() => !this.done && v.magic.ring(it.x, it.z, { color: i % 2 ? this.E.a : '#fff6cf', from: 1, to: this.speed * (4 - i * 0.35), time: 3.2 + i * 0.2, width: 0.12 - i * 0.02 }), 220 * i);
       g.audio?.sfx('crumble', 0.1);
     }
     const prepared = g.agePrep?.get(`${b.id}:${this.age}`);
@@ -152,6 +176,8 @@ export class Ascension {
     }
     if (this.onScreen(it) || !this.cinematic) {
       v.magic.emit(this.el, it.x, it.z, { n: 18 + small * 8, radius: small * TILE * 0.35, speed: 1.2, life: 1.4, size: 1 });
+      // Celestial: a shower of stars falls onto each building as it changes.
+      if (this.G.starfall) v.magic.emit(this.el, it.x, it.z, { n: 10 + small * 3, y: 6, radius: small * TILE * 0.4, speed: 1.4, life: 1.2, size: 1.1, shape: 'star', up: -1.4 });
       g.audio?.sfx('whoosh', 0.09);
     }
     const pillar = v.magic.pillar(it.x, it.z, { color: this.E.a, radius: small * TILE * 0.38, height: big ? 18 : 8 });
@@ -212,6 +238,8 @@ export class Ascension {
       el.className = 'hidden'; el.onpointerdown = null;
       document.getElementById('app').classList.remove('cinema');
       this.g.hud.toast(`Welcome to the ${CONFIG.ageUp[this.age]?.name}! Your units and buildings are stronger.`);
+      const news = typeof NEWS[this.age] === 'function' ? NEWS[this.age](this.g) : NEWS[this.age];
+      if (news) setTimeout(() => this.g.hud?.alert(news, [], 'good', 9), 2700);
     }
     if (this.g.agePrep) for (const k of [...this.g.agePrep.keys()]) if (k.endsWith(`:${this.age}`)) this.g.agePrep.delete(k);
   }

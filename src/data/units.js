@@ -197,15 +197,60 @@ export const ROSTER = {
 // Heroes: one per nation, trained at the Sanctum from the Mythic Age (one at a time). Each age
 // gives a new title and look, and the Celestial form is the final one. Stats are for the Mythic Age.
 export const HEROES = {
-  air: { role: 'Leader', range: 0.95, cooldown: 1.1, sight: 9, cost: { food: 150, gold: 150 }, time: 40, ability: { name: 'Updraft', text: 'Lifts nearby allies: they move faster and dodge arrows for a few seconds.' }, base: { hp: 320, attack: 16, speed: 2.6 } },
-  water: { role: 'Support leader', range: 3.5, cooldown: 1.4, sight: 9, cost: { food: 150, gold: 150 }, time: 40, ability: { name: 'High Tide', text: 'A wave heals allies and pushes enemies back.' }, base: { hp: 280, attack: 12, speed: 2.3 } },
-  fire: { role: 'Champion', range: 1.0, cooldown: 1.2, sight: 8, cost: { food: 150, gold: 150 }, time: 40, ability: { name: 'Battle Roar', text: 'Nearby allies deal more damage for a few seconds.' }, base: { hp: 360, attack: 20, speed: 2.4 } },
-  earth: { role: 'Defender', range: 3.0, cooldown: 1.5, sight: 8, cost: { food: 150, gold: 150 }, time: 40, ability: { name: 'Root Snare', text: 'Roots grab enemies in an area and hold them in place.' }, base: { hp: 340, attack: 14, speed: 2.0 } },
+  air: { role: 'Leader', range: 0.95, cooldown: 1.1, sight: 9, cost: { food: 150, gold: 150 }, time: 40, ability: { id: 'updraft', name: 'Updraft', text: 'Lifts nearby allies: they move faster and dodge arrows for a few seconds.' }, base: { hp: 320, attack: 16, speed: 2.6 } },
+  water: { role: 'Support leader', range: 3.5, cooldown: 1.4, sight: 9, cost: { food: 150, gold: 150 }, time: 40, ability: { id: 'hightide', name: 'High Tide', text: 'A wave heals allies and pushes enemies back.' }, base: { hp: 280, attack: 12, speed: 2.3 } },
+  fire: { role: 'Champion', range: 1.0, cooldown: 1.2, sight: 8, cost: { food: 150, gold: 150 }, time: 40, ability: { id: 'roar', name: 'Battle Roar', text: 'Nearby allies deal more damage for a few seconds.' }, base: { hp: 360, attack: 20, speed: 2.4 } },
+  earth: { role: 'Defender', range: 3.0, cooldown: 1.5, sight: 8, cost: { food: 150, gold: 150 }, time: 40, ability: { id: 'snare', name: 'Root Snare', text: 'Roots grab enemies in an area and hold them in place.' }, base: { hp: 340, attack: 14, speed: 2.0 } },
 };
 
-// Signature creatures (forms per age in docs/concepts/signature-creatures.html).
+// Hero abilities: tap the ability button with the hero selected. Each works around the hero,
+// and each age makes it reach further and come back sooner.
+export const HERO_ABILITY = { radius: [4, 4.5, 5], cooldown: [35, 30, 25] }; // Mythic, Arcane, Celestial
+
+// Signature creatures: one per nation, trained at the Beast Pen from the Mythic Age (one at a
+// time). Each later age gives a stronger form. Stats are for the Mythic Age. Their ability works
+// on its own. Creatures follow the element cycle: each beats the next one's creature.
 export const CREATURES = {
-  air: 'Galehide Bear', water: 'Tide Raven', fire: 'Ember Lion', earth: 'Rootcoil Serpent',
+  air: {
+    role: 'Tank', attackType: 'melee', pop: 3, time: 35, cost: { food: 150, gold: 60 },
+    base: { hp: 560, attack: 20, range: 1.1, cooldown: 1.5, speed: 1.7, sight: 7 },
+    trait: { id: 'galeSlam', name: 'Gale Slam', text: 'Every few seconds a gust bursts from its paws, hurting enemies around it and pushing them back.' },
+    forms: [
+      ['Galehide Bear', 'A huge honey-gold bear with glowing wind crystals along its spine, gold rune stripes and rings of wind spinning at its paws.'],
+      ['Stormhide Bear', 'The bear grows into a storm: plates of amber honeycomb on its back, crystals crackling with lightning and a small storm cloud riding between its shoulders.'],
+      ['Starhide Bear', 'A great cloud-white and gold bear with a mane of amber stars, a gold brow plate and wings of wind, padding on puffs of cloud.'],
+    ],
+  },
+  water: {
+    role: 'Flying support', attackType: 'ranged', flies: true, pop: 3, time: 35, cost: { food: 110, gold: 70 },
+    base: { hp: 240, attack: 12, range: 4, cooldown: 1.4, speed: 3.2, sight: 9 },
+    trait: { id: 'healingRain', name: 'Healing Rain', text: 'Friendly units beneath it slowly heal while it flies overhead.' },
+    forms: [
+      ['Tide Raven', 'An eagle-sized raven with deep-blue feathers, a hooked beak, a crest of living water like a crown of glass, cyan wing tips and tail streamers of flowing water.'],
+      ['Glass Raven', 'A larger raven with feathers edged in clear glass, a bronze-and-glass crest and a small armillary ring turning around its body, trailing streamers of water.'],
+      ['Moon Raven', 'A great night-blue raven with silver-edged wings, a crescent crest and a full moon glowing on its breast, trailing moonlit water.'],
+    ],
+  },
+  fire: {
+    role: 'Striker', attackType: 'melee', pop: 3, time: 35, cost: { food: 130, gold: 80 },
+    base: { hp: 380, attack: 26, range: 1.0, cooldown: 1.3, speed: 3.0, sight: 7 },
+    trait: { id: 'fireRoar', name: 'Fire Roar', text: 'Now and then it roars fire, burning every enemy in front of it.' },
+    forms: [
+      ['Ember Lion', 'A lion whose mane is living fire, with molten cracks glowing through its hide, a flame at the tip of its tail and golden eyes.'],
+      ['Magma Lion', 'A heavier lion armoured in basalt plates with rivers of magma between them, a mane of tall flames and gold bands on its legs.'],
+      ['Sun Lion', 'A golden lion with a mane of sun rays and a sun disc blazing behind its head, on burning paws.'],
+    ],
+  },
+  earth: {
+    role: 'Controller', attackType: 'melee', pop: 3, time: 35, cost: { food: 140, gold: 60 },
+    base: { hp: 440, attack: 16, range: 1.2, cooldown: 1.4, speed: 1.8, sight: 7 },
+    trait: { id: 'entangle', name: 'Entangle', text: 'Its strike roots the target in place for 3 seconds.' },
+    forms: [
+      ['Rootcoil Serpent', 'A great moss-scaled serpent with leaves along its spine, a leaf frill behind its head, stone horns, glowing green eyes and rune rings around its body.'],
+      ['Runecoil Serpent', 'A longer serpent with stone plates carved with glowing runes, rune stones floating along its back and a frill of stone and moss.'],
+      ['Bloomcoil Serpent', 'A vast serpent in living green with star blossoms opening along its back, a frill of glowing petals and an emerald crown of horns.'],
+    ],
+  },
 };
 
 export const NATION_ORDER = ['air', 'water', 'fire', 'earth'];

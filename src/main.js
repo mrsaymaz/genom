@@ -12,6 +12,7 @@ import { Tutorial } from './tutorial.js';
 import { Audio } from './audio.js';
 import { installGate } from './ui/install.js';
 import { Ascension, prepareArts } from './ageup.js';
+import { ELEMENTS } from './render/effects.js';
 
 const STEP = 1 / 20;
 const plural = (name, n) => (n === 1 || name.endsWith('s') ? name : name.endsWith('man') ? `${name.slice(0, -3)}men` : `${name}s`);
@@ -151,6 +152,7 @@ class Game {
       if (this.cinema) this.acc = 0;
       if (this.rivalShift) { this.rivalShift.update(dt); if (this.rivalShift.done) this.rivalShift = null; }
       this.researchGlow(dt);
+      this.auras(dt);
       this.tutorial.update(dt);
       this.saveT += dt;
       if (this.saveT > 20) { this.saveT = 0; this.save(); }
@@ -178,7 +180,21 @@ class Game {
         if (b) { v.syncBuilding(b); if (b.team === 0) { this.hud.toast(`${CONFIG.buildings[b.type].name} complete.`); audio.sfx('built'); audio.say('built', b.type, true); } }
       } else if (ev.type === 'trained' && ev.team === 0) {
         const u = w.get(ev.id);
-        if (u) { const n = w.def(0, u.type).name; audio.sfx('trained'); audio.speak(`${/^[AEIOU]/.test(n) ? 'An' : 'A'} ${n} is ready.`); }
+        if (!u) continue;
+        const n = w.def(0, u.type).name, [x, z] = v.toWorld(u.x, u.y), el = w.teams[0].nation.art;
+        if (u.type === 'hero' || u.type === 'creature') {
+          // A hero or creature arrives with a fanfare and a burst of the nation's element.
+          v.magic.emit(el, x, z, { n: 40, radius: 0.8, speed: 1.4, life: 1.4, size: 1.1 });
+          v.magic.ring(x, z, { color: ELEMENTS[el].b, from: 0.3, to: 4, time: 1.2, width: 0.1 });
+          audio.sfx(u.type === 'hero' ? 'fanfare' : 'roar');
+          audio.speak(u.type === 'hero' ? `Your hero, the ${n}, has arrived!` : `The ${n} has joined you!`, true);
+          this.hud.toast(u.type === 'hero' ? `The ${n} is here! Select your hero and tap ${w.def(0, 'hero').cast.name}.` : `The ${n} has joined you. Its ${w.def(0, 'creature').ability.name} works on its own.`);
+        } else { audio.sfx('trained'); audio.speak(`${/^[AEIOU]/.test(n) ? 'An' : 'A'} ${n} is ready.`); }
+      } else if (ev.type === 'cast') this.castFx(ev);
+      else if (ev.type === 'trait') this.traitFx(ev);
+      else if (ev.type === 'rooted') {
+        const t = w.get(ev.id);
+        if (t && this.onScreen1(t.x, t.y)) { const [x, z] = v.toWorld(t.x, t.y); v.magic.emit('earth', x, z, { n: 10, radius: 0.35, speed: 0.6, life: 1.1, size: 0.9, up: 0.5 }); audio.sfx('roots', 0.4); }
       } else if (ev.type === 'deposit' && ev.team === 0) {
         const u = w.get(ev.id);
         if (u && this.onScreen1(u.x, u.y)) audio.sfx('deposit', 0.15);
@@ -187,6 +203,8 @@ class Game {
         v.removeEntity(ev);
         if (ev.cat === 'bld') audio.sfx('crumble', 0.3);
         if (ev.cat === 'bld' && ev.team === 0) this.hud.toast(`Your ${CONFIG.buildings[ev.kind].name} was destroyed.`, 'bad');
+        if (ev.cat === 'unit' && ev.team === 0 && (ev.kind === 'hero' || ev.kind === 'creature')) this.hud.toast(ev.kind === 'hero' ? 'Your hero has fallen. Train them again at the Sanctum.' : 'Your creature has fallen. Train it again at the Beast Pen.', 'bad');
+        if (ev.cat === 'unit' && ev.team !== 0 && ev.kind === 'hero') this.hud.toast('You defeated the rival hero!', 'good');
       } else if (ev.type === 'hit') {
         const a = w.get(ev.from), t = w.get(ev.to);
         if (!a || !t) continue;
@@ -240,6 +258,61 @@ class Game {
     this.glowPillar.opacity = 0.08 + 0.3 * k * (0.85 + 0.15 * Math.sin(this.time * 4));
     this.glowPillar.width = 0.5 + 0.5 * k;
     prepareArts(this, 0, tc.ageUp.to);
+  }
+
+  // ---------- heroes and creatures ----------
+  // Use the selected hero's ability.
+  castHero(id) {
+    const w = this.world, u = w.get(id), c = w.canCast(u);
+    if (!c.ok) { if (c.why === 'cooldown') this.hud.toast(`${w.def(0, 'hero').cast.name} is ready in ${Math.ceil(c.wait)} s.`); return; }
+    w.cast(id);
+    this.events();
+  }
+  // A hero's ability on the map: a burst and a wave of the nation's element, and a voice line.
+  castFx(ev) {
+    const v = this.view, [x, z] = v.toWorld(ev.x, ev.y), R = ev.r * TILE, w = this.world;
+    const el = { updraft: 'air', hightide: 'water', roar: 'fire', snare: 'earth' }[ev.ability], E = ELEMENTS[el];
+    v.magic.ring(x, z, { color: E.b, from: 0.4, to: R, time: 0.9, width: 0.06 });
+    v.magic.ring(x, z, { color: E.a, from: 0.3, to: R * 0.8, time: 1.2, width: 0.14 });
+    if (ev.ability === 'updraft') v.magic.emit('air', x, z, { n: 70, radius: R * 0.55, speed: 1.6, life: 1.6, size: 1.1, up: 1.4 });
+    if (ev.ability === 'hightide') { v.magic.emit('water', x, z, { n: 90, radius: R * 0.25, speed: 2.6, life: 1.4, size: 1.2 }); v.magic.emit('water', x, z, { n: 40, radius: R * 0.8, speed: 0.6, life: 1.1, size: 1 }); }
+    if (ev.ability === 'roar') v.magic.emit('fire', x, z, { n: 80, radius: R * 0.4, speed: 1.6, life: 1.4, size: 1.2 });
+    if (ev.ability === 'snare') for (const id of ev.hit) { const t = w.get(id); if (!t) continue; const [tx, tz] = v.toWorld(t.x, t.y); v.magic.emit('earth', tx, tz, { n: 14, radius: 0.4, speed: 0.7, life: 1.4, size: 1, up: 0.6 }); }
+    if (this.onScreen1(ev.x, ev.y) || ev.team === 0) {
+      audio.sfx({ updraft: 'gust', hightide: 'splash', roar: 'roar', snare: 'roots' }[ev.ability]);
+      if (ev.team === 0) audio.say('cast', ev.ability, true);
+    }
+  }
+  // Creature abilities on the map.
+  traitFx(ev) {
+    const v = this.view, [x, z] = v.toWorld(ev.x, ev.y);
+    if (!this.onScreen1(ev.x, ev.y)) return;
+    if (ev.trait === 'galeSlam') { v.magic.ring(x, z, { color: '#fff6cf', from: 0.3, to: ev.r * TILE, time: 0.7, width: 0.12 }); v.magic.emit('air', x, z, { n: 40, radius: 0.8, speed: 2, life: 1, size: 1 }); audio.sfx('gust', 0.3); }
+    else if (ev.trait === 'healingRain') v.magic.emit('water', x, z, { n: 6, y: 1.5, radius: ev.r * TILE * 0.4, speed: 0.2, life: 1.1, size: 0.8, up: -0.2 });
+    else if (ev.trait === 'fireRoar') {
+      // A cone of fire in the direction it faces.
+      for (let i = 1; i <= 6; i++) { const d = i * 0.45, s = d * 0.45; const cx = ev.x + Math.cos(ev.face) * d, cy = ev.y + Math.sin(ev.face) * d; const [fx, fz] = v.toWorld(cx, cy); v.magic.emit('fire', fx, fz, { n: 8, radius: s * TILE * 0.5, speed: 0.8, life: 0.9, size: 1.1 }); }
+      audio.sfx('flame', 0.3);
+    }
+  }
+  // Lingering effects on units: roots holding them, a battle roar, an updraft lifting them.
+  auras(dt) {
+    // A soft chime when the hero's ability is ready again.
+    const hero = [...this.world.units()].find(u => u.team === 0 && u.type === 'hero');
+    const cooling = !!hero && hero.castCd > 0;
+    if (this.heroCooling && !cooling && hero) audio.sfx('ready');
+    this.heroCooling = cooling;
+    this.auraT = (this.auraT || 0) - dt;
+    if (this.auraT > 0) return;
+    this.auraT = 0.22;
+    const v = this.view;
+    for (const u of this.world.units()) {
+      if (!(u.rootT > 0 || u.roar > 0 || u.dodge > 0) || !this.onScreen1(u.x, u.y)) continue;
+      const [x, z] = v.toWorld(u.x, u.y);
+      if (u.rootT > 0) v.magic.emit('earth', x, z, { n: 2, radius: 0.3, speed: 0.3, life: 0.8, size: 0.7, up: 0.3 });
+      if (u.roar > 0) v.magic.emit('fire', x, z, { n: 1, y: 0.6, radius: 0.25, speed: 0.4, life: 0.7, size: 0.6 });
+      if (u.dodge > 0) v.magic.emit('air', x, z, { n: 1, radius: 0.3, speed: 0.5, life: 0.8, size: 0.6 });
+    }
   }
 
   // Tracks whether the rival's raid has reached the base and been beaten off (tutorial goal),
@@ -358,7 +431,8 @@ class Game {
   // A selected unit answers in English.
   greet(e) {
     audio.sfx('select');
-    if (e.cat === 'unit') audio.say(e.type === 'worker' ? 'selectWorker' : 'selectSoldier');
+    if (e.cat === 'unit' && e.type === 'creature') audio.sfx('roar', 0.5);
+    else if (e.cat === 'unit') audio.say(e.type === 'worker' ? 'selectWorker' : e.type === 'hero' ? 'selectHero' : 'selectSoldier');
   }
   // Long-press: on a worker, open the build wheel; on anything else of yours, select all of that kind.
   longPress(sx, sy) {
@@ -484,6 +558,8 @@ class Game {
   // buildings selected, each unit goes to the one with the shortest queue.
   trainUnit(bids, type, count = 1) {
     const w = this.world, d = w.def(0, type);
+    if (d.unique && w.hasUnique(0, type)) { this.hud.toast(type === 'hero' ? 'You can have one hero at a time.' : 'You can have one creature at a time.'); return; }
+    if (d.unique) count = 1;
     const list = [].concat(bids).map(id => w.get(id)).filter(b => b && b.built && CONFIG.buildings[b.type].trains?.includes(type));
     if (!list.length) return;
     let n = 0;

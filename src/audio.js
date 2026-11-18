@@ -6,6 +6,9 @@ const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ==
 export const LINES = {
   selectWorker: ['Yes?', 'Ready to work!', 'What can I do?', 'I am listening.'],
   selectSoldier: ['Ready!', 'Yes, chief?', 'At your command!', 'I am ready to fight.'],
+  selectHero: ['I will lead you!', 'What is your plan?', 'Together we are strong!', 'Show me the way.'],
+  // Hero abilities, said as the hero uses them.
+  cast: { updraft: 'Rise up, my friends!', hightide: 'The tide is with us!', roar: 'Fight with all your heart!', snare: 'Roots, hold them!' },
   move: ['On my way!', 'Right away!', 'Okay, I am going.', 'Moving now.'],
   gatherLumber: ['I will cut some wood.', 'Chopping trees!', 'Wood, coming up!'],
   gatherFood: ['I will pick some berries.', 'Food for the village!', 'Time to gather food.'],
@@ -127,6 +130,16 @@ export class Audio {
         [349.2, 440, 523.3, 698.5].forEach((f, i) => this.tone({ f, type: 'triangle', t: 2.6, v: 0.1, delay: 4.2 + i * 0.04 }));
         [392, 493.9, 587.3, 784, 987.8].forEach((f, i) => this.tone({ f, type: 'triangle', t: 3, v: 0.11, delay: 5.4 + i * 0.04 }));
       },
+      // Heroes and creatures.
+      fanfare: () => { [392, 523, 659, 784].forEach((f, i) => this.tone({ f, type: 'triangle', t: 0.3, v: 0.14, delay: i * 0.1 })); [523, 659, 784, 1047].forEach(f => this.tone({ f, type: 'sine', t: 1.2, v: 0.07, delay: 0.42 })); },
+      roar: () => { this.noise({ t: 0.7, v: 0.35, f: 260, q: 0.8, type: 'lowpass' }); this.tone({ f: 110, f2: 70, type: 'sawtooth', t: 0.6, v: 0.08, attack: 0.08 }); },
+      gust: () => { this.noise({ t: 0.7, v: 0.3, f: 700, q: 0.7 }); this.tone({ f: 200, f2: 700, type: 'sine', t: 0.6, v: 0.05 }); },
+      splash: () => { this.noise({ t: 0.6, v: 0.3, f: 1600, q: 0.6 }); this.noise({ t: 0.9, v: 0.18, f: 500, q: 0.7, type: 'lowpass', delay: 0.1 }); },
+      flame: () => { this.noise({ t: 0.8, v: 0.3, f: 900, q: 0.5 }); this.tone({ f: 140, f2: 90, type: 'sawtooth', t: 0.5, v: 0.05 }); },
+      roots: () => { for (let i = 0; i < 4; i++) this.noise({ t: 0.08, v: 0.25, f: 500 + i * 120, q: 4, delay: i * 0.07 }); this.tone({ f: 90, f2: 60, type: 'triangle', t: 0.4, v: 0.2 }); },
+      ready: () => [880, 1320].forEach((f, i) => this.tone({ f, type: 'sine', t: 0.25, v: 0.08, delay: i * 0.07 })),
+      // The last age: a higher, longer crown of bells over the ascension.
+      crown: () => { [1047, 1319, 1568, 2093, 2637, 3136].forEach((f, i) => this.tone({ f, type: 'sine', t: 1.6, v: 0.06, delay: i * 0.11 })); [523.3, 659.3, 784, 1047].forEach(f => this.tone({ f, type: 'triangle', t: 3.6, v: 0.08, delay: 0.7 })); },
       whoosh: () => { this.noise({ t: 0.5, v: 0.18, f: 900, q: 1.2 }); this.tone({ f: 300, f2: 900, type: 'sine', t: 0.45, v: 0.05 }); },
       chime: () => this.tone({ f: 1568 + Math.random() * 600, type: 'sine', t: 0.35, v: 0.05 }),
       victory: () => [523, 659, 784, 1047, 784, 1047].forEach((f, i) => this.tone({ f, type: 'triangle', t: i === 5 ? 0.8 : 0.22, v: 0.18, delay: i * 0.16 })),

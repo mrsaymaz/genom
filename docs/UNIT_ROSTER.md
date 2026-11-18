@@ -40,10 +40,10 @@ Unit twist: All units move 10% faster. Special line: **Scout**. The fastest unit
 | Ranged | Wind Slinger | Gale Archer | Storm Archer | Comet Archer |
 | Scout | Kite Runner | Glider | Bee Rider | Starwing Rider |
 | Hero | — | Wind Warden | Storm Warden | Sky Warden |
-| Signature creature | — | Galehide Bear | Elder form | Celestial form |
+| Signature creature | — | Galehide Bear | Stormhide Bear | Starhide Bear |
 | Siege | — | — | Gust Cannon | Storm Engine |
 
-Hero: Leader. Ability **Updraft**: Lifts nearby allies: they move faster and dodge arrows for a few seconds.
+Hero: Leader. Ability **Updraft** (tap the button; it recharges in 35, 30 and 25 s in the Mythic, Arcane and Celestial Ages): Lifts nearby allies: they move faster and dodge arrows for a few seconds.
 
 ### Hero
 
@@ -52,6 +52,16 @@ Hero: Leader. Ability **Updraft**: Lifts nearby allies: they move faster and dod
 | Mythic | Wind Warden | A tall leader in a long honey cloak and a crown of amber hexes, holding a staff topped by a spinning wind rose with a floating amber crystal. |
 | Arcane | Storm Warden | A leader in a storm-grey and honey cloak, with a crown of floating amber hexes, holding a staff wrapped in a small storm cloud where lightning flickers in the amber. |
 | Celestial | Sky Warden | A leader who stands on a cloud with great white wings, in a cloud-white robe banded with gold, crowned with gold hexes under a blazing amber star, while a constellation ring turns around them and a gold wind rose tops the staff. |
+
+Signature creature: Tank, trained at the Beast Pen, one at a time (3 population). Mythic stats: 560 HP, 20 melee attack, cost 150 Food, 60 Gold. Ability **Gale Slam** (works on its own): Every few seconds a gust bursts from its paws, hurting enemies around it and pushing them back.
+
+### Signature creature
+
+| Age | Name | Look |
+|---|---|---|
+| Mythic | Galehide Bear | A huge honey-gold bear with glowing wind crystals along its spine, gold rune stripes and rings of wind spinning at its paws. |
+| Arcane | Stormhide Bear | The bear grows into a storm: plates of amber honeycomb on its back, crystals crackling with lightning and a small storm cloud riding between its shoulders. |
+| Celestial | Starhide Bear | A great cloud-white and gold bear with a mane of amber stars, a gold brow plate and wings of wind, padding on puffs of cloud. |
 
 ### Worker
 
@@ -100,10 +110,10 @@ Unit twist: Units slowly heal when they are out of combat. Special line: **Heale
 | Ranged | Harpooner | Tide Archer | Glass Archer | Moon Archer |
 | Healer | Tide Mender | Wave Mender | Spring Sage | Moon Sage |
 | Hero | — | Tide Navigator | Glass Navigator | Moon Navigator |
-| Signature creature | — | Tide Raven | Elder form | Celestial form |
+| Signature creature | — | Tide Raven | Glass Raven | Moon Raven |
 | Siege | — | — | Tide Engine | Moon Engine |
 
-Hero: Support leader. Ability **High Tide**: A wave heals allies and pushes enemies back.
+Hero: Support leader. Ability **High Tide** (tap the button; it recharges in 35, 30 and 25 s in the Mythic, Arcane and Celestial Ages): A wave heals allies and pushes enemies back.
 
 ### Hero
 
@@ -112,6 +122,16 @@ Hero: Support leader. Ability **High Tide**: A wave heals allies and pushes enem
 | Mythic | Tide Navigator | A captain in a long deep-blue coat with pearl buttons and a shell tricorn, holding a bronze spyglass, with two bronze rings turning behind them. |
 | Arcane | Glass Navigator | A captain in a long blue coat with a glass-and-bronze armillary sphere turning behind them and an orb of water at its heart, holding a bronze sextant. |
 | Celestial | Moon Navigator | A captain in a night-blue coat and a crescent tricorn, with a silver spyglass and a moon staff, while a ring of water orbits them like a planet and a great silver orrery turns behind them with the moon at its heart. |
+
+Signature creature: Flying support, trained at the Beast Pen, one at a time (3 population). Mythic stats: 240 HP, 12 ranged attack, cost 110 Food, 70 Gold; it flies over water and buildings. Ability **Healing Rain** (works on its own): Friendly units beneath it slowly heal while it flies overhead.
+
+### Signature creature
+
+| Age | Name | Look |
+|---|---|---|
+| Mythic | Tide Raven | An eagle-sized raven with deep-blue feathers, a hooked beak, a crest of living water like a crown of glass, cyan wing tips and tail streamers of flowing water. |
+| Arcane | Glass Raven | A larger raven with feathers edged in clear glass, a bronze-and-glass crest and a small armillary ring turning around its body, trailing streamers of water. |
+| Celestial | Moon Raven | A great night-blue raven with silver-edged wings, a crescent crest and a full moon glowing on its breast, trailing moonlit water. |
 
 ### Worker
 
@@ -160,10 +180,10 @@ Unit twist: Units train 15% faster. Special line: **Charger**. A rider who crash
 | Ranged | Ember Archer | Flame Archer | Blaze Archer | Sunfire Archer |
 | Charger | Boar Rider | Ember Rider | Lava Charger | Sun Charger |
 | Hero | — | Flame Captain | Blaze Captain | Phoenix Captain |
-| Signature creature | — | Ember Lion | Elder form | Celestial form |
+| Signature creature | — | Ember Lion | Magma Lion | Sun Lion |
 | Siege | — | — | Magma Mortar | Sun Cannon |
 
-Hero: Champion. Ability **Battle Roar**: Nearby allies deal more damage for a few seconds.
+Hero: Champion. Ability **Battle Roar** (tap the button; it recharges in 35, 30 and 25 s in the Mythic, Arcane and Celestial Ages): Nearby allies deal more damage for a few seconds.
 
 ### Hero
 
@@ -172,6 +192,16 @@ Hero: Champion. Ability **Battle Roar**: Nearby allies deal more damage for a fe
 | Mythic | Flame Captain | A champion in red iron plate with a mane of flame on the shoulders, a gold crown of fire, a scarlet cape and a great blade with a glowing magma edge. |
 | Arcane | Blaze Captain | A champion in basalt plate split by magma seams, with burning horns, a mane of fire and a great blade that burns white-hot. |
 | Celestial | Phoenix Captain | A champion in golden plate with phoenix wings of fire, a sun disc blazing behind the head, a crown of rays and a great sun blade that burns white-hot. |
+
+Signature creature: Striker, trained at the Beast Pen, one at a time (3 population). Mythic stats: 380 HP, 26 melee attack, cost 130 Food, 80 Gold. Ability **Fire Roar** (works on its own): Now and then it roars fire, burning every enemy in front of it.
+
+### Signature creature
+
+| Age | Name | Look |
+|---|---|---|
+| Mythic | Ember Lion | A lion whose mane is living fire, with molten cracks glowing through its hide, a flame at the tip of its tail and golden eyes. |
+| Arcane | Magma Lion | A heavier lion armoured in basalt plates with rivers of magma between them, a mane of tall flames and gold bands on its legs. |
+| Celestial | Sun Lion | A golden lion with a mane of sun rays and a sun disc blazing behind its head, on burning paws. |
 
 ### Worker
 
@@ -220,10 +250,10 @@ Unit twist: Units have 10% more HP but move 5% slower. Special line: **Guardian*
 | Ranged | Thornbow | Briar Archer | Rune Archer | Starthorn Archer |
 | Guardian | Stonewarden | Moss Golem | Rune Golem | Grove Colossus |
 | Hero | — | Root Seer | Rune Seer | Star Seer |
-| Signature creature | — | Rootcoil Serpent | Elder form | Celestial form |
+| Signature creature | — | Rootcoil Serpent | Runecoil Serpent | Bloomcoil Serpent |
 | Siege | — | — | Root Catapult | Earthshaker |
 
-Hero: Defender. Ability **Root Snare**: Roots grab enemies in an area and hold them in place.
+Hero: Defender. Ability **Root Snare** (tap the button; it recharges in 35, 30 and 25 s in the Mythic, Arcane and Celestial Ages): Roots grab enemies in an area and hold them in place.
 
 ### Hero
 
@@ -232,6 +262,16 @@ Hero: Defender. Ability **Root Snare**: Roots grab enemies in an area and hold t
 | Mythic | Root Seer | An elder in a long moss robe with an antler crown of leaves, leaning on a staff of twisted roots that holds a glowing green rune stone. |
 | Arcane | Rune Seer | An elder in a robe of living moss with a branching antler crown, leaning on a staff grown from the World Tree while rune stones orbit them. |
 | Celestial | Star Seer | An elder in a moss robe with a hem of petals, whose antler crown blooms with glowing star blossoms among fireflies, holding a staff that opens into a star bud while glowing seed pods orbit them. |
+
+Signature creature: Controller, trained at the Beast Pen, one at a time (3 population). Mythic stats: 440 HP, 16 melee attack, cost 140 Food, 60 Gold. Ability **Entangle** (works on its own): Its strike roots the target in place for 3 seconds.
+
+### Signature creature
+
+| Age | Name | Look |
+|---|---|---|
+| Mythic | Rootcoil Serpent | A great moss-scaled serpent with leaves along its spine, a leaf frill behind its head, stone horns, glowing green eyes and rune rings around its body. |
+| Arcane | Runecoil Serpent | A longer serpent with stone plates carved with glowing runes, rune stones floating along its back and a frill of stone and moss. |
+| Celestial | Bloomcoil Serpent | A vast serpent in living green with star blossoms opening along its back, a frill of glowing petals and an emerald crown of horns. |
 
 ### Worker
 

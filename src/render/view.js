@@ -177,6 +177,8 @@ export class View {
     v.art.holder.scale.y = v.art.holder.scale.x * Math.max(0.06, Math.pow(p, 0.8));
     v.scaffold.visible = !b.built;
   }
+  // A building's model for any team, type and age (used by the age-up and the tests).
+  makeArt(key, type, age) { return makeBuilding(key, type, age); }
   // Replaces a building's model with its form in another age (prepared art can be passed in).
   // Returns { old, art } so the age-up can animate the change.
   swapArt(b, age, art) {

@@ -208,6 +208,8 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .cost svg { width: 11px; height: 11px; }
 .rbtn .badge { position: absolute; right: -4px; top: -4px; min-width: 20px; padding: 0 5px; border-radius: 10px; background: var(--gold); color: #2a1a00; font: 800 12px/20px var(--text); font-style: normal; }
 .rbtn .badge:empty { display: none; }
+.rbtn .tag.none, .rbtn .tag:empty { display: none; }
+.qitem.res { border-color: var(--gold); }
 .rbtn:active .face { transform: scale(0.92); }
 .rbtn.poor .face { background: #2a2d33; color: #8a8f98; filter: grayscale(1); }
 .rbtn.poor .lbl { color: #8a8f98; }
@@ -232,6 +234,7 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .toast { max-width: 100%; padding: 7px 14px; border-radius: 12px; background: var(--panel-solid); border: 1px solid var(--line); font-size: 14px; text-align: center; transition: opacity 0.5s, transform 0.5s; }
 .toast.bad { border-color: var(--bad); color: #ffd4cf; }
 .toast.hint { border-color: var(--gold); color: #fff3c8; }
+.toast.good { border-color: var(--good, #4fb176); color: #d8ffe4; }
 .toast.out { opacity: 0; transform: translateY(-8px); }
 .dragbox { position: absolute; border: 2px solid #7dff9a; background: rgba(125, 255, 154, 0.12); border-radius: 4px; pointer-events: none !important; }
 

@@ -78,6 +78,19 @@ export const STEPS = [
     guide: g => trainGuide(g, 'barracks', 'spearman'),
   },
   {
+    title: 'Research an upgrade', short: 'Get an upgrade', reward: { food: 50, gold: 50 }, hint: 'Tap the Barracks, tap Research, then tap Forged Weapons. Upgrades make your soldiers stronger than the rival\'s.',
+    done: g => Object.values(g.world.teams[0].tech).some(v => v > 0) || [...g.world.buildings(0)].some(b => b.research),
+    guide: g => {
+      const b = mine(g, 'barracks');
+      if (!b) return {};
+      const next = g.world.nextTech(0, 'weapons');
+      if (next && !g.world.canAfford(0, next.cost)) return { at: nearest(g, workerFor(g), 'gold') || nearest(g, workerFor(g), 'berries'), say: 'We need food and gold!', hint: 'Forged Weapons costs 100 food and 50 gold. Keep your workers gathering.' };
+      if (!g.sel.includes(b.id)) return { at: b, say: 'Tap the Barracks!', hint: 'Tap your Barracks.' };
+      if (g.hud.researchAt === b.id) return { ui: '[data-id="rweapons"]', say: 'Tap Forged Weapons!', hint: 'Tap Forged Weapons: your soldiers will hit harder.' };
+      return { ui: '[data-id="research"]', say: 'Tap Research!', hint: 'Tap the Research button on the Barracks.' };
+    },
+  },
+  {
     title: 'Hold off the first attack', short: 'Stop the attack', reward: { lumber: 60, gold: 40 }, hint: 'The rival will attack. Keep soldiers near your base. If they come, ring the Town bell.',
     done: g => g.raided && g.calmFor >= 8,
     guide: g => ({ at: soldiers(g.world, 0) < 5 ? mine(g, 'barracks') : null, say: 'Train more soldiers!', hint: 'Train more soldiers while you wait. Keep your workers gathering.' }),

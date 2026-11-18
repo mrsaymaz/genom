@@ -14,8 +14,8 @@ export const CONFIG = {
 
   // Pace: Relaxed or Challenge. The rival's timings and size come from here.
   pace: {
-    relaxed: { aiWorkers: 9, aiBarracksAt: 210, firstWaveAt: 480, waveEvery: 210, firstWave: 3, waveGrowth: 1, aiTrainEvery: 26, aiAges: { mythic: 780, arcane: 1260, celestial: 1740 } },
-    challenge: { aiWorkers: 13, aiBarracksAt: 140, firstWaveAt: 330, waveEvery: 165, firstWave: 5, waveGrowth: 2, aiTrainEvery: 18, aiAges: { mythic: 520, arcane: 880, celestial: 1240 } },
+    relaxed: { aiWorkers: 9, aiBarracksAt: 210, firstWaveAt: 480, waveEvery: 210, firstWave: 3, waveGrowth: 1, aiTrainEvery: 26, aiTechEvery: 90, aiAges: { mythic: 780, arcane: 1260, celestial: 1740 } },
+    challenge: { aiWorkers: 13, aiBarracksAt: 140, firstWaveAt: 330, waveEvery: 165, firstWave: 5, waveGrowth: 2, aiTrainEvery: 18, aiTechEvery: 30, aiAges: { mythic: 520, arcane: 880, celestial: 1240 } },
   },
 
   map: { size: 72, seed: 7, name: 'Sunmeadow Vale' },

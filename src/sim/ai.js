@@ -2,15 +2,18 @@
 // only changes its timings and the size of its attack waves.
 import { CONFIG } from '../config.js';
 
+// What the rival researches first: its economy, then its army, then its towers and specials.
+const TECH_ORDER = ['farming', 'baskets', 'axes', 'weapons', 'picks', 'armour', 'townguard', 'forgefury', 'swarm', 'springs', 'ironbark', 'herocraft', 'fletching', 'beastcraft', 'walls', 'lionheart', 'tidehealers', 'hivestore', 'roots', 'quickfeet', 'signals', 'siegecraft'];
+
 export class RivalAI {
   constructor(world, team = 1) {
     this.w = world; this.team = team;
     this.p = CONFIG.pace[world.pace];
-    this.tick = 0; this.wave = 0; this.nextWave = this.p.firstWaveAt; this.nextTrain = 0;
+    this.tick = 0; this.wave = 0; this.nextWave = this.p.firstWaveAt; this.nextTrain = 0; this.nextTech = 60;
     this.home = [...world.buildings(team)].find(b => b.type === 'towncenter');
   }
 
-  save() { return { tick: this.tick, wave: this.wave, nextWave: this.nextWave, nextTrain: this.nextTrain, rebalT: this.rebalT || 0 }; }
+  save() { return { tick: this.tick, wave: this.wave, nextWave: this.nextWave, nextTrain: this.nextTrain, rebalT: this.rebalT || 0, nextTech: this.nextTech }; }
   load(d) { Object.assign(this, d); }
 
   get t() { return this.w.teams[this.team]; }
@@ -26,7 +29,29 @@ export class RivalAI {
     this.economy();
     this.buildUp();
     this.army();
+    this.research();
     this.ageUp();
+  }
+
+  // Now and then (more often on Challenge), the next useful technology it can afford, keeping
+  // enough food for workers and never while saving for an age or its key buildings.
+  research() {
+    const w = this.w;
+    this.techCost = null;
+    if (w.time < this.nextTech || this.saving() || (this.goal() && !w.canAfford(this.team, this.goal()))) return;
+    for (const id of TECH_ORDER) {
+      const next = w.nextTech(this.team, id);
+      if (!next) continue;
+      const b = this.mine(next.tech.at).find(x => x.built && !x.research && !x.ageUp);
+      if (!b) continue;
+      const c = w.canResearch(b.id, id);
+      if (c.ok) { w.startResearch(b.id, id); this.nextTech = w.time + this.p.aiTechEvery; return; }
+      // Short of resources: save for it (soldiers wait) for up to 40 seconds, then move on.
+      if (c.why === 'cost') {
+        if (w.time - this.nextTech > 40) { this.nextTech = w.time + this.p.aiTechEvery / 2; return; }
+        this.techCost = c.next.cost; return;
+      }
+    }
   }
 
   // How the workers should share out, leaning towards what is short.
@@ -119,6 +144,8 @@ export class RivalAI {
     const grove = w.nearestResource(cx, cy, 'tree', 40);
     if (grove && Math.hypot(grove.x - cx, grove.y - cy) > 10 && !this.mine('storehouse').some(s => Math.hypot(s.x - grove.x, s.y - grove.y) < 8) && t.res.lumber > 120) this.tryBuild('storehouse', grove.x, grove.y);
     if (w.time > this.p.aiBarracksAt + 120 && !this.mine('watchtower').length) this.tryBuild('watchtower', cx + 3, cy + 3);
+    // A Storehouse near home by about four minutes, for the gathering upgrades.
+    if (w.time > 240 && !this.mine('storehouse').length) this.tryBuild('storehouse', cx - 3, cy + 2);
     // From the Mythic Age: a Sanctum for the hero, then a Beast Pen for the creature. (They are
     // also the keys to the Arcane and Celestial Ages.)
     if (t.age !== 'dark' && !this.saving()) {
@@ -131,7 +158,7 @@ export class RivalAI {
   army() {
     const w = this.w, t = this.t;
     const rax = this.mine('barracks').find(b => b.built);
-    const goal = this.goal(), short = goal && !w.canAfford(this.team, goal);
+    const goal = this.goal(), short = (goal && !w.canAfford(this.team, goal)) || !!this.techCost;
     if (rax && w.time >= this.nextTrain && rax.queue.length < 2 && !this.saving() && !short) {
       // Keep a mix: about half spears, then ranged units and the nation's special.
       const mix = { spearman: 0.45, archer: 0.3, special: 0.25 };

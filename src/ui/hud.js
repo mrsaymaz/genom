@@ -6,6 +6,7 @@ import { ICONS, unitIcon } from './icons.js';
 import { T } from '../sim/map.js';
 import { ActionRing } from './ring.js';
 import { TILE } from '../render/art.js';
+import { ROMAN } from '../data/tech.js';
 
 const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
 const RES = ['food', 'lumber', 'gold'];
@@ -331,14 +332,16 @@ export class HUD {
     } else if (e.cat === 'bld' && own && e.queue.length && e.queue[0].blocked && w.teams[0].pop >= w.teams[0].popCap) st = 'house';
     if (st !== this.stKey) { this.stKey = st; this.pSt.innerHTML = st ? ICONS[st] || '' : ''; this.pSt.classList.toggle('hidden', !st); this.pSt.classList.toggle('warn', st === 'house'); }
     // Training queue: small icons; the first shows its progress. Tap one to cancel it.
-    const q = e.cat === 'bld' && own ? e.queue : [];
-    const qk = q.map(x => x.type).join(',');
+    const q = e.cat === 'bld' && own ? e.queue : [], rs = e.cat === 'bld' && own ? e.research : null;
+    const qk = (rs ? `r:${rs.id}:` : '') + q.map(x => x.type).join(',');
     if (qk !== this.queueKey) {
       this.queueKey = qk;
-      this.pQueue.innerHTML = q.map((x, i) => `<button class="qitem" data-i="${i}" title="Cancel">${unitIcon(w.def(e.team, x.type))}${i === 0 ? '<s><i></i></s>' : ''}</button>`).join('');
-      this.pQueue.querySelectorAll('.qitem').forEach(b => { b.onclick = () => g.cancelTraining(e.id, +b.dataset.i); });
+      this.pQueue.innerHTML = (rs ? `<button class="qitem res" data-r="1" title="Researching (tap twice to cancel)">${ICONS[`t-${rs.id}`] || ICONS.research}<s class="rbar"><i></i></s></button>` : '')
+        + q.map((x, i) => `<button class="qitem" data-i="${i}" title="Cancel">${unitIcon(w.def(e.team, x.type))}${i === 0 && !rs ? '<s><i></i></s>' : ''}</button>`).join('');
+      this.pQueue.querySelectorAll('.qitem').forEach(b => { b.onclick = () => (b.dataset.r ? g.cancelResearchTap(e.id) : g.cancelTraining(e.id, +b.dataset.i)); });
     }
-    if (q.length) {
+    if (rs) { const bar = this.pQueue.querySelector('.rbar i'); if (bar) bar.style.width = `${Math.min(1, rs.t / rs.time) * 100}%`; }
+    if (q.length && !rs) {
       const first = q[0], p = Math.min(1, first.t / w.def(e.team, first.type).time);
       const bar = this.pQueue.querySelector('s i'); if (bar) bar.style.width = `${p * 100}%`;
     }
@@ -351,6 +354,7 @@ export class HUD {
   commands() {
     const g = this.g, w = g.world, v = g.view;
     const ents = g.sel.map(id => w.get(id)).filter(e => e && e.team === 0);
+    if (ents.length !== 1 || ents[0].id !== this.researchAt) this.researchAt = null;
     const compact = v.h < 700;
     // Rings stay below the top bar and above the info panel.
     const st = this.safeTop ?? (this.safeTop = parseFloat(getComputedStyle(this.top).top) - 6 || 0);
@@ -402,6 +406,14 @@ export class HUD {
           };
         });
         if (d.trains) items.push({ id: 'rally', icon: ICONS.rally, label: 'Rally', hint: 'Set where new units go', act: () => { g.rallyMode = true; this.toast('Tap where new units should go.'); } });
+        // Research: a button that opens this building's upgrades in a wheel of their own.
+        const techs = ents.length === 1 ? w.techsAt(0, b.type) : [];
+        if (techs.length) {
+          const r = b.research, avail = techs.filter(id => w.canResearch(b.id, id).ok).length;
+          items.push({ id: 'research', icon: ICONS.research, label: r ? `${Math.floor(100 * r.t / r.time)}%` : 'Research', cls: r ? 'on' : avail ? 'main' : '', badge: r ? '' : avail || '',
+            progress: r ? r.t / r.time : 0, hint: 'Upgrades: make your people stronger', act: () => { this.researchAt = b.id; } });
+        }
+        if (this.researchAt === b.id && techs.length) items = this.researchItems(b, techs);
         if (b.type === 'towncenter') {
           // The next age: a button with the research progress on its ring.
           const next = w.nextAge(0), ad = next && CONFIG.ageUp[next];
@@ -415,6 +427,7 @@ export class HUD {
             : { id: 'bell', icon: ICONS.bell, label: 'Bell', cls: 'warn', hint: 'Ring the Town bell: workers hide inside and the Town Center shoots harder', act: () => g.ringBell() });
         }
       }
+      if (ents.length !== 1 || this.researchAt !== b.id) this.researchAt = null; // the wheel closes when the selection changes
       const [cx, cy] = w.center(b), view = g.view.blds.get(b.id);
       const hgt = view ? Math.min(2.2, view.art.height * 0.45) : 1;
       const anchor = v.screen(cx, cy, hgt), radius = b.w * TILE * ppu * 0.5 + 34;
@@ -459,6 +472,28 @@ export class HUD {
       const t = v.h <= 430 ? 26 : 32; // half a thumb button (smaller on phones)
       this.thumb.show([v.w - 6 - sr - t, v.h - 6 - sb - t], thumb.items, { stack: t * 2 + 8, bounds });
     } else this.thumb.hide();
+  }
+
+  // The research wheel: each upgrade's next level, with what it does, its cost and its level.
+  researchItems(b, techs) {
+    const g = this.g, w = g.world, out = [];
+    for (const id of techs) {
+      const r = b.research;
+      if (r && r.id === id) {
+        const T = w.nextTech(0, id)?.tech || { name: id };
+        out.push({ id: `r${id}`, icon: ICONS[`t-${id}`] || ICONS.research, label: `${Math.floor(100 * r.t / r.time)}%`, cls: 'on', badge: ROMAN[r.level - 1], progress: r.t / r.time,
+          hint: `${T.name}: researching (tap twice to cancel)`, act: () => g.cancelResearchTap(b.id) });
+        continue;
+      }
+      const next = w.nextTech(0, id);
+      if (!next) continue; // fully researched
+      const c = w.canResearch(b.id, id), locked = c.why === 'age';
+      out.push({ id: `r${id}`, icon: ICONS[`t-${id}`] || ICONS.research, label: locked ? `${CONFIG.ageUp[next.age]?.name.split(' ')[0]} Age` : next.tech.short, cost: locked ? null : next.cost,
+        badge: ROMAN[next.level - 1], poor: !c.ok, hint: `${next.tech.name} ${ROMAN[next.level - 1]}: ${next.tech.text}`, act: () => g.research(b.id, id) });
+    }
+    if (!out.length) out.push({ id: 'rdone', icon: ICONS.check, label: 'All done', cls: 'go', act: () => this.toast('Every upgrade here is done.') });
+    out.push({ id: 'rback', icon: ICONS.back, label: 'Back', cls: 'stop', act: () => { this.researchAt = null; } });
+    return out;
   }
 
   // ---------- minimap ----------

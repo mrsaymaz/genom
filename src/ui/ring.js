@@ -51,6 +51,10 @@ export class ActionRing {
       b.el.classList.toggle('poor', !!it.poor);
       b.el.classList.toggle('on', !!it.on);
       if (b.badge.textContent !== String(it.badge || '')) b.badge.textContent = it.badge || '';
+      // Labels (a research percentage) and costs (the next level) can change while it is open.
+      if (b.lbl && b.lbl.textContent !== it.label) { b.lbl.textContent = it.label; b.lbl.classList.toggle('long', it.label.length > 9); }
+      const ck = JSON.stringify(it.cost || null);
+      if (ck !== b.ck) { b.ck = ck; if (b.tag) b.tag.innerHTML = costHtml(it.cost); }
       b.el.style.setProperty('--p', it.progress || 0);
       b.it = it;
     });
@@ -63,9 +67,9 @@ export class ActionRing {
       el.className = `rbtn ${it.cls || ''}`;
       el.dataset.id = it.id;
       el.style.animationDelay = `${i * 30}ms`;
-      el.innerHTML = `<span class="face">${it.icon}<span class="lbl${it.label.length > 9 ? ' long' : ''}">${it.label}</span></span>${it.cost ? `<span class="tag">${costHtml(it.cost)}</span>` : ''}<i class="badge"></i>`;
+      el.innerHTML = `<span class="face">${it.icon}<span class="lbl${it.label.length > 9 ? ' long' : ''}">${it.label}</span></span><span class="tag${it.cost ? '' : ' none'}">${costHtml(it.cost)}</span><i class="badge"></i>`;
       el.title = it.hint || it.label;
-      const b = { el, badge: el.querySelector('.badge'), it, held: false, timer: 0 };
+      const b = { el, badge: el.querySelector('.badge'), lbl: el.querySelector('.lbl'), tag: el.querySelector('.tag'), ck: JSON.stringify(it.cost || null), it, held: false, timer: 0 };
       // Tap to act; hold to run the item's hold action (for example, queue five).
       el.addEventListener('pointerdown', e => {
         e.stopPropagation();

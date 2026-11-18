@@ -4,6 +4,7 @@ import { CONFIG } from '../config.js';
 import { generateMap, T } from './map.js';
 import { findPath } from './path.js';
 import { unitDefs, roleOf, COUNTER, BLD_DAMAGE, ELEMENT_BEATS } from './units.js';
+import { techsFor, LEVEL_COST, LEVEL_TIME } from '../data/tech.js';
 
 const AGE_I = { dark: 0, mythic: 1, arcane: 2, celestial: 3 };
 
@@ -29,7 +30,7 @@ export class World {
       res: { food: CONFIG.start.food, lumber: CONFIG.start.lumber, gold: CONFIG.start.gold },
       pop: 0, popCap: 0,
       stats: { gathered: { food: 0, lumber: 0, gold: 0 }, trained: 0, lost: 0, killed: 0, built: 0, razed: 0 },
-      age: 'dark', units: unitDefs(CONFIG.teams[key].art),
+      age: 'dark', units: unitDefs(CONFIG.teams[key].art), tech: {},
     }));
     for (const r of this.map.resources) this.addResource(r);
     this.map.bases.forEach((b, i) => {
@@ -49,11 +50,12 @@ export class World {
 
   addBuilding(team, type, x, y, built = false) {
     const d = CONFIG.buildings[type], t = this.teams[team];
-    const maxHp = Math.round(d.hp * t.nation.hp);
+    const wallK = 1 + 0.25 * (t.tech?.walls || 0);
+    const maxHp = Math.round(d.hp * t.nation.hp * wallK);
     const e = {
       id: this.nextId++, cat: 'bld', type, team, x, y, w: d.size, h: d.size,
       maxHp, hp: built ? maxHp : Math.max(1, Math.round(maxHp * 0.05)), progress: built ? 1 : 0, built,
-      bt: d.bt * t.nation.bt, queue: [], rally: null, cd: 0, walkable: !!d.walkable,
+      bt: d.bt * t.nation.bt, queue: [], rally: null, cd: 0, walkable: !!d.walkable, wallK,
     };
     this.ents.set(e.id, e);
     this.mark(e, e.id);
@@ -102,8 +104,8 @@ export class World {
 
   recount() {
     for (const t of this.teams) t.popCap = 0;
-    for (const e of this.ents.values()) if (e.cat === 'bld' && e.built) this.teams[e.team].popCap += CONFIG.buildings[e.type].pop || 0;
-    for (const t of this.teams) t.popCap = Math.min(t.popCap, CONFIG.popMax);
+    for (const e of this.ents.values()) if (e.cat === 'bld' && e.built) this.teams[e.team].popCap += (CONFIG.buildings[e.type].pop || 0) + (e.type === 'house' && this.teams[e.team].tech?.hivestore ? 5 : 0);
+    for (const t of this.teams) t.popCap = Math.min(t.popCap, t.tech?.hivestore ? 80 : CONFIG.popMax);
   }
 
   // ---------- grid ----------
@@ -223,10 +225,78 @@ export class World {
   enterAge(team, age) {
     const t = this.teams[team], gain = CONFIG.ageUp[age]?.hpGain || 1;
     t.age = age;
-    t.units = unitDefs(t.nation.art, age);
-    for (const u of this.allUnits()) if (u.team === team) { const m = t.units[u.type].hp; u.hp = (u.hp / u.maxHp) * m; u.maxHp = m; }
+    this.refresh(team);
     for (const b of this.buildings(team)) { b.maxHp = Math.round(b.maxHp * gain); b.hp = Math.min(b.maxHp, b.hp * gain); }
     this.events.push({ type: 'aged', team, age });
+  }
+
+  // ---------- upgrades and technologies ----------
+  lv(team, id) { return this.teams[team].tech[id] || 0; }
+  // The next level of a technology for a team: { tech, level, cost, time } or null when done.
+  nextTech(team, id) {
+    const T = techsFor(this.teams[team].nation.art)[id];
+    if (!T) return null;
+    const level = this.lv(team, id);
+    if (level >= T.ages.length) return null;
+    const k = LEVEL_COST[level], cost = Object.fromEntries(Object.entries(T.cost).map(([r, v]) => [r, Math.round(v * k / 5) * 5]));
+    return { id, tech: T, level: level + 1, cost, time: Math.round(T.time * LEVEL_TIME[level]), age: T.ages[level] };
+  }
+  // The technologies a building offers its team.
+  techsAt(team, type) { return Object.entries(techsFor(this.teams[team].nation.art)).filter(([, T]) => T.at === type).map(([id]) => id); }
+  // Can this building research that technology now? Returns { ok, why, next }.
+  canResearch(bid, id) {
+    const b = this.get(bid);
+    if (!b || !b.built) return { ok: false, why: 'building' };
+    const next = this.nextTech(b.team, id);
+    if (!next) return { ok: false, why: 'max' };
+    if (next.tech.at !== b.type) return { ok: false, why: 'building' };
+    if (CONFIG.ages.indexOf(this.teams[b.team].age) < CONFIG.ages.indexOf(next.age)) return { ok: false, why: 'age', next };
+    if (b.research || b.ageUp) return { ok: false, why: 'busy', next };
+    for (const o of this.buildings(b.team)) if (o.research?.id === id) return { ok: false, why: 'busy', next };
+    if (!this.canAfford(b.team, next.cost)) return { ok: false, why: 'cost', next };
+    return { ok: true, next };
+  }
+  startResearch(bid, id) {
+    const c = this.canResearch(bid, id), b = this.get(bid);
+    if (!c.ok) return false;
+    this.pay(b.team, c.next.cost);
+    b.research = { id, level: c.next.level, t: 0, time: c.next.time, cost: c.next.cost };
+    this.events.push({ type: 'researchStart', team: b.team, id: b.id, tech: id, level: c.next.level });
+    return true;
+  }
+  cancelResearch(bid) {
+    const b = this.get(bid);
+    if (!b?.research) return;
+    this.refund(b.team, b.research.cost);
+    b.research = null;
+  }
+  // A team's unit stats with its technologies applied.
+  withTech(team, defs) {
+    const L = id => this.lv(team, id);
+    for (const [type, d0] of Object.entries(defs)) {
+      const d = defs[type] = { ...d0 };
+      if (['spearman', 'archer', 'special'].includes(type)) { d.damage = Math.round(d.damage * (1 + 0.15 * L('weapons')) * 10) / 10; d.hp = Math.round(d.hp * (1 + 0.15 * L('armour'))); }
+      if (type === 'archer') { d.range += L('fletching'); d.sight += L('fletching'); }
+      if (type === 'worker') { d.carry += 5 * L('baskets'); d.speed = Math.round(d.speed * (1 + 0.15 * L('quickfeet')) * 100) / 100; }
+      if (type === 'hero' && d.cast) { d.cast = { ...d.cast, radius: d.cast.radius + L('herocraft'), cooldown: Math.round(d.cast.cooldown * (1 - 0.2 * L('herocraft'))) }; d.hp = Math.round(d.hp * (1 + 0.15 * L('herocraft'))); }
+      if (type === 'creature') { d.hp = Math.round(d.hp * (1 + 0.2 * L('beastcraft'))); d.damage = Math.round(d.damage * (1 + 0.2 * L('beastcraft')) * 10) / 10; }
+      if (type === 'siege') { d.range += L('siegecraft'); d.siege = { ...d.siege, splash: d.siege.splash + 0.3 * L('siegecraft') }; }
+      if (L('forgefury')) d.time = Math.round(d.time * 0.75);
+      if (L('ironbark') && d.kind === 'guardian') d.hp = Math.round(d.hp * 1.3);
+      if (L('tidehealers') && d.kind === 'healer') { d.heal *= 1.5; d.range += 1; }
+      if (L('springs')) d.regen *= 2;
+    }
+    return defs;
+  }
+  // After a technology or an age: new unit stats (units keep their share of health), building
+  // health from Stone Walls, and the population limit.
+  refresh(team) {
+    const t = this.teams[team];
+    t.units = this.withTech(team, unitDefs(t.nation.art, t.age));
+    for (const u of this.allUnits()) if (u.team === team && t.units[u.type]) { const m = t.units[u.type].hp; if (m !== u.maxHp) { u.hp = (u.hp / u.maxHp) * m; u.maxHp = m; } }
+    const wallK = 1 + 0.25 * this.lv(team, 'walls');
+    for (const b of this.buildings(team)) if ((b.wallK || 1) !== wallK) { const k = wallK / (b.wallK || 1); b.maxHp = Math.round(b.maxHp * k); b.hp = Math.min(b.maxHp, b.hp * k); b.wallK = wallK; }
+    this.recount();
   }
 
   cancel(bid, i) {
@@ -326,7 +396,7 @@ export class World {
   save() {
     return {
       v: 1, seed: this.seed, size: this.size, pace: this.pace, time: this.time, nextId: this.nextId, winner: this.winner,
-      teams: this.teams.map(t => ({ key: t.key, res: t.res, stats: t.stats, bell: !!t.bell, age: t.age })),
+      teams: this.teams.map(t => ({ key: t.key, res: t.res, stats: t.stats, bell: !!t.bell, age: t.age, tech: t.tech })),
       ents: [...this.ents.values()], shots: this.shots, burns: this.burns,
     };
   }
@@ -336,7 +406,7 @@ export class World {
     w.ents = new Map(); w.occ.fill(0);
     for (const e of data.ents) { w.ents.set(e.id, e); if (e.cat !== 'unit') w.mark(e, e.id); }
     Object.assign(w, { time: data.time, nextId: data.nextId, winner: data.winner, events: [], shots: data.shots || [], burns: data.burns || [] });
-    data.teams.forEach((t, i) => { Object.assign(w.teams[i], { res: t.res, stats: t.stats, bell: t.bell, age: t.age || 'dark' }); w.teams[i].units = unitDefs(w.teams[i].nation.art, w.teams[i].age); });
+    data.teams.forEach((t, i) => { Object.assign(w.teams[i], { res: t.res, stats: t.stats, bell: t.bell, age: t.age || 'dark' }); w.teams[i].tech = t.tech || {}; w.teams[i].units = w.withTech(i, unitDefs(w.teams[i].nation.art, w.teams[i].age)); });
     for (const t of w.teams) t.pop = 0;
     for (const u of w.allUnits()) w.teams[u.team].pop += w.def(u.team, u.type).pop;
     w.recount();
@@ -461,8 +531,10 @@ export class World {
       // Signature creatures follow the element cycle among themselves, strongly.
       if (ar === 'creature' && tr === 'creature' && ELEMENT_BEATS[this.teams[attacker.team].nation.art] === this.teams[target.team].nation.art) dmg *= 1.5;
     }
-    // Battle Roar: roused units hit harder.
+    // Battle Roar: roused units hit harder. Lion Heart: hurt soldiers hit harder too.
     if (attacker.cat === 'unit' && attacker.roar > 0) dmg *= 1.35;
+    if (attacker.cat === 'unit' && attacker.hp < attacker.maxHp / 2 && this.lv(attacker.team, 'lionheart')) dmg *= 1.3;
+    if (target.cat === 'bld') target.hurtT = this.time;
     // The element cycle: Fire > Earth > Air > Water > Fire, a small extra edge.
     if (target.team !== undefined && ELEMENT_BEATS[this.teams[attacker.team].nation.art] === this.teams[target.team].nation.art) dmg *= 1.1;
     target.hp -= dmg;
@@ -500,9 +572,20 @@ export class World {
     const d = CONFIG.buildings[b.type];
     if (!b.built) return;
     // Researching the next age: training waits until it is done.
+    // Root Network: buildings repair themselves when nothing has hit them for a while.
+    if (this.lv(b.team, 'roots') && b.hp < b.maxHp && this.time - (b.hurtT ?? -99) > 6) b.hp = Math.min(b.maxHp, b.hp + b.maxHp * 0.006 * dt);
     if (b.ageUp) {
       b.ageUp.t += dt;
       if (b.ageUp.t >= b.ageUp.time) { const to = b.ageUp.to; b.ageUp = null; this.enterAge(b.team, to); }
+    } else if (b.research) {
+      // Researching: the building does not train until it is done.
+      b.research.t += dt;
+      if (b.research.t >= b.research.time) {
+        const r = b.research; b.research = null;
+        this.teams[b.team].tech[r.id] = r.level;
+        this.refresh(b.team);
+        this.events.push({ type: 'researched', team: b.team, id: b.id, tech: r.id, level: r.level });
+      }
     } else if (b.queue.length) {
       const q = b.queue[0], ud = this.def(b.team, q.type), t = this.teams[b.team];
       if (q.t < ud.time) q.t += dt;
@@ -524,10 +607,11 @@ export class World {
       b.cd -= dt;
       if (b.cd <= 0) {
         const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
-        let best = null, bd = d.attack.range + b.w / 2;
+        // Signal Fires reach further; Fletching adds a tile to towers.
+        let best = null, bd = d.attack.range + b.w / 2 + 2 * this.lv(b.team, 'signals') + (b.type === 'watchtower' ? this.lv(b.team, 'fletching') : 0);
         for (const u of this.units()) { if (u.team === b.team) continue; const dd = Math.hypot(u.x - cx, u.y - cy); if (dd < bd) { bd = dd; best = u; } }
         // Each sheltering worker adds an extra arrow's worth of damage.
-        if (best) { b.cd = d.attack.cooldown; this.damage(b, best, d.attack.damage * (1 + 0.35 * this.sheltered(b).length)); }
+        if (best) { b.cd = d.attack.cooldown; this.damage(b, best, d.attack.damage * (1 + 0.35 * this.sheltered(b).length) * (1 + 0.3 * this.lv(b.team, 'townguard'))); }
       }
     }
   }
@@ -539,7 +623,7 @@ export class World {
     if (d.heal) this.mend(u, d, dt);
     if (d.trait) this.trait(u, d, dt);
     // Ravenclaw's twist: units out of combat for a while slowly heal.
-    if (d.regen && u.hp < u.maxHp && this.time - u.hurtT > 5) u.hp = Math.min(u.maxHp, u.hp + d.regen * dt);
+    if (d.regen && u.hp < u.maxHp && this.time - u.hurtT > (this.lv(u.team, 'springs') ? 3 : 5)) u.hp = Math.min(u.maxHp, u.hp + d.regen * dt);
     const o = u.order;
     if (!o) {
       if (u.type !== 'worker' && d.kind !== 'healer') { const e = d.siege ? this.siegeTarget(u, d) : this.nearestEnemy(u, d.sight, true); if (e) this.setOrder(u, { type: 'attack', target: e.id, auto: true }); }
@@ -636,8 +720,8 @@ export class World {
         // Entangle: the Rootcoil Serpent's strike roots its target.
         if (d.trait === 'entangle' && e.cat === 'unit' && this.ents.has(e.id)) { e.rootT = 3; e.path = null; this.events.push({ type: 'rooted', id: e.id, by: u.id }); }
         if (charged) this.events.push({ type: 'charge', id: u.id });
-        // Tailwind: a scout speeds away after landing a hit.
-        if (d.kind === 'scout') u.boost = 3;
+        // Tailwind: a scout speeds away after landing a hit. Swarm Call: its target is slowed.
+        if (d.kind === 'scout') { u.boost = 3; if (this.lv(u.team, 'swarm') && e.cat === 'unit' && this.ents.has(e.id)) e.slowT = 2; }
         u.run = 0;
       }
     }
@@ -814,7 +898,7 @@ export class World {
     if (u.carry && (u.carry.type !== type || u.carry.amt >= cap)) { this.setOrder(u, { type: 'return', then: r.id }); return; }
     const inRange = r.cat === 'bld' ? this.distTo(u, r) <= 0.05 || this.approach(u, r, 0.05, dt) : this.approach(u, r, 0.8, dt);
     if (!inRange) return;
-    const rate = r.cat === 'bld' ? CONFIG.gather.farm : CONFIG.gather[type];
+    const rate = (r.cat === 'bld' ? CONFIG.gather.farm : CONFIG.gather[type]) * (1 + 0.2 * this.lv(u.team, type === 'lumber' ? 'axes' : type === 'gold' ? 'picks' : 'farming'));
     u.facing = Math.atan2(r.y + r.h / 2 - u.y, r.x + r.w / 2 - u.x);
     u.work = (u.work + dt) % 1;
     const amt = Math.min(rate * dt, r.cat === 'bld' ? Infinity : r.amount, cap - (u.carry?.amt || 0));

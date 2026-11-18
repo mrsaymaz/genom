@@ -13,6 +13,7 @@ import { Audio } from './audio.js';
 import { installGate } from './ui/install.js';
 import { Ascension, prepareArts } from './ageup.js';
 import { ELEMENTS } from './render/effects.js';
+import { techsFor, ROMAN } from './data/tech.js';
 
 const STEP = 1 / 20;
 const plural = (name, n) => (n === 1 || name.endsWith('s') ? name : name.endsWith('man') ? `${name.slice(0, -3)}men` : `${name}s`);
@@ -195,6 +196,14 @@ class Game {
         v.shot(v.toWorld(ev.x0, ev.y0), v.toWorld(ev.x, ev.y), ev.time, ev.effect, w.teams[ev.team].age);
         if (this.onScreen1(ev.x0, ev.y0)) audio.sfx('launch', 0.15);
       } else if (ev.type === 'impact') this.impactFx(ev);
+      else if (ev.type === 'researched') {
+        const T = techsFor(w.teams[ev.team].nation.art)[ev.tech], name = `${T.name}${T.ages.length > 1 ? ` ${ROMAN[ev.level - 1]}` : ''}`, b = w.get(ev.id);
+        if (ev.team === 0) {
+          this.hud.toast(`${name} is ready! ${T.text}`, 'good');
+          audio.sfx('built'); audio.speak('Research complete!', true);
+          if (b) { const [bx, by] = w.center(b), [x, z] = v.toWorld(bx, by); v.magic.emit(w.teams[0].nation.art, x, z, { n: 30, radius: b.w * TILE * 0.35, speed: 1.2, life: 1.4, size: 1, shape: 'star' }); }
+        } else this.hud.toast(`The rival learned ${name}.`, 'bad');
+      }
       else if (ev.type === 'cast') this.castFx(ev);
       else if (ev.type === 'trait') this.traitFx(ev);
       else if (ev.type === 'rooted') {
@@ -609,6 +618,28 @@ class Game {
     const u = list[this.gatherI]; this.view.centerOn(u.x, u.y);
     this.hud.toast(`${list.length} worker${list.length > 1 ? 's' : ''} gathering ${kind}.`);
   }
+  // ---------- upgrades ----------
+  research(bid, id) {
+    const w = this.world, c = w.canResearch(bid, id), next = c.next || w.nextTech(0, id), name = next ? `${next.tech.name}${next.tech.ages.length > 1 ? ` ${ROMAN[next.level - 1]}` : ''}` : '';
+    if (!c.ok) {
+      if (c.why === 'age') this.hud.toast(`${name} needs the ${CONFIG.ageUp[next.age].name}.`);
+      else if (c.why === 'cost') this.hud.toast(`Not enough: ${this.missing(next.cost)}.`, 'bad');
+      else if (c.why === 'busy') this.hud.toast(w.get(bid)?.research ? 'This building is already researching. Wait until it is done.' : `${name} is being researched somewhere else.`);
+      return;
+    }
+    w.startResearch(bid, id);
+    this.events();
+    audio.sfx('order');
+    this.hud.toast(`Researching ${name}: ${next.tech.text}`);
+  }
+  // Cancelling a research takes two taps, so it is not lost by accident.
+  cancelResearchTap(bid) {
+    const now = performance.now();
+    if (this.cancelArm?.id === bid && now - this.cancelArm.t < 2500) { this.world.cancelResearch(bid); this.cancelArm = null; this.hud.toast('Research cancelled. Your resources are back.'); return; }
+    this.cancelArm = { id: bid, t: now };
+    this.hud.toast('Tap again to cancel this research.');
+  }
+
   // Research the next age at the Town Center.
   ageUp() {
     const w = this.world, tc = this.home(), c = w.canAgeUp(0);

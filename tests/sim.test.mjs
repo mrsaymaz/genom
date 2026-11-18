@@ -499,3 +499,107 @@ test('a match saved on the old 48-tile map still continues', () => {
   run(w, 5);
   assert.equal([...w.buildings(0)].length, 1);
 });
+
+// ---------- upgrades and technologies ----------
+function techWorld(nation = 'gryffindor') {
+  const w = new World({ teams: [nation, 'hufflepuff'] });
+  const tc = [...w.buildings(0)].find(b => b.type === 'towncenter');
+  w.teams[0].res = { food: 9000, lumber: 9000, gold: 9000 };
+  const put = type => { for (let y = tc.y - 14; y < tc.y + 10; y++) for (let x = tc.x - 6; x < tc.x + 16; x++) if (w.canPlace(0, type, x, y)) return w.addBuilding(0, type, x, y, true); };
+  return { w, tc, put };
+}
+const research = (w, b, id) => { assert.ok(w.startResearch(b.id, id), `start ${id}`); for (let t = 0; t < 120 && b.research; t += 0.05) w.step(0.05); };
+
+test('research: one at a time per building, costs grow per level, and each level waits for its age', () => {
+  const { w, put } = techWorld();
+  const rax = put('barracks');
+  const before = { ...w.teams[0].res };
+  assert.ok(w.startResearch(rax.id, 'weapons'));
+  assert.equal(before.food - w.teams[0].res.food, 100);
+  assert.equal(w.canResearch(rax.id, 'armour').why, 'busy', 'one research at a time');
+  w.train(rax.id, 'spearman');
+  for (let t = 0; t < 31; t += 0.05) w.step(0.05);
+  assert.equal(w.lv(0, 'weapons'), 1);
+  assert.equal(w.canResearch(rax.id, 'weapons').why, 'age', 'level II needs the Mythic Age');
+  assert.equal(w.nextTech(0, 'weapons').cost.food, 180, 'level II costs more');
+  assert.equal(w.canResearch(rax.id, 'fletching').why, 'age');
+  w.enterAge(0, 'mythic');
+  assert.ok(w.canResearch(rax.id, 'weapons').ok);
+  // Cancelling gives everything back.
+  const r0 = w.teams[0].res.gold; w.startResearch(rax.id, 'weapons'); w.cancelResearch(rax.id);
+  assert.equal(w.teams[0].res.gold, r0);
+});
+
+test('army upgrades make soldiers hit harder, live longer and shoot further, even ones already trained', () => {
+  const { w, tc, put } = techWorld();
+  const rax = put('barracks'), sp = w.spawnUnit(0, 'spearman', tc), ar = w.spawnUnit(0, 'archer', tc);
+  const dmg = w.def(0, 'spearman').damage, hp = sp.maxHp, range = w.def(0, 'archer').range;
+  research(w, rax, 'weapons'); research(w, rax, 'armour');
+  assert.ok(Math.abs(w.def(0, 'spearman').damage - dmg * 1.15) < 0.11);
+  assert.equal(sp.maxHp, Math.round(hp * 1.15), 'trained soldiers get the armour too');
+  w.enterAge(0, 'mythic'); research(w, rax, 'fletching');
+  assert.equal(w.def(0, 'archer').range, range + 1);
+  void ar;
+});
+
+test('gathering upgrades bring resources in faster', () => {
+  const gathered = withAxes => {
+    const { w, tc, put } = techWorld();
+    const store = put('storehouse');
+    if (withAxes) research(w, store, 'axes');
+    w.teams[0].res.lumber = 0;
+    const tree = w.nearestResource(...w.center(tc), 'tree', 30);
+    w.orderGather([...w.units()].filter(u => u.team === 0).map(u => u.id), tree.id);
+    run(w, 90);
+    return w.teams[0].res.lumber;
+  };
+  const plain = gathered(false), sharp = gathered(true);
+  assert.ok(sharp > plain * 1.1, `with Sharp Axes ${sharp}, without ${plain}`);
+});
+
+test('Stone Walls, Town Guard and Bigger Baskets', () => {
+  const { w, tc, put } = techWorld();
+  const tower = put('watchtower'), hp = tc.maxHp;
+  w.enterAge(0, 'mythic');
+  research(w, tower, 'walls');
+  assert.equal(tc.maxHp, Math.round(Math.round(hp * 1.2) * 1.25), 'existing buildings get stronger');
+  const house = put('house');
+  assert.equal(house.maxHp, Math.round(550 * 0.85 * 1.25), 'and new ones too');
+  research(w, tc, 'baskets');
+  assert.equal(w.def(0, 'worker').carry, 15);
+  research(w, tc, 'townguard');
+  const foe = w.spawnUnit(1, 'spearman', tc); foe.x = tc.x - 1; foe.y = tc.y + 1; foe.hp = foe.maxHp = 1000; tc.cd = 0;
+  w.step(0.05);
+  assert.ok(Math.abs(1000 - foe.hp - 4 * 1.3) < 0.01, 'the Town Center shoots 30% harder');
+});
+
+test('each nation has its own two technologies at the Sanctum', () => {
+  for (const [nation, ids] of [['hufflepuff', ['swarm', 'hivestore']], ['ravenclaw', ['springs', 'tidehealers']], ['gryffindor', ['forgefury', 'lionheart']], ['slytherin', ['ironbark', 'roots']]]) {
+    const { w } = techWorld(nation);
+    assert.deepEqual(w.techsAt(0, 'sanctum').filter(id => ids.includes(id)).sort(), [...ids].sort());
+  }
+  // Forge Fury and Hive Homes.
+  let { w, put } = techWorld('gryffindor');
+  w.enterAge(0, 'mythic'); const s = put('sanctum'), t0 = w.def(0, 'spearman').time;
+  research(w, s, 'forgefury');
+  assert.equal(w.def(0, 'spearman').time, Math.round(t0 * 0.75));
+  ({ w, put } = techWorld('hufflepuff'));
+  w.enterAge(0, 'mythic'); w.enterAge(0, 'arcane'); const s2 = put('sanctum'); put('house'); w.recount();
+  const cap = w.teams[0].popCap; research(w, s2, 'hivestore');
+  assert.equal(w.teams[0].popCap, cap + 5);
+  // Root Network: a hurt building mends itself.
+  ({ w, put } = techWorld('slytherin'));
+  w.enterAge(0, 'mythic'); w.enterAge(0, 'arcane'); const s3 = put('sanctum'); research(w, s3, 'roots');
+  s3.hp = s3.maxHp / 2; run(w, 20);
+  assert.ok(s3.hp > s3.maxHp * 0.55);
+});
+
+test('technologies survive a save', () => {
+  const { w, tc, put } = techWorld();
+  const rax = put('barracks'); research(w, rax, 'weapons'); w.startResearch(tc.id, 'baskets');
+  const b = World.load(JSON.parse(JSON.stringify(w.save())));
+  assert.equal(b.lv(0, 'weapons'), 1);
+  assert.equal(b.def(0, 'spearman').damage, w.def(0, 'spearman').damage);
+  run(b, 30);
+  assert.equal(b.lv(0, 'baskets'), 1, 'the research in progress finishes after loading');
+});

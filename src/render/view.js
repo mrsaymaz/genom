@@ -131,7 +131,7 @@ export class View {
     this.target.addScaledVector(right, -dxPx * k).addScaledVector(fwd, dyPx * k / 0.6);
     this.updateCamera();
   }
-  zoomBy(f) { this.zoom = Math.max(10, Math.min(40, this.zoom * f)); this.updateCamera(); }
+  zoomBy(f) { this.zoom = Math.max(10, Math.min(48, this.zoom * f)); this.updateCamera(); }
 
   // Screen point -> fractional tile coordinates on the ground.
   pick(sx, sy) {

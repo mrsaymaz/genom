@@ -10,7 +10,7 @@ export class RivalAI {
     this.home = [...world.buildings(team)].find(b => b.type === 'towncenter');
   }
 
-  save() { return { tick: this.tick, wave: this.wave, nextWave: this.nextWave, nextTrain: this.nextTrain }; }
+  save() { return { tick: this.tick, wave: this.wave, nextWave: this.nextWave, nextTrain: this.nextTrain, rebalT: this.rebalT || 0 }; }
   load(d) { Object.assign(this, d); }
 
   get t() { return this.w.teams[this.team]; }

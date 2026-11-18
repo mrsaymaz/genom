@@ -58,7 +58,8 @@ export function buildTerrain(world) {
   group.add(ground);
 
   // The map edge: a slab of earth, like the concept dioramas.
-  const side = new THREE.Mesh(new THREE.BoxGeometry(W, 1.6, W), [0, 1, 2, 3, 4, 5].map(i => new THREE.MeshStandardMaterial({ color: lin(i === 2 ? '#6c8f3a' : '#6b4b2e'), roughness: 1 })));
+  // Its top is left open: a lid would sit above the riverbed and hide the river.
+  const side = new THREE.Mesh(new THREE.BoxGeometry(W, 1.6, W), [0, 1, 2, 3, 4, 5].map(i => (i === 2 ? new THREE.MeshBasicMaterial({ visible: false }) : new THREE.MeshStandardMaterial({ color: lin('#6b4b2e'), roughness: 1 }))));
   side.position.y = -0.82; group.add(side);
 
   // Water over the riverbed, with a gentle current.
@@ -79,7 +80,7 @@ export function buildTerrain(world) {
 
   // Wild flowers for texture.
   const fl = [];
-  for (let i = 0; i < 260; i++) { const x = Math.floor(r() * size), y = Math.floor(r() * size); if (terrain[y * size + x] !== T.GRASS || world.occ[y * size + x]) continue; const [wx, wz] = toWorld(size, x + r(), y + r()); const g = new THREE.SphereGeometry(0.05, 4, 3); g.translate(wx, 0.05, wz); const c = lin(['#fff4c0', '#f2a0c0', '#c8b0ff', '#ffffff'][(r() * 4) | 0]); const n = g.attributes.position.count, a = new Float32Array(n * 3); for (let k = 0; k < n; k++) { a[k * 3] = c.r; a[k * 3 + 1] = c.g; a[k * 3 + 2] = c.b; } g.setAttribute('color', new THREE.BufferAttribute(a, 3)); fl.push(g.toNonIndexed()); }
+  for (let i = 0; i < Math.round(260 * size * size / 2304); i++) { const x = Math.floor(r() * size), y = Math.floor(r() * size); if (terrain[y * size + x] !== T.GRASS || world.occ[y * size + x]) continue; const [wx, wz] = toWorld(size, x + r(), y + r()); const g = new THREE.SphereGeometry(0.05, 4, 3); g.translate(wx, 0.05, wz); const c = lin(['#fff4c0', '#f2a0c0', '#c8b0ff', '#ffffff'][(r() * 4) | 0]); const n = g.attributes.position.count, a = new Float32Array(n * 3); for (let k = 0; k < n; k++) { a[k * 3] = c.r; a[k * 3 + 1] = c.g; a[k * 3 + 2] = c.b; } g.setAttribute('color', new THREE.BufferAttribute(a, 3)); fl.push(g.toNonIndexed()); }
   if (fl.length) group.add(new THREE.Mesh(mergeBufferGeometries(fl), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8 })));
 
   return { group, water: wt, ground };

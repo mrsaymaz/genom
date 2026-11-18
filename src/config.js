@@ -18,7 +18,7 @@ export const CONFIG = {
     challenge: { aiWorkers: 13, aiBarracksAt: 140, firstWaveAt: 330, waveEvery: 165, firstWave: 5, waveGrowth: 2, aiTrainEvery: 18, aiAges: { mythic: 520, arcane: 880, celestial: 1240 } },
   },
 
-  map: { size: 48, seed: 7, name: 'Sunmeadow Vale' },
+  map: { size: 72, seed: 7, name: 'Sunmeadow Vale' },
 
   start: { food: 200, lumber: 200, gold: 100, workers: 3 },
   popMax: 60,

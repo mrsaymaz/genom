@@ -18,7 +18,8 @@ test('the map is symmetric and both bases can reach each other', () => {
   assert.ok(p && p.length > 10, 'a path exists between the bases');
   // The player's base is on the south-west side of the river, the rival's on the north-east.
   assert.ok(a.y - a.x > 20 && b.x - b.y > 20, `player base ${a.x},${a.y} rival ${b.x},${b.y}`);
-  assert.ok(w.map.fords.length === 3);
+  assert.ok(w.map.fords.length === 5, 'five fords on the large map');
+  assert.equal(n, 72);
   assert.equal(w.map.terrain[w.map.fords[1][1] * n + w.map.fords[1][0]], T.FORD);
 });
 
@@ -473,4 +474,28 @@ test('shots in flight and burning ground survive a save', () => {
   for (let i = 0; i < 30; i++) { r.w.step(0.05); b.step(0.05); }
   assert.equal(Math.round(b.get(r.house.id).hp), Math.round(r.house.hp));
   assert.equal(b.burns.length, r.w.burns.length);
+});
+
+// ---------- the large map ----------
+test('the large map gives each side five gold mines (home, back, two outlying sites, contested), all within reach', () => {
+  const w = new World(), n = w.size;
+  const side = r => (r.y + r.h / 2 > r.x + r.w / 2 ? 0 : 1);
+  const golds = [...w.resources('gold')];
+  assert.equal(golds.filter(g => side(g) === 0).length, 5, 'five gold mines a side');
+  assert.equal(golds.filter(g => side(g) === 1).length, 5);
+  // Every gold mine and berry bush can be reached by a worker from its own Town Center.
+  const tc = [...w.buildings(0)].find(b => b.type === 'towncenter'), start = w.goalsAround(tc).values().next().value;
+  for (const r of [...w.resources('gold'), ...w.resources('berries')]) {
+    const p = findPath(n, (x, y) => w.blocked(x, y), start % n, Math.floor(start / n), w.goalsAround(r), 30000);
+    assert.ok(p, `${r.kind} at ${r.x},${r.y} is reachable`);
+  }
+});
+
+test('a match saved on the old 48-tile map still continues', () => {
+  const old = new World({ size: 48 }), data = JSON.parse(JSON.stringify(old.save()));
+  delete data.size; // saves from before the large map
+  const w = World.load(data);
+  assert.equal(w.size, 48);
+  run(w, 5);
+  assert.equal([...w.buildings(0)].length, 1);
 });

@@ -10,11 +10,11 @@ const AGE_I = { dark: 0, mythic: 1, arcane: 2, celestial: 3 };
 const UNIT_R = 0.32;
 
 export class World {
-  constructor({ teams = ['hufflepuff', 'gryffindor'], pace = 'relaxed', seed = CONFIG.map.seed } = {}) {
+  constructor({ teams = ['hufflepuff', 'gryffindor'], pace = 'relaxed', seed = CONFIG.map.seed, size = CONFIG.map.size } = {}) {
     this.cfg = CONFIG;
     this.pace = CONFIG.pace[pace] ? pace : 'relaxed';
     this.seed = seed;
-    this.map = generateMap(CONFIG.map.size, seed);
+    this.map = generateMap(size, seed);
     this.size = this.map.size;
     this.time = 0;
     this.ents = new Map();
@@ -325,13 +325,14 @@ export class World {
   // A match saves as plain data. The map itself is rebuilt from its seed.
   save() {
     return {
-      v: 1, seed: this.seed, pace: this.pace, time: this.time, nextId: this.nextId, winner: this.winner,
+      v: 1, seed: this.seed, size: this.size, pace: this.pace, time: this.time, nextId: this.nextId, winner: this.winner,
       teams: this.teams.map(t => ({ key: t.key, res: t.res, stats: t.stats, bell: !!t.bell, age: t.age })),
       ents: [...this.ents.values()], shots: this.shots, burns: this.burns,
     };
   }
   static load(data) {
-    const w = new World({ teams: data.teams.map(t => t.key), pace: data.pace, seed: data.seed });
+    // Saves from before the large map have no size: they were made on the 48-tile map.
+    const w = new World({ teams: data.teams.map(t => t.key), pace: data.pace, seed: data.seed, size: data.size || 48 });
     w.ents = new Map(); w.occ.fill(0);
     for (const e of data.ents) { w.ents.set(e.id, e); if (e.cat !== 'unit') w.mark(e, e.id); }
     Object.assign(w, { time: data.time, nextId: data.nextId, winner: data.winner, events: [], shots: data.shots || [], burns: data.burns || [] });
@@ -364,7 +365,7 @@ export class World {
   pathTo(u, goals) {
     // Flying units (the Tide Raven) go over water, rocks and buildings.
     const flies = this.def(u.team, u.type).flies;
-    const p = findPath(this.size, flies ? (x, y) => !this.inside(x, y) : (x, y) => this.blocked(x, y), Math.floor(u.x), Math.floor(u.y), goals);
+    const p = findPath(this.size, flies ? (x, y) => !this.inside(x, y) : (x, y) => this.blocked(x, y), Math.floor(u.x), Math.floor(u.y), goals, Math.max(6000, this.size * this.size * 1.6));
     u.path = p ? p.map(([x, y]) => [x + 0.5, y + 0.5]) : [];
     // Already on a goal tile but off its centre: finish the last half-step.
     if (p && !p.length) { const cx = Math.floor(u.x) + 0.5, cy = Math.floor(u.y) + 0.5; if (Math.hypot(cx - u.x, cy - u.y) > 0.05) u.path = [[cx, cy]]; }

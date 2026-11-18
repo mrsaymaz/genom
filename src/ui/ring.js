@@ -46,7 +46,8 @@ export class ActionRing {
         x = Math.max(BTN / 2 + 6, Math.min(bounds.w - BTN / 2 - 6, x));
         y = Math.max(bounds.top + BTN / 2, Math.min(bounds.h - bounds.bottom - BTN / 2, y));
       }
-      b.el.style.transform = `translate(${x - BTN / 2}px, ${y - BTN / 2}px)`;
+      const r = (b.el.offsetWidth || BTN) / 2; // buttons can be smaller on small screens
+      b.el.style.transform = `translate(${x - r}px, ${y - r}px)`;
       b.el.classList.toggle('poor', !!it.poor);
       b.el.classList.toggle('on', !!it.on);
       if (b.badge.textContent !== String(it.badge || '')) b.badge.textContent = it.badge || '';

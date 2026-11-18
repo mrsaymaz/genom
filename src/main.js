@@ -154,6 +154,10 @@ class Game {
     this.pings = this.pings.filter(p => (p.t -= dt / 3) > 0);
     this.sel = this.sel.filter(id => { const e = this.world.get(id); return e && !e.inside; });
     this.hud.update(dt);
+    // Turning the phone: iOS reports the new size before the turn has finished, so check the
+    // canvas size every frame and resize when it really changed.
+    const cw = this.canvas.clientWidth, ch = this.canvas.clientHeight;
+    if (cw && ch && (cw !== this.view.w || ch !== this.view.h)) this.view.resize(cw, ch);
     this.view.render(this.paused ? 0 : this.acc / STEP, this.time, dt, this.rings());
   }
 

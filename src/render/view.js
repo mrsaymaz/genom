@@ -21,7 +21,7 @@ export class View {
     this.scene.background = lin('#9cc8e8');
     this.scene.fog = new THREE.Fog(this.scene.background, 60, 140);
     this.cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 200);
-    this.zoom = matchMedia('(max-height: 460px)').matches ? 18 : 22; this.target = new THREE.Vector3();
+    this.zoom = Math.min(innerWidth, innerHeight) < 500 ? 18 : 22; this.target = new THREE.Vector3();
     this.scene.add(new THREE.HemisphereLight(lin('#dfeeff'), lin('#5a4630'), 0.7));
     this.sun = new THREE.DirectionalLight(lin('#fff0d6'), 1.5);
     this.sun.castShadow = true;
@@ -68,9 +68,12 @@ export class View {
     this.renderer.setSize(w, h, false);
     this.updateCamera();
   }
+  // Zoom is the number of world units across the screen's shorter side, so a phone shows the
+  // same scale held upright or sideways.
+  get ppu() { return Math.min(this.w, this.h) / this.zoom; }
   updateCamera() {
-    const a = this.w / this.h, v = this.zoom;
-    Object.assign(this.cam, { left: -v * a / 2, right: v * a / 2, top: v / 2, bottom: -v / 2 });
+    const vw = this.w / this.ppu, vh = this.h / this.ppu, v = Math.max(vw, vh);
+    Object.assign(this.cam, { left: -vw / 2, right: vw / 2, top: vh / 2, bottom: -vh / 2 });
     this.cam.updateProjectionMatrix();
     const half = this.size * TILE / 2;
     this.target.x = Math.max(-half, Math.min(half, this.target.x));
@@ -85,7 +88,7 @@ export class View {
   }
   centerOn(tx, ty) { const [x, z] = this.toWorld(tx, ty); this.target.set(x, 0, z); this.updateCamera(); }
   pan(dxPx, dyPx) {
-    const k = this.zoom / this.h;
+    const k = 1 / this.ppu;
     const right = new THREE.Vector3(1, 0, -1).normalize(), fwd = new THREE.Vector3(-1, 0, -1).normalize();
     this.target.addScaledVector(right, -dxPx * k).addScaledVector(fwd, dyPx * k / 0.6);
     this.updateCamera();

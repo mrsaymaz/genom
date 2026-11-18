@@ -1,5 +1,5 @@
 // Sunmeadow Vale: the invented tutorial landscape. A meadow split by a river with three
-// fords, the player's base in the south-west and the rival's in the north-east. The map is
+// fords, the player's base at the bottom of the screen and the rival's at the top. The map is
 // point-symmetric, so neither base has an advantage.
 import { rng } from './rng.js';
 
@@ -79,5 +79,21 @@ export function generateMap(size, seed) {
   // Mirror rocks exactly (the loop above can leave a mismatch when the random skip differs).
   for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (terrain[idx(x, y)] === T.ROCK) { const [x2, y2] = mirror(x, y); terrain[idx(x2, y2)] = T.ROCK; }
 
-  return { size, terrain, bases, resources, fords, name: 'Sunmeadow Vale' };
+  // The game is played upright on phones: turn the whole map a quarter so the player's base
+  // sits at the bottom of the screen and the rival's at the top, with the river across the
+  // middle. A pure rotation, so the map stays fair and point-symmetric.
+  return rotateQuarter({ size, terrain, bases, resources, fords, name: 'Sunmeadow Vale' });
+}
+
+// (x, y) -> (y, size - 1 - x), applied to the terrain, rectangles and points.
+function rotateQuarter(m) {
+  const n = m.size, t = new Uint8Array(n * n);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) t[(n - 1 - x) * n + y] = m.terrain[y * n + x];
+  const rect = (r, w = r.w, h = r.h) => ({ ...r, x: r.y, y: n - 1 - (r.x + w - 1), w: h, h: w });
+  return {
+    ...m, terrain: t,
+    bases: m.bases.map(b => { const q = rect({ ...b, w: 4, h: 4 }); return { x: q.x, y: q.y }; }),
+    resources: m.resources.map(r => rect(r)),
+    fords: m.fords.map(([x, y]) => [y, n - 1 - x]),
+  };
 }

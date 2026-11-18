@@ -231,9 +231,12 @@ export class HUD {
   commands() {
     const g = this.g, w = g.world, v = g.view;
     const ents = g.sel.map(id => w.get(id)).filter(e => e && e.team === 0);
-    const compact = v.h < 460;
-    const bounds = { w: v.w, h: v.h, top: compact ? 44 : 56, bottom: 4 };
-    const ppu = v.h / v.zoom;
+    const compact = v.h < 700;
+    // Rings stay below the top bar and above the info panel.
+    const st = this.safeTop ?? (this.safeTop = parseFloat(getComputedStyle(this.top).top) - 6 || 0);
+    const sb = this.safeBottom ?? (this.safeBottom = parseFloat(getComputedStyle(this.panel).bottom) - 8 || 0);
+    const bounds = { w: v.w, h: v.h, top: 54 + st, bottom: 8 + sb };
+    const ppu = v.ppu;
     let ring = null, thumb = null;
 
     if (g.placing) {
@@ -311,12 +314,11 @@ export class HUD {
 
     if (ring && (ring.anchor[0] < -40 || ring.anchor[0] > v.w + 40 || ring.anchor[1] < -40 || ring.anchor[1] > v.h + 40)) ring = null;
     // Rings on the map stay clear of the info panel at the bottom of the screen.
-    if (ring) this.ring.show(ring.anchor, ring.items, { ...ring.opts, bounds: { ...bounds, bottom: this.panel.classList.contains('hidden') ? 4 : (compact ? 96 : 108) } }); else this.ring.hide();
+    if (ring) this.ring.show(ring.anchor, ring.items, { ...ring.opts, bounds: { ...bounds, bottom: this.panel.classList.contains('hidden') ? bounds.bottom : this.panel.offsetHeight + 16 + sb } }); else this.ring.hide();
     if (thumb) {
-      // The thumb zone: buttons in a quarter circle around the bottom-right corner.
-      const corner = [v.w - 10, v.h - 10];
-      const n = thumb.items.length, r = n <= 2 ? (compact ? 62 : 74) : n === 3 ? (compact ? 100 : 112) : (compact ? 132 : 146);
-      this.thumb.show(corner, thumb.items, { radius: r, center: -135, step: n <= 2 ? 62 : 90 / (n - 1), bounds });
+      // The thumb zone: a column of buttons climbing the right edge from the bottom corner,
+      // under the right thumb, beside the info panel.
+      this.thumb.show([v.w - 8 - 30, v.h - 8 - sb - 30], thumb.items, { stack: 72, bounds });
     } else this.thumb.hide();
   }
 

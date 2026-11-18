@@ -39,9 +39,13 @@ export class ActionRing {
       const b = this.btns.get(it.id);
       if (!b) return;
       const a = ((start + i * step) * Math.PI) / 180;
-      let x = anchor[0] + Math.cos(a) * radius, y = anchor[1] + Math.sin(a) * radius;
-      x = Math.max(BTN / 2 + 6, Math.min(bounds.w - BTN / 2 - 6, x));
-      y = Math.max(bounds.top + BTN / 2, Math.min(bounds.h - bounds.bottom - BTN / 2, y));
+      let x, y;
+      if (opts.stack) { x = anchor[0]; y = anchor[1] - i * opts.stack; } // a column climbing from the anchor
+      else {
+        x = anchor[0] + Math.cos(a) * radius; y = anchor[1] + Math.sin(a) * radius;
+        x = Math.max(BTN / 2 + 6, Math.min(bounds.w - BTN / 2 - 6, x));
+        y = Math.max(bounds.top + BTN / 2, Math.min(bounds.h - bounds.bottom - BTN / 2, y));
+      }
       b.el.style.transform = `translate(${x - BTN / 2}px, ${y - BTN / 2}px)`;
       b.el.classList.toggle('poor', !!it.poor);
       b.el.classList.toggle('on', !!it.on);

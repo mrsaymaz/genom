@@ -57,11 +57,15 @@ class Game {
     this.tutorial = new Tutorial(this);
     if (saved) { this.tutorial.i = saved.tutorial; this.raided = saved.raided; this.calmFor = saved.calmFor; }
     this.input = new Input(this.canvas, this);
-    this.onResize = () => this.view.resize(innerWidth, innerHeight);
+    // Size the view to the canvas as it is actually shown. On iPhone, Safari's bars make the
+    // visible area smaller than 100vh, which used to stretch the picture and shift every tap.
+    this.onResize = () => { const r = this.canvas.getBoundingClientRect(); this.view.resize(Math.round(r.width), Math.round(r.height)); };
+    window.visualViewport?.addEventListener('resize', this.onResize);
     addEventListener('resize', this.onResize); this.onResize();
     if (saved?.cam) { this.view.target.set(saved.cam.x, 0, saved.cam.z); this.view.zoom = saved.cam.zoom; this.view.updateCamera(); } else {
+      // Upright view: the Town Center in the lower part of the screen, the river and the rival above.
       const tc = this.home();
-      this.view.centerOn(tc.x + 3, tc.y - 1);
+      this.view.centerOn(tc.x - 3, tc.y - 3);
     }
     this.acc = 0; this.last = performance.now(); this.time = 0;
     this.frame = this.frame.bind(this);
@@ -117,6 +121,7 @@ class Game {
     removeEventListener('pagehide', this.onPageHide);
     this.input.dispose();
     removeEventListener('resize', this.onResize);
+    window.visualViewport?.removeEventListener('resize', this.onResize);
     this.view.renderer.dispose(); this.view.renderer.forceContextLoss();
     $('#hud').innerHTML = '';
   }
@@ -259,7 +264,7 @@ class Game {
   // ---------- picking ----------
   // Finds what is under a screen point: units first, then buildings, then resources.
   entityAt(sx, sy) {
-    const w = this.world, v = this.view, ppu = v.h / v.zoom;
+    const w = this.world, v = this.view, ppu = v.ppu;
     let best = null, bs = 1;
     const test = (e, tx, ty, hgt, rad, bias) => {
       const [x, y] = v.screen(tx, ty, hgt), s = Math.hypot(x - sx, y - sy) / (rad * ppu) * bias;
@@ -482,7 +487,7 @@ class Game {
     this.sel = [u.id]; this.view.centerOn(u.x, u.y);
   }
   selectArmy() { const a = this.army(); if (a.length) { this.sel = a.map(u => u.id); const u = a[0]; this.view.centerOn(u.x, u.y); } }
-  goHome() { const tc = this.home(); if (tc) { this.view.centerOn(tc.x + 2, tc.y + 2); this.sel = [tc.id]; } }
+  goHome() { const tc = this.home(); if (tc) { this.view.centerOn(tc.x - 2, tc.y - 2); this.sel = [tc.id]; } } // base low on screen, land ahead
   escape() {
     if (this.hud.wheelAt) this.hud.wheelAt = null;
     else if (this.amoveMode) this.amoveMode = false;
@@ -525,11 +530,12 @@ function menu() {
   const teams = $('#teams');
   teams.innerHTML = TEAM_IDS.map(id => {
     const t = CONFIG.teams[id];
-    return `<button class="team" data-id="${id}" style="--tc:${t.color};--td:${t.dark}"><span class="emblem">${EMBLEMS[t.art]}</span><b>${t.name}</b><small>${t.element}</small></button>`;
+    return `<button class="team" data-id="${id}" style="--tc:${t.color};--td:${t.dark}"><span class="emblem">${EMBLEMS[t.art]}</span><span class="tn"><b>${t.name}</b><small>${t.element}</small></span></button>`;
   }).join('');
   const paint = () => {
     teams.querySelectorAll('.team').forEach(b => b.classList.toggle('on', b.dataset.id === choice.team));
     document.querySelectorAll('.pace').forEach(b => b.classList.toggle('on', b.dataset.pace === choice.pace));
+    $('#pace-desc').textContent = document.querySelector('.pace.on small')?.textContent || '';
   };
   teams.querySelectorAll('.team').forEach(b => { b.onclick = () => { choice.team = b.dataset.id; store.set('genom.team', choice.team); paint(); }; });
   document.querySelectorAll('.pace').forEach(b => { b.onclick = () => { choice.pace = b.dataset.pace; store.set('genom.pace', choice.pace); paint(); }; });
@@ -546,6 +552,10 @@ function menu() {
   $('#settings-done').onclick = () => $('#settings').classList.add('hidden');
   settingsUi();
   showContinue();
+  // On an iPhone in Safari, the browser's bars take part of the screen: suggest the Home Screen.
+  const ios = /iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && innerWidth < 600);
+  const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  $('#ios-tip').classList.toggle('hidden', !ios || standalone);
   // Every button gives a soft click.
   document.addEventListener('pointerdown', e => { if (e.target.closest?.('button, input')) audio.sfx('tap'); }, true);
 }
@@ -554,6 +564,8 @@ function menu() {
 function showContinue() {
   const s2 = loadSave(), el = $('#continue');
   el.classList.toggle('hidden', !s2);
+  $('#start').textContent = s2 ? 'New match' : 'Start';
+  $('#start').classList.toggle('big', !s2);
   if (!s2) return;
   const me = CONFIG.teams[s2.team], them = CONFIG.teams[s2.rivalKey], t = s2.world.time;
   el.innerHTML = `<b>Continue</b><small>${me.name} vs ${them.name} · ${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')} played</small>`;

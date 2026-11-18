@@ -3,9 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#1b2128">
+  <meta name="theme-color" content="#16202a">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="screen-orientation" content="portrait">
   <title>Genom</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,68 +15,101 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <canvas id="view"></canvas>
-  <div id="hud"></div>
+  <!-- The game is played upright: on computers and tablets it sits in an upright column. -->
+  <div id="app">
+    <canvas id="view"></canvas>
+    <div id="hud"></div>
 
-  <section id="menu" class="screen">
-    <div class="sheet">
-      <h1>Genom</h1>
-      <p class="sub">Dark Age · Tutorial skirmish · <span id="map-name"></span></p>
-      <h2>Your team</h2>
-      <div id="teams" class="teams"></div>
-      <p class="note">Your team will come from the English League roster once it is connected.</p>
-      <h2>Pace</h2>
-      <div class="paces">
-        <button class="pace" data-pace="relaxed"><b>Relaxed</b><small>The rival builds slowly and attacks with small groups.</small></button>
-        <button class="pace" data-pace="challenge"><b>Challenge</b><small>A faster rival with bigger attacks.</small></button>
+    <section id="menu" class="screen menu">
+      <svg class="vista" viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <path d="M0 150 C60 120 110 132 160 118 C220 100 270 128 330 112 C360 104 385 110 400 106 V300 H0Z" fill="#5d8fa8" opacity=".55"/>
+        <path d="M0 178 C70 150 130 168 200 150 C270 132 330 160 400 146 V300 H0Z" fill="#5f9a3e"/>
+        <path d="M0 205 C90 186 160 200 230 188 C300 176 350 194 400 186 V300 H0Z" fill="#7fb24f"/>
+        <path d="M-10 262 C70 236 150 252 210 232 C260 216 330 232 410 214 V230 C330 248 262 234 214 250 C152 270 76 254 -10 280Z" fill="#3b8fc8"/>
+        <path d="M-10 266 C70 242 150 256 210 238 C260 222 330 238 410 220" stroke="#bfe6f5" stroke-width="2" fill="none" opacity=".6"/>
+        <g fill="#2f6b36"><path d="M28 196l12-30 12 30z"/><path d="M44 200l10-24 10 24z"/><path d="M340 182l12-30 12 30z"/><path d="M356 188l10-22 10 22z"/><path d="M318 190l9-20 9 20z"/></g>
+        <g fill="#244f2a"><path d="M60 300l20-52 20 52z"/><path d="M86 300l16-40 16 40z"/><path d="M300 300l20-56 20 56z"/><path d="M326 300l15-38 15 38z"/></g>
+        <g transform="translate(176 176)"><path d="M0 24h48l-6-6H6z" fill="#7a5432"/><path d="M8 18c0-14 8-22 16-22s16 8 16 22z" fill="#e8b830"/><path d="M10 12h28M9 6h30" stroke="#b08a42" stroke-width="2"/><path d="M24 -4v-10l9 4-9 4" fill="#c22a26"/></g>
+      </svg>
+      <button class="open-settings corner icon-btn" type="button" aria-label="Sound and graphics"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10.3 2h3.4l.5 2.6 1.7.8 2.3-1.4 2.4 2.4-1.4 2.3.8 1.7 2.6.5v3.4l-2.6.5-.8 1.7 1.4 2.3-2.4 2.4-2.3-1.4-1.7.8-.5 2.6h-3.4l-.5-2.6-1.7-.8-2.3 1.4-2.4-2.4 1.4-2.3-.8-1.7L2 13.7v-3.4l2.6-.5.8-1.7L4 5.8l2.4-2.4 2.3 1.4 1.7-.8zM12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z"/></svg></button>
+      <header class="brand">
+        <p class="kicker">English League</p>
+        <h1 class="logo">Genom</h1>
+        <p class="sub">Dark Age · Tutorial · <span id="map-name"></span></p>
+      </header>
+      <div class="card">
+        <h2>Your team</h2>
+        <div id="teams" class="teams"></div>
+        <h2>Rival pace</h2>
+        <div class="paces" role="group" aria-label="Rival pace">
+          <button class="pace" type="button" data-pace="relaxed"><b>Relaxed</b><small>The rival builds slowly and attacks with small groups.</small></button>
+          <button class="pace" type="button" data-pace="challenge"><b>Challenge</b><small>A faster rival with bigger attacks.</small></button>
+        </div>
+        <p id="pace-desc" class="pace-desc"></p>
       </div>
-      <button id="continue" class="big continue hidden"></button>
-      <div class="row">
-        <button id="start" class="big">Start</button>
-        <button class="open-settings icon-only" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10.3 2h3.4l.5 2.6 1.7.8 2.3-1.4 2.4 2.4-1.4 2.3.8 1.7 2.6.5v3.4l-2.6.5-.8 1.7 1.4 2.3-2.4 2.4-2.3-1.4-1.7.8-.5 2.6h-3.4l-.5-2.6-1.7-.8-2.3 1.4-2.4-2.4 1.4-2.3-.8-1.7L2 13.7v-3.4l2.6-.5.8-1.7L4 5.8l2.4-2.4 2.3 1.4 1.7-.8zM12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z"/></svg></button>
+      <div class="actions">
+        <button id="continue" class="btn gold continue hidden" type="button"></button>
+        <button id="start" class="btn gold big" type="button">Start</button>
+        <p id="ios-tip" class="tip hidden">To play full screen on iPhone: tap Share, then Add to Home Screen.</p>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="loading" class="screen hidden"><div class="loader">Building your village…</div></section>
+    <section id="loading" class="screen center hidden">
+      <div class="loader"><span class="spin" aria-hidden="true"></span><b>Building your village…</b></div>
+    </section>
 
-  <section id="pause" class="screen hidden">
-    <div class="sheet small">
-      <h1>Paused</h1>
-      <button id="resume" class="big">Resume</button>
-      <button class="open-settings">Sound and graphics</button>
-      <button id="restart">Restart</button>
-      <button id="quit">Quit to menu</button>
-      <p class="note">Tap to select. Tap the ground or a target to give orders. Drag to select a group. Use two fingers to move the map and pinch to zoom.</p>
-    </div>
-  </section>
-
-  <section id="settings" class="screen hidden">
-    <div class="sheet small settings">
-      <h1>Settings</h1>
-      <label class="slider"><span>Sound effects</span><input id="set-sfx" type="range" min="0" max="100" step="5"></label>
-      <label class="slider"><span>Voices</span><input id="set-voice" type="range" min="0" max="100" step="5"></label>
-      <label class="check"><input id="set-mute" type="checkbox"><span>Mute everything</span></label>
-      <h2>Graphics</h2>
-      <div id="set-quality" class="seg">
-        <button data-q="auto">Auto</button><button data-q="high">High</button><button data-q="medium">Medium</button><button data-q="low">Low</button>
+    <section id="pause" class="screen center dim hidden">
+      <div class="sheet">
+        <h1>Paused</h1>
+        <button id="resume" class="btn gold big" type="button">Resume</button>
+        <div class="row2">
+          <button class="open-settings btn" type="button">Settings</button>
+          <button id="restart" class="btn" type="button">Restart</button>
+        </div>
+        <button id="quit" class="btn" type="button">Save and quit to menu</button>
+        <h2>How to play</h2>
+        <ul class="howto">
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".5"/></svg><span><b>Tap</b> a unit or building to select it.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19L19 5M19 5h-7M19 5v7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg><span><b>Tap the ground</b> or a target to give an order.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/></svg><span><b>Drag</b> to select a group.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="14" r="3" fill="currentColor"/><circle cx="16" cy="10" r="3" fill="currentColor"/><path d="M4 20l2-2M20 4l-2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span><b>Two fingers</b> move the map; pinch to zoom.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span><b>Hold</b> a building to select all of its kind, or a worker to build.</span></li>
+        </ul>
       </div>
-      <p class="note">Auto lowers the graphics by itself if the game runs slowly on your device.</p>
-      <button id="settings-done" class="big">Done</button>
-    </div>
-  </section>
+    </section>
 
-  <section id="end" class="screen hidden">
-    <div class="sheet small">
-      <h1 id="end-title"></h1>
-      <p class="sub" id="end-sub"></p>
-      <div id="end-stats" class="stats"></div>
-      <button id="again" class="big">Play again</button>
-      <button id="menu-btn">Menu</button>
-    </div>
-  </section>
+    <section id="settings" class="screen center dim hidden">
+      <div class="sheet settings">
+        <h1>Settings</h1>
+        <h2>Sound</h2>
+        <label class="slider"><span>Effects</span><input id="set-sfx" type="range" min="0" max="100" step="5"></label>
+        <label class="slider"><span>Voices</span><input id="set-voice" type="range" min="0" max="100" step="5"></label>
+        <label class="check"><input id="set-mute" type="checkbox"><span>Mute everything</span></label>
+        <h2>Graphics</h2>
+        <div id="set-quality" class="seg">
+          <button type="button" data-q="auto">Auto</button><button type="button" data-q="high">High</button><button type="button" data-q="medium">Medium</button><button type="button" data-q="low">Low</button>
+        </div>
+        <p class="note">Auto lowers the graphics by itself if the game runs slowly on your device.</p>
+        <button id="settings-done" class="btn gold big" type="button">Done</button>
+      </div>
+    </section>
 
-  <div id="rotate" class="screen"><div class="sheet small"><svg viewBox="0 0 48 48" class="turn" aria-hidden="true"><rect x="16" y="6" width="16" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 38c6 6 26 6 32 0M36 34l4 4-5 3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg><p>Turn your device sideways to play.</p></div></div>
+    <section id="end" class="screen center dim hidden">
+      <div class="sheet">
+        <h1 id="end-title"></h1>
+        <p class="sub" id="end-sub"></p>
+        <div id="end-stats" class="stats"></div>
+        <button id="again" class="btn gold big" type="button">Play again</button>
+        <button id="menu-btn" class="btn" type="button">Menu</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Phones held sideways: the game is played upright. -->
+  <div id="rotate">
+    <svg viewBox="0 0 64 64" class="turn" aria-hidden="true"><rect x="22" y="8" width="20" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="3.5"/><circle cx="32" cy="38" r="2" fill="currentColor"/><path d="M10 50c8 8 36 8 44 0M50 44l4 6-7 2" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <p>Turn your phone upright to play.</p>
+  </div>
 
   <script src="art-buildings.js"></script>
   <script src="art-towncenters.js"></script>

@@ -78,6 +78,7 @@ npm test
 | `arcane-age-buildings.html` | The eight Arcane Age buildings per nation, with Dark and Mythic |
 | `celestial-age-buildings.html` | The eight Celestial Age buildings per nation, with all four ages |
 | `dark-age-units.html` | The four Dark Age units per nation, with a phone-size lineup and the age ladder (generated) |
+| `mythic-age-units.html` | The Mythic Age units and the first hero per nation, with a switch to compare with the Dark Age (generated) |
 | `signature-creatures.html` | The four signature creatures |
 | `nation-design-languages.html` | The four nation design languages |
 

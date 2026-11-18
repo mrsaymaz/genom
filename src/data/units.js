@@ -83,123 +83,124 @@ export const ROSTER = {
   air: {
     worker: [
       ['Beekeeper', 'A villager in a wide straw hat and veil, with a smoker pot, a hand axe and a straw hive on their back.'],
-      ['Comb Keeper', 'A honey gatherer with an amber-glass satchel and a small kite pack.'],
+      ['Comb Keeper', 'A honey gatherer in a striped smock and a broad hat banded with honeycomb, with a glowing amber satchel, a long honey dipper and a small kite flying from a pole on the back.'],
       ['Sky Tender', 'Followed by a floating honey crystal that carries their load.'],
       ['Cloud Tender', 'Glides over the ground on a small puff of cloud.'],
     ],
     infantry: [
       ['Hive Guard', 'A spear fighter in a striped honey-and-black tabard, a coiled straw helmet like a beehive, and a hexagonal wicker shield.'],
-      ['Comb Warden', 'Honeycomb armour and an amber hex shield; the spear tip is shaped like a stinger.'],
+      ['Comb Warden', 'A guard in plates of golden honeycomb over a striped tabard, with a tall hive helm and amber visor, a glowing amber hex shield and a stinger-tipped spear.'],
       ['Gale Lancer', 'A lancer whose shield holds a spinning wind rose.'],
       ['Sky Lancer', 'Canvas wings on the back let them leap over the line.'],
     ],
     ranged: [
       ['Wind Slinger', 'A light fighter with a honey scarf, a striped cap and amber goggles, whirling a sling over their head.'],
-      ['Gale Archer', 'A bow fletched with sail cloth; arrows ride the wind.'],
+      ['Gale Archer', 'An archer in a striped sail-cloth cape that billows behind, with a timber bow, a hexagonal quiver and a ring of wind around the arrow.'],
       ['Storm Archer', 'Arrows leave a trail of wind that pushes enemies back.'],
       ['Comet Archer', 'Hovers above the field and shoots streaks of golden light.'],
     ],
     special: [
       ['Kite Runner', 'A quick runner in honey and cream, towing a striped diamond kite that catches the wind.'],
-      ['Glider', 'Glides a little above the ground on a striped canvas wing.'],
+      ['Glider', 'A scout who skims just above the ground under a striped canvas wing on a timber frame, goggles down, with a pennant streaming behind.'],
       ['Bee Rider', 'Rides a giant honeybee over walls and rivers.'],
       ['Wind Skiff', 'A tiny flying boat with a full sail.'],
     ],
-    hero: ['Wind Warden', 'Storm Warden', 'Sky Warden'],
+    hero: [['Wind Warden', 'A tall leader in a long honey cloak and a crown of amber hexes, holding a staff topped by a spinning wind rose with a floating amber crystal.'], ['Storm Warden', 'Storm clouds gather around the staff and lightning flickers in the amber.'], ['Sky Warden', 'Rides the wind on canvas wings, crowned with a blazing amber star.']],
     siege: ['Gust Cannon', 'Storm Engine'],
   },
   water: {
     worker: [
       ['Shell Gatherer', 'A villager in a blue tunic and a spiral shell hat, with a net basket on their back and a bronze hand-pick.'],
-      ['Pearl Gatherer', 'Carries pearls and glass floats in a woven net.'],
+      ['Pearl Gatherer', 'A gatherer in a spiral shell hat topped with a glass bubble, with bronze goggles, a net of pearls and glass floats over one shoulder and a bronze rake.'],
       ['Tide Scholar', 'Uses bronze tools and a floating water orb.'],
       ['Star Scholar', 'Reads the stars from a small bronze armillary.'],
     ],
     infantry: [
       ['Shell Guard', 'A spear fighter in a pearl breastplate and a tall spiral conch helmet, with a scallop shield and a coral spear.'],
-      ['Conch Guard', 'Mother-of-pearl armour and a shield shaped like a conch.'],
+      ['Conch Guard', 'A guard in layered mother-of-pearl armour with bronze trim, a conch-spiral helm, a round spiral shield and a bronze-headed trident.'],
       ['Tidewall Guard', 'Their shield is a curved wall of moving water.'],
       ['Pearl Sentinel', 'Armour of glass and pearl that shines like the moon.'],
     ],
     ranged: [
       ['Harpooner', 'A sailor in a blue bandana who throws bronze harpoons, with a rope coil at the waist and spare harpoons on the back.'],
-      ['Tide Archer', 'A bow of polished shell; arrows splash on impact.'],
+      ['Tide Archer', 'An archer in a deep-blue cape with a wave-shaped hem, a bow of polished pearl shell and arrows tipped with glowing water.'],
       ['Glass Archer', 'A crystal bow that shoots arrows of glass and water.'],
       ['Moon Archer', 'Silver arrows that glow like moonlight on water.'],
     ],
     special: [
       ['Tide Mender', 'A healer in a long deep-blue robe and a shell crown, carrying a glass bowl of glowing water.'],
-      ['Wave Mender', 'Heals with ribbons of water that flow to wounded allies.'],
+      ['Wave Mender', 'A healer in a tall shell crown and a flowing robe, holding a glass orb as ribbons of glowing water curl around them.'],
       ['Spring Sage', 'A floating spring follows them and heals everyone it touches.'],
       ['Star Sage', 'Heals a whole group with a shower of starlit rain.'],
     ],
-    hero: ['Tide Navigator', 'Glass Navigator', 'Star Navigator'],
+    hero: [['Tide Navigator', 'A captain in a long deep-blue coat with pearl buttons and a shell tricorn, holding a bronze spyglass, with two bronze rings turning behind them.'], ['Glass Navigator', 'The rings become a full armillary sphere of glass and bronze.'], ['Star Navigator', 'Water orbits them like the rings of a planet.']],
     siege: ['Tide Engine', 'Moon Engine'],
   },
   fire: {
     worker: [
       ['Forge Hand', 'A strong villager in a leather apron and a scarlet bandana, with a big hammer on the shoulder.'],
-      ['Ember Smith', 'Carries a small glowing anvil-stone that never cools.'],
+      ['Ember Smith', 'A smith in iron gauntlets and a scorched apron with gold rivets, carrying a glowing anvil-stone and a forge hammer, with a gold-banded bandana.'],
       ['Magma Smith', 'Iron gloves and tools that glow with heat.'],
       ['Sun Smith', 'Works gold and sunfire with a golden hammer.'],
     ],
     infantry: [
       ['Ash Guard', 'A spear fighter in black basalt armour with red iron plates, a spiked crest that burns at the top, and a spiked shield.'],
-      ['Flame Guard', 'Armour with glowing seams and a lion-faced shield.'],
+      ['Flame Guard', 'A guard in stepped basalt armour with glowing magma seams and spiked pauldrons, a flame-crested helm and a shield bearing a gold lion face with a fiery mane.'],
       ['Magma Guard', 'Heavy plates with rivers of magma between them.'],
       ['Sun Guard', 'Golden armour crowned with a ring of flame.'],
     ],
     ranged: [
       ['Ember Archer', 'An archer in a red hood with iron cheek guards, shooting arrows with glowing ember tips.'],
-      ['Flame Archer', 'Fire arrows that leave small burning patches.'],
+      ['Flame Archer', 'An archer in a scarlet hood with an iron half-mask, a forged black bow and a quiver of burning arrows, with a fire arrow nocked.'],
       ['Blaze Archer', 'A forged bow that shoots arrows of pure flame.'],
       ['Sunfire Archer', 'Arrows of sunlight that burn through shields.'],
     ],
     special: [
       ['Boar Rider', 'A rider on a black war boar with big tusks, an iron head plate and a scarlet saddle cloth.'],
-      ['Ember Rider', 'The boar\'s tusks and bristles glow like coals.'],
+      ['Ember Rider', 'A rider on an armoured war boar whose tusks and bristles glow like coals, carrying a flame banner.'],
       ['Lava Charger', 'Rides an armoured salamander with a magma back.'],
       ['Sun Charger', 'Rides a burning horse that leaves a trail of fire.'],
     ],
-    hero: ['Flame Captain', 'Blaze Captain', 'Sun Champion'],
+    hero: [['Flame Captain', 'A champion in red iron plate with a mane of flame on the shoulders, a gold crown of fire, a scarlet cape and a great blade with a glowing magma edge.'], ['Blaze Captain', 'The armour splits with magma seams and the blade burns white-hot.'], ['Sun Champion', 'Golden armour under a crown of sunfire.']],
     siege: ['Magma Mortar', 'Sun Cannon'],
   },
   earth: {
     worker: [
       ['Root Tender', 'A villager in a moss-green tunic and a wide leaf hat, with a wicker basket of mushrooms and a wooden hoe.'],
-      ['Moss Tender', 'Moss and small flowers grow on their cloak.'],
+      ['Moss Tender', 'A gatherer under a big spotted mushroom hat, with a moss cloak sprouting small flowers, a basket of glowing mushrooms and a rune-carved hoe.'],
       ['Rune Gardener', 'Their tools carry glowing green runes.'],
       ['Grove Keeper', 'Little living saplings walk behind them.'],
     ],
     infantry: [
       ['Thorn Guard', 'A spear fighter in bark armour and a leaf cloak, with a branching wooden helmet, a mossy round shield and a thorn spear.'],
-      ['Bark Guard', 'Thick bark armour that slowly heals itself.'],
+      ['Bark Guard', 'A guard in thick, layered bark armour with moss in the joints, a leafy antler helm, a shield cut from a tree trunk with a glowing rune, and a thorn spear.'],
       ['Rune Guard', 'Standing-stone shields with glowing green runes.'],
       ['Grove Guard', 'Armour of living wood that blooms in battle.'],
     ],
     ranged: [
       ['Thornbow', 'A hooded archer in a pointed leaf cloak, with a longbow grown from a living branch.'],
-      ['Briar Archer', 'Arrows that sprout thorny briars where they land.'],
+      ['Briar Archer', 'An archer in a leaf hood crowned with small flowers, with a longbow wrapped in thorny briars and arrows tipped with glowing seeds.'],
       ['Rune Archer', 'A rune-carved bow that shoots glowing seeds.'],
       ['Starthorn Archer', 'Arrows of starlight wrapped in thorns.'],
     ],
     special: [
       ['Stonewarden', 'A huge warrior in rough stone armour with moss on the shoulders, a stone slab shield and green rune light.'],
-      ['Moss Golem', 'A walking stone figure covered in moss.'],
+      ['Moss Golem', 'A walking figure of stacked stones covered in moss and ferns, with a glowing rune heart, glowing eyes and boulder fists.'],
       ['Rune Golem', 'Standing stones joined by glowing runes.'],
       ['Grove Colossus', 'A towering giant of stone and living trees.'],
     ],
-    hero: ['Root Seer', 'Rune Seer', 'Star Seer'],
+    hero: [['Root Seer', 'An elder in a long moss robe with an antler crown of leaves, leaning on a staff of twisted roots that holds a glowing green rune stone.'], ['Rune Seer', 'Small rune stones orbit them as they walk.'], ['Star Seer', 'Their antlers bloom with starlight and fireflies.']],
     siege: ['Root Catapult', 'Earthshaker'],
   },
 };
 
-// Heroes: one per nation, trained at the Sanctum from the Mythic Age. Each age gives a new title.
+// Heroes: one per nation, trained at the Sanctum from the Mythic Age (one at a time). Each age
+// gives a new title and look. Stats are for the Mythic Age.
 export const HEROES = {
-  air: { role: 'Leader', ability: { name: 'Updraft', text: 'Lifts nearby allies: they move faster and dodge arrows for a few seconds.' }, base: { hp: 320, attack: 16, speed: 2.6 } },
-  water: { role: 'Support leader', ability: { name: 'High Tide', text: 'A wave heals allies and pushes enemies back.' }, base: { hp: 280, attack: 12, speed: 2.3 } },
-  fire: { role: 'Champion', ability: { name: 'Battle Roar', text: 'Nearby allies deal more damage for a few seconds.' }, base: { hp: 360, attack: 20, speed: 2.4 } },
-  earth: { role: 'Defender', ability: { name: 'Root Snare', text: 'Roots grab enemies in an area and hold them in place.' }, base: { hp: 340, attack: 14, speed: 2.0 } },
+  air: { role: 'Leader', range: 0.95, cooldown: 1.1, sight: 9, cost: { food: 150, gold: 150 }, time: 40, ability: { name: 'Updraft', text: 'Lifts nearby allies: they move faster and dodge arrows for a few seconds.' }, base: { hp: 320, attack: 16, speed: 2.6 } },
+  water: { role: 'Support leader', range: 3.5, cooldown: 1.4, sight: 9, cost: { food: 150, gold: 150 }, time: 40, ability: { name: 'High Tide', text: 'A wave heals allies and pushes enemies back.' }, base: { hp: 280, attack: 12, speed: 2.3 } },
+  fire: { role: 'Champion', range: 1.0, cooldown: 1.2, sight: 8, cost: { food: 150, gold: 150 }, time: 40, ability: { name: 'Battle Roar', text: 'Nearby allies deal more damage for a few seconds.' }, base: { hp: 360, attack: 20, speed: 2.4 } },
+  earth: { role: 'Defender', range: 3.0, cooldown: 1.5, sight: 8, cost: { food: 150, gold: 150 }, time: 40, ability: { name: 'Root Snare', text: 'Roots grab enemies in an area and hold them in place.' }, base: { hp: 340, attack: 14, speed: 2.0 } },
 };
 
 // Signature creatures (forms per age in docs/concepts/signature-creatures.html).

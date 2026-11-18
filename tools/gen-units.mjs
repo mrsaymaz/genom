@@ -1,9 +1,9 @@
-// Generates the unit roster (docs/UNIT_ROSTER.md) and the Dark Age units concept page
-// (docs/concepts/dark-age-units.html) from src/data/units.js and src/render/unit-models.js,
+// Generates the unit roster (docs/UNIT_ROSTER.md) and the units concept pages
+// (docs/concepts/dark-age-units.html, mythic-age-units.html) from src/data/units.js and src/render/unit-models.js,
 // so the docs, the page and the game always show the same units.
 // Run: node tools/gen-units.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
-import { AGES, AGE_NAMES, LINES, SPECIALS, ROSTER, HEROES, CREATURES, UNIT_TWISTS, NATION_ORDER, NATION_INFO, unitStats } from '../src/data/units.js';
+import { AGES, AGE_NAMES, LINES, SPECIALS, ROSTER, HEROES, CREATURES, UNIT_TWISTS, NATION_ORDER, NATION_INFO } from '../src/data/units.js';
 
 const strip = src => src.replace(/^export (const|function|let) /gm, '$1 ');
 const fmtCost = c => Object.entries(c).map(([k, v]) => `${v} ${k[0].toUpperCase() + k.slice(1)}`).join(', ');
@@ -32,11 +32,14 @@ function roster() {
     L.push(`Unit twist: ${UNIT_TWISTS[n].text} Special line: **${sp.label}**. ${sp.role} Ability: **${sp.ability.name}**, ${sp.ability.text.charAt(0).toLowerCase() + sp.ability.text.slice(1)}`, '');
     L.push('| Line | Dark | Mythic | Arcane | Celestial |', '|---|---|---|---|---|');
     for (const line of ['worker', 'infantry', 'ranged', 'special']) L.push(`| ${line === 'special' ? sp.label : LINES[line].label} | ${r[line].map(x => x[0]).join(' | ')} |`);
-    L.push(`| Hero | — | ${r.hero.join(' | ')} |`);
+    L.push(`| Hero | — | ${r.hero.map(x => x[0]).join(' | ')} |`);
     L.push(`| Signature creature | — | ${CREATURES[n]} | Elder form | Celestial form |`);
     L.push(`| Siege | — | — | ${r.siege.join(' | ')} |`);
     L.push('');
     L.push(`Hero: ${HEROES[n].role}. Ability **${HEROES[n].ability.name}**: ${HEROES[n].ability.text}`, '');
+    L.push('### Hero', '', '| Age | Name | Look |', '|---|---|---|');
+    r.hero.forEach(([name, desc], i) => L.push(`| ${AGE_NAMES[AGES[i + 1]]} | ${name} | ${desc} |`));
+    L.push('');
     for (const line of ['worker', 'infantry', 'ranged', 'special']) {
       L.push(`### ${line === 'special' ? sp.label : LINES[line].label}`, '');
       L.push('| Age | Name | Look |', '|---|---|---|');
@@ -48,16 +51,17 @@ function roster() {
 }
 
 // ---------- the concept page ----------
-function page() {
+function page(age) {
+  const ai = AGES.indexOf(age), AGE = AGE_NAMES[age], lines = ai ? ['worker', 'infantry', 'ranged', 'special', 'hero'] : ['worker', 'infantry', 'ranged', 'special'];
   const models = strip(readFileSync('src/render/unit-models.js', 'utf8'));
   const data = strip(readFileSync('src/data/units.js', 'utf8'));
-  return `<title>Dark Age Units</title>
+  return `<title>${AGE} Age Units</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: RA2-style command panel, matching the building pages. Header, nation tabs, four bevelled unit cards on turntables, then the units at true phone size and the age ladder. Single dark look by design. */
+/* Layout: RA2-style command panel, matching the building pages. Header, nation tabs, bevelled unit cards on turntables, then the units at true phone size and the age ladder. Single dark look by design. */
 :root {
   color-scheme: dark;
   --bg: #12161b; --panel: #1b2128; --panel-2: #222a33; --line: #303a45;
@@ -92,7 +96,7 @@ button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 .nation-bar p { margin: 0; flex: 1; min-width: 240px; }
 .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
 @media (min-width: 700px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 1180px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1180px) { .grid { grid-template-columns: repeat(${lines.length > 4 ? 3 : 4}, minmax(0, 1fr)); } }
 .card { --cut: 14px; background: var(--panel); clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut))); display: grid; gap: 12px; align-content: start; padding: 16px 16px 18px; min-width: 0; }
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .eyebrow { margin: 0; font: 400 12px/1.3 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--c); }
@@ -145,14 +149,15 @@ td.na { color: var(--muted); }
 
 <div class="wrap">
   <header class="top">
-    <p class="kicker">Concept renders · Age 1 of 4</p>
+    <p class="kicker">Concept renders · Age ${ai + 1} of 4</p>
     <div class="top-row">
-      <h1>Dark Age Units</h1>
+      <h1>${AGE} Age Units</h1>
       <button id="motion" type="button" aria-pressed="false">Pause turntable</button>
     </div>
-    <p class="lead">Each nation's four Dark Age units: a worker, a spear fighter, a ranged fighter and one special unit that fits its element. Every line transforms in each new age, as the buildings do. These are the game's own low-poly models, so what you see here is what students will command.</p>
+    <p class="lead">${ai ? `Each nation's units after the age-up to the ${AGE} Age: every line keeps its outline but gains the materials of the nation's ${AGE} buildings, and the first hero joins them. Switch to Dark Age to compare. These are the game's own low-poly models.` : `Each nation's four Dark Age units: a worker, a spear fighter, a ranged fighter and one special unit that fits its element. Every line transforms in each new age, as the buildings do. These are the game's own low-poly models, so what you see here is what students will command.`}</p>
     <div class="controls">
-      <div><span class="clbl">View</span><span class="seg" role="group" aria-label="View"><button type="button" data-view="color" aria-pressed="true">Colour</button><button type="button" data-view="sil" aria-pressed="false">Silhouette</button></span></div>
+${ai ? `      <div><span class="clbl">Age</span><span class="seg" role="group" aria-label="Age"><button type="button" data-age="${age}" aria-pressed="true">${AGE}</button><button type="button" data-age="dark" aria-pressed="false">Dark Age</button></span></div>
+` : ''}      <div><span class="clbl">View</span><span class="seg" role="group" aria-label="View"><button type="button" data-view="color" aria-pressed="true">Colour</button><button type="button" data-view="sil" aria-pressed="false">Silhouette</button></span></div>
     </div>
   </header>
 
@@ -163,7 +168,7 @@ ${NATION_ORDER.map((n, i) => `    <button class="tab" role="tab" data-n="${n}" s
   <div class="nation-bar"><span class="lbl">Unit twist</span><p id="twist"></p></div>
 
   <div class="grid" id="cards">
-${['worker', 'infantry', 'ranged', 'special'].map(l => `    <article class="card" data-line="${l}">
+${lines.map(l => `    <article class="card" data-line="${l}">
       <div class="card-head"><p class="eyebrow"></p><span class="fp"></span></div>
       <h2></h2>
       <div class="art"><p class="fallback">Loading 3D preview…</p></div>
@@ -177,8 +182,8 @@ ${['worker', 'infantry', 'ranged', 'special'].map(l => `    <article class="card
 
   <section class="panel" aria-labelledby="size-h">
     <h3 id="size-h">At game size</h3>
-    <p>All sixteen units at the size a student sees them on a phone held sideways (about 20 screen points tall). Each nation should be easy to tell apart by colour and shape, and each unit by its outline: the hat, the shield, the bow, the kite, the boar, the stone.</p>
-    <div class="field-wrap"><div class="field" id="field"><canvas id="field-cv" aria-label="All sixteen Dark Age units at phone size, one row per nation"></canvas></div></div>
+    <p>All the ${AGE} Age units at the size a student sees them on a phone held sideways (about 20 screen points tall). Each nation should be easy to tell apart by colour and shape, and each unit by its outline: the hat, the shield, the bow, the kite, the boar, the stone.</p>
+    <div class="field-wrap"><div class="field" id="field"><canvas id="field-cv" aria-label="All ${AGE} Age units at phone size, one row per nation"></canvas></div></div>
   </section>
 
   <section class="panel" aria-labelledby="ladder-h">
@@ -201,8 +206,9 @@ ${['worker', 'infantry', 'ranged', 'special'].map(l => `    <article class="card
 ${data}
 ${models}
   var T3 = THREE;
-  var LINE_ORDER = ["worker", "infantry", "ranged", "special"];
-  var state = { n: "air", sil: false, paused: false };
+  var PAGE_AGE = "${age}", LINE_ORDER = ${JSON.stringify(lines)}, LADDER_LINES = ["worker", "infantry", "ranged", "special"];
+  var SETS = { dark: DARK_UNITS, mythic: typeof MYTHIC_UNITS !== "undefined" ? MYTHIC_UNITS : DARK_UNITS };
+  var state = { n: "air", sil: false, paused: false, age: PAGE_AGE };
   var BY_HASH = {}; NATION_ORDER.forEach(function (n) { BY_HASH[NATION_INFO[n].hash] = n; });
   var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
   var costText = function (c) { return Object.keys(c).map(function (k) { return c[k] + " " + cap(k); }).join(" · "); };
@@ -213,12 +219,27 @@ ${models}
     var r = ROSTER[n], sp = SPECIALS[n];
     document.documentElement.style.setProperty("--c", "var(--" + n + ")");
     document.getElementById("twist").textContent = UNIT_TWISTS[n].text + " Special line: " + sp.label + ".";
+    var ai = AGES.indexOf(state.age);
     document.querySelectorAll(".card").forEach(function (card) {
-      var line = card.dataset.line, def = line === "special" ? sp : LINES[line], st = unitStats(n, line, "dark");
+      var line = card.dataset.line;
+      if (line === "hero") {
+        var hd = HEROES[n], hb = hd.base;
+        card.querySelector(".eyebrow").textContent = "Hero · " + hd.role + " · Sanctum";
+        card.querySelector(".fp").textContent = "One at a time";
+        card.querySelector("h2").textContent = ai ? r.hero[ai - 1][0] : "No hero yet";
+        card.querySelector(".desc").textContent = ai ? r.hero[ai - 1][1] : "Heroes join from the Mythic Age, trained at the Sanctum.";
+        card.querySelector(".role").textContent = "Leads the army. Strong but costly; only one can be alive at a time.";
+        card.querySelector(".stats").innerHTML = [["HP", hb.hp], ["Attack", hb.attack + (hd.range > 1.5 ? " ranged" : " melee")], ["Range", hd.range > 1.5 ? hd.range + " tiles" : "Melee"], ["Speed", speedWord(hb.speed) + " (" + hb.speed + ")"], ["Sight", hd.sight + " tiles"], ["Train", hd.time + " s"], ["Cost", costText(hd.cost), "wide"]].map(function (x) { return '<div' + (x[2] ? ' class="wide"' : "") + '><dt>' + x[0] + "</dt><dd>" + x[1] + "</dd></div>"; }).join("");
+        card.querySelector(".strong").textContent = "Every line, one at a time";
+        card.querySelector(".weak").textContent = "Being surrounded";
+        var ab0 = card.querySelector(".ability"); ab0.hidden = false; ab0.innerHTML = "<b>" + hd.ability.name + ":</b> " + hd.ability.text;
+        return;
+      }
+      var def = line === "special" ? sp : LINES[line], st = unitStats(n, line, state.age);
       card.querySelector(".eyebrow").textContent = (line === "special" ? "Special · " + sp.label : def.label) + " · " + def.from;
       card.querySelector(".fp").textContent = st.pop > 1 ? st.pop + " population" : "1 population";
-      card.querySelector("h2").textContent = r[line][0][0];
-      card.querySelector(".desc").textContent = r[line][0][1];
+      card.querySelector("h2").textContent = r[line][ai][0];
+      card.querySelector(".desc").textContent = r[line][ai][1];
       card.querySelector(".role").textContent = def.role;
       var rows = [["HP", st.hp], ["Attack", st.attack + " " + def.attackType], ["Range", st.range < 1.2 ? "Melee" : st.range + " tiles"], ["Speed", speedWord(st.speed) + " (" + st.speed + ")"], ["Sight", st.sight + " tiles"], ["Train", st.time + " s"], ["Cost", costText(st.cost), "wide"]];
       card.querySelector(".stats").innerHTML = rows.map(function (x) { return '<div' + (x[2] ? ' class="wide"' : "") + '><dt>' + x[0] + "</dt><dd>" + x[1] + "</dd></div>"; }).join("");
@@ -229,12 +250,13 @@ ${models}
     });
     document.querySelectorAll(".tab").forEach(function (t) { var on = t.dataset.n === n; t.setAttribute("aria-selected", on ? "true" : "false"); t.tabIndex = on ? 0 : -1; });
     // Age ladder for this nation.
-    document.getElementById("ladder-lead").textContent = "How " + NATION_INFO[n].team + "'s units transform. Each age brings a major new look and stronger stats; the Dark Age column is shown above.";
-    var head = "<tr><th>Line</th>" + AGES.map(function (a, i) { return '<th class="' + (i ? "" : "now") + '">' + AGE_NAMES[a] + "</th>"; }).join("") + "</tr>";
-    var rowsH = LINE_ORDER.map(function (l) { return "<tr><td>" + (l === "special" ? sp.label : LINES[l].label) + "</td>" + r[l].map(function (x, i) { return '<td class="' + (i ? "" : "now") + '">' + x[0] + "</td>"; }).join("") + "</tr>"; });
-    rowsH.push('<tr><td>Hero</td><td class="now na">—</td>' + r.hero.map(function (h) { return "<td>" + h + "</td>"; }).join("") + "</tr>");
-    rowsH.push('<tr><td>Creature</td><td class="now na">—</td><td>' + CREATURES[n] + "</td><td>Elder form</td><td>Celestial form</td></tr>");
-    rowsH.push('<tr><td>Siege</td><td class="now na">—</td><td class="na">—</td>' + r.siege.map(function (h) { return "<td>" + h + "</td>"; }).join("") + "</tr>");
+    var pi = AGES.indexOf(PAGE_AGE), now = function (i) { return i === pi ? "now" : ""; };
+    document.getElementById("ladder-lead").textContent = "How " + NATION_INFO[n].team + "'s units transform. Each age brings a major new look and stronger stats; the " + AGE_NAMES[PAGE_AGE] + " Age column is shown above.";
+    var head = "<tr><th>Line</th>" + AGES.map(function (a, i) { return '<th class="' + now(i) + '">' + AGE_NAMES[a] + "</th>"; }).join("") + "</tr>";
+    var rowsH = LADDER_LINES.map(function (l) { return "<tr><td>" + (l === "special" ? sp.label : LINES[l].label) + "</td>" + r[l].map(function (x, i) { return '<td class="' + now(i) + '">' + x[0] + "</td>"; }).join("") + "</tr>"; });
+    rowsH.push('<tr><td>Hero</td><td class="' + now(0) + ' na">—</td>' + r.hero.map(function (h, i) { return '<td class="' + now(i + 1) + '">' + h[0] + "</td>"; }).join("") + "</tr>");
+    rowsH.push('<tr><td>Creature</td><td class="' + now(0) + ' na">—</td><td class="' + now(1) + '">' + CREATURES[n] + '</td><td class="' + now(2) + '">Elder form</td><td class="' + now(3) + '">Celestial form</td></tr>');
+    rowsH.push('<tr><td>Siege</td><td class="' + now(0) + ' na">—</td><td class="' + now(1) + ' na">—</td>' + r.siege.map(function (h, i) { return '<td class="' + now(i + 2) + '">' + h + "</td>"; }).join("") + "</tr>");
     document.getElementById("ladder").innerHTML = "<thead>" + head + "</thead><tbody>" + rowsH.join("") + "</tbody>";
   }
 
@@ -253,13 +275,16 @@ ${models}
   var GLOW = new T3.MeshBasicMaterial({ vertexColors: true });
   var SIL = new T3.MeshBasicMaterial({ color: lin("#1b2028") });
   var cache = {};
-  function model(n, line) {
-    var key = n + ":" + line;
-    if (!cache[key]) { var k = unitKit(T3); DARK_UNITS[n][line](k); cache[key] = k.build(); }
+  function model(n, line, age) {
+    age = age || state.age;
+    var key = age + ":" + n + ":" + line, set = SETS[age] || DARK_UNITS;
+    if (!set[n][line]) return null;
+    if (!cache[key]) { var k = unitKit(T3); set[n][line](k); cache[key] = k.build(); }
     return cache[key];
   }
-  function unitGroup(n, line) {
-    var m = model(n, line), g = new T3.Group();
+  function unitGroup(n, line, age) {
+    var m = model(n, line, age), g = new T3.Group();
+    if (!m) return g;
     var a = new T3.Mesh(m.lit, MAT); a.castShadow = true; g.add(a);
     if (m.glow) g.add(new T3.Mesh(m.glow, GLOW));
     return g;
@@ -326,8 +351,8 @@ ${models}
   // In the game a phone held sideways shows 18 world units over about 390 screen points, so one
   // world unit is about 21.7 points. Drawn here at the same scale with the game's camera.
   function drawField() {
-    var PPU = 390 / 18, cols = 4, rows = 4, gap = 4.4, rowGap = 3.7;
-    var cssW = 560, cssH = 300, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var PPU = 390 / 18, cols = LINE_ORDER.length, rows = 4, gap = 4.4, rowGap = 3.7;
+    var cssW = cols > 4 ? 660 : 560, cssH = 300, dpr = Math.min(window.devicePixelRatio || 1, 2);
     var cv = document.getElementById("field-cv"), field = document.getElementById("field");
     cv.width = cssW * dpr; cv.height = cssH * dpr; cv.style.width = cssW + "px"; cv.style.height = cssH + "px";
     field.style.width = cssW + "px";
@@ -337,7 +362,7 @@ ${models}
     var all = new T3.Group();
     NATION_ORDER.forEach(function (n, r) {
       LINE_ORDER.forEach(function (l, c) {
-        var g = unitGroup(n, l);
+        var g = unitGroup(n, l, PAGE_AGE);
         g.position.copy(right.clone().multiplyScalar((c - (cols - 1) / 2 + 0.35) * gap)).add(down.clone().multiplyScalar((r - (rows - 1) / 2) * rowGap));
         g.rotation.y = 0.55; all.add(g);
       });
@@ -374,6 +399,14 @@ ${models}
       buildCards(); drawField();
     });
   });
+  // Compare with the Dark Age: the cards switch models, names and stats.
+  document.querySelectorAll("[data-age]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      state.age = b.dataset.age;
+      document.querySelectorAll("[data-age]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      fill(state.n); buildCards();
+    });
+  });
   var btn = document.getElementById("motion");
   function setPaused(p) { state.paused = p; btn.setAttribute("aria-pressed", p ? "true" : "false"); btn.textContent = p ? "Play turntable" : "Pause turntable"; }
   btn.addEventListener("click", function () { setPaused(!state.paused); });
@@ -387,5 +420,6 @@ ${models}
 }
 
 writeFileSync('docs/UNIT_ROSTER.md', roster());
-writeFileSync('docs/concepts/dark-age-units.html', page());
-console.log('Wrote docs/UNIT_ROSTER.md and docs/concepts/dark-age-units.html');
+writeFileSync('docs/concepts/dark-age-units.html', page('dark'));
+writeFileSync('docs/concepts/mythic-age-units.html', page('mythic'));
+console.log('Wrote docs/UNIT_ROSTER.md, docs/concepts/dark-age-units.html and docs/concepts/mythic-age-units.html');

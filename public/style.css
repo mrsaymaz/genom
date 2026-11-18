@@ -93,10 +93,7 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .scroll .prog svg { position: relative; width: 18px; height: 18px; color: var(--acc); }
 .scroll .n { font: 800 11px var(--text); color: var(--acc); font-variant-numeric: tabular-nums; }
 .scroll b { font: 600 15px/1.1 var(--display); white-space: nowrap; }
-.quest-body { width: 250px; padding: 9px 12px; border-radius: 14px; }
-.quest-body b { display: block; font: 600 15px/1.2 var(--display); color: var(--acc); }
-.quest-body p { margin: 3px 0 0; font-size: 13px; color: var(--ink2); }
-.quest.closed .quest-body, .quest.closed .scroll .n, .quest.closed .scroll b { display: none; }
+.quest.closed .scroll .n, .quest.closed .scroll b { display: none; }
 .quest.closed .scroll { padding-right: 6px; }
 .quest.pulse .scroll { animation: pulse 1.2s ease; }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(242, 192, 64, 0.8); } 100% { box-shadow: 0 0 0 14px rgba(242, 192, 64, 0); } }
@@ -177,10 +174,7 @@ body.installing #rotate { display: none !important; } /* the install guide is re
   .scroll .prog svg { width: 22px; height: 22px; }
   .scroll b { font-size: 18px; }
   .scroll .n { font-size: 13px; }
-  .quest-body { width: 300px; }
-  .quest-body b { font-size: 17px; }
-  .quest-body p { font-size: 15px; }
-  .bubble { max-width: 300px; }
+        .bubble { max-width: 300px; }
   .bubble .face, .bubble .face svg { width: 42px; height: 42px; }
   .bubble .say { font-size: 18px; }
   .bubble .speak { width: 36px; height: 36px; }
@@ -358,10 +352,7 @@ h2 { margin: 0; font: 600 13px var(--display); color: var(--ink2); text-transfor
   .scroll b { font-size: 13px; }
   .scroll .n { font-size: 10px; }
   .stamp { width: 26px; height: 26px; left: 6px; }
-  .quest-body { width: 210px; padding: 7px 10px; }
-  .quest-body b { font-size: 13px; }
-  .quest-body p { font-size: 11.5px; }
-  .bubble { max-width: 200px; gap: 6px; padding: 3px 4px 3px 3px; }
+        .bubble { max-width: 200px; gap: 6px; padding: 3px 4px 3px 3px; }
   .bubble .face, .bubble .face svg { width: 28px; height: 28px; }
   .bubble .say { font-size: 13px; }
   .bubble .speak { width: 26px; height: 26px; }

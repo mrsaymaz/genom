@@ -39,7 +39,7 @@ function trainGuide(g, type, unit) {
 
 export const STEPS = [
   {
-    title: 'Select a worker', short: 'Pick a worker', reward: { food: 20 }, hint: 'Tap one of your workers near the Town Center.',
+    title: 'Select a worker', short: 'Tap a worker', reward: { food: 20 }, hint: 'Tap one of your workers near the Town Center.',
     done: g => selWorkers(g).length > 0,
     guide: g => ({ at: workerFor(g), say: 'Tap a worker!', hint: 'Tap a worker. Workers carry a tool.' }),
   },
@@ -58,7 +58,7 @@ export const STEPS = [
     },
   },
   {
-    title: 'Train a worker', short: 'New worker', reward: { food: 30 }, hint: 'Tap your Town Center, then tap the Worker button that pops up on it.',
+    title: 'Train a worker', short: 'Train a worker', reward: { food: 30 }, hint: 'Tap your Town Center, then tap the Worker button that pops up on it.',
     done: g => g.world.teams[0].stats.trained > 0 || [...g.world.buildings(0)].some(b => b.queue.length),
     guide: g => trainGuide(g, 'towncenter', 'worker'),
   },
@@ -68,22 +68,22 @@ export const STEPS = [
     guide: g => { const h = mine(g, 'house'); return h && !h.built ? { at: h, say: 'They are building it. Wait!', hint: 'Your workers are building the House. Wait for them to finish.' } : buildGuide(g, 'house'); },
   },
   {
-    title: 'Build a Barracks', short: 'Barracks', reward: { gold: 30 }, hint: 'Barracks train soldiers. You need 150 lumber.',
+    title: 'Build a Barracks', short: 'Build Barracks', reward: { gold: 30 }, hint: 'Barracks train soldiers. You need 150 lumber.',
     done: g => has(g.world, 0, 'barracks'),
     guide: g => { const b = mine(g, 'barracks'); return b && !b.built ? { at: b, say: 'More workers build faster!', hint: 'The Barracks are going up. More workers build faster.' } : buildGuide(g, 'barracks'); },
   },
   {
-    title: 'Train three soldiers', short: '3 soldiers', reward: { food: 50, gold: 20 }, hint: 'Tap the Barracks, then tap a soldier button on it. Hold a button to queue five.',
+    title: 'Train three soldiers', short: 'Train 3 soldiers', reward: { food: 50, gold: 20 }, hint: 'Tap the Barracks, then tap a soldier button on it. Hold a button to queue five.',
     done: g => soldiers(g.world, 0) >= 3,
     guide: g => trainGuide(g, 'barracks', 'spearman'),
   },
   {
-    title: 'Hold off the first attack', short: 'Hold the base', reward: { lumber: 60, gold: 40 }, hint: 'The rival will attack. Keep soldiers near your base. If they come, ring the Town bell.',
+    title: 'Hold off the first attack', short: 'Stop the attack', reward: { lumber: 60, gold: 40 }, hint: 'The rival will attack. Keep soldiers near your base. If they come, ring the Town bell.',
     done: g => g.raided && g.calmFor >= 8,
     guide: g => ({ at: soldiers(g.world, 0) < 5 ? mine(g, 'barracks') : null, say: 'Train more soldiers!', hint: 'Train more soldiers while you wait. Keep your workers gathering.' }),
   },
   {
-    title: "Destroy the rival's Town Center", short: 'Win!', reward: null, hint: 'Gather an army, cross a ford and attack the rival Town Center across the river.',
+    title: "Destroy the rival's Town Center", short: 'Destroy their Town Center', reward: null, hint: 'Gather an army, cross a ford and attack the rival Town Center across the river.',
     done: g => g.world.winner === 0,
     guide: g => ({ at: [...g.world.buildings(1)].find(b => b.type === 'towncenter'), say: 'Attack their Town Center!', hint: 'Select your soldiers, tap Attack, then tap the rival Town Center.' }),
   },

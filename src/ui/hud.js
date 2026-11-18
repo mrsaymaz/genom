@@ -59,13 +59,13 @@ export class HUD {
     this.top.append(this.muteBtn, this.pauseBtn);
     this.paintMute();
 
-    // Goals: a quest scroll with a progress ring; tap to unroll the full goal.
+    // Goals: a progress ring that shows the goal in a few simple words, then folds back to the
+    // ring. Tap the ring to see the words again. (The guide's bubble says what to tap.)
     this.obj = h('div', 'quest closed');
     this.objHead = h('button', 'scroll frame');
-    this.objBody = h('div', 'quest-body frame');
     this.objHead.onclick = () => { this.obj.classList.toggle('closed'); this.objOpenT = this.obj.classList.contains('closed') ? 0 : 6; };
-    this.objHead.title = 'Your goal (tap to read it)';
-    this.obj.append(this.objHead, this.objBody);
+    this.objHead.title = 'Your goal (tap to see it)';
+    this.obj.append(this.objHead);
 
     // The guide's speech bubble, beside the pointer arrow on the map.
     this.bubble = h('div', 'bubble hidden', `<span class="face">${guideFace(art)}</span><span class="say"></span><button class="speak" type="button" title="Listen">${ICONS.sound}</button>`);
@@ -169,7 +169,6 @@ export class HUD {
     this.objKey = key;
     const p = step ? n / tut.total : 1;
     this.objHead.innerHTML = `<span class="prog" style="--p:${p}">${ICONS.scroll}</span><span class="n">${step ? `${n + 1}/${tut.total}` : `${tut.total}/${tut.total}`}</span><b>${step ? step.short : 'All done!'}</b>`;
-    this.objBody.innerHTML = step ? `<b>${step.title}</b><p>${step.hint}</p>` : '<b>All goals done!</b><p>Well played! Now win the match.</p>';
     this.obj.classList.remove('closed'); this.objOpenT = innerHeight < 430 ? 4 : 5; // then it folds back to the ring
     this.obj.classList.remove('pulse'); void this.obj.offsetWidth; this.obj.classList.add('pulse');
   }

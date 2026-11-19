@@ -562,7 +562,7 @@ export class HUD {
     const w = this.g.world, n = w.size, c = document.createElement('canvas');
     c.width = c.height = n;
     const x = c.getContext('2d'), img = x.createImageData(n, n);
-    const col = { [T.GRASS]: [118, 170, 76], [T.WATER]: [59, 143, 200], [T.FORD]: [150, 190, 200], [T.ROCK]: [130, 124, 114], [T.MOUNT]: [138, 128, 112], [T.SAND]: [226, 208, 152], [T.GARDEN]: [96, 160, 70], [T.DECOR]: [150, 140, 122], [T.PAVE]: [196, 186, 164] };
+    const col = { [T.GRASS]: [118, 170, 76], [T.WATER]: [59, 143, 200], [T.FORD]: [150, 190, 200], [T.ROCK]: [130, 124, 114], [T.MOUNT]: [138, 128, 112], [T.SAND]: [226, 208, 152], [T.GARDEN]: [96, 160, 70], [T.DECOR]: [150, 140, 122], [T.PAVE]: [196, 186, 164], [T.BRIDGE]: [176, 164, 140] };
     for (let i = 0; i < n * n; i++) { const c3 = col[w.map.terrain[i]] || col[T.GRASS]; img.data.set([...c3, 255], i * 4); }
     x.putImageData(img, 0, 0);
     return c;
@@ -574,6 +574,8 @@ export class HUD {
     for (const r of w.resources()) { x.fillStyle = r.kind === 'tree' ? '#2f5f2a' : r.kind === 'gold' ? '#f2c040' : '#c8304a'; x.fillRect(r.x * k, r.y * k, Math.max(1, r.w * k), Math.max(1, r.h * k)); }
     for (const b of w.buildings()) { x.fillStyle = w.teams[b.team].nation.color; x.fillRect(b.x * k, b.y * k, b.w * k, b.h * k); x.strokeStyle = '#0008'; x.lineWidth = 0.6; x.strokeRect(b.x * k, b.y * k, b.w * k, b.h * k); }
     for (const u of w.units()) { x.fillStyle = u.team === 0 ? '#fff' : w.teams[u.team].nation.color; x.fillRect(u.x * k - 1, u.y * k - 1, 2, 2); }
+    // The ancient wonders: diamonds in their owner's colour (pale when nobody holds them).
+    for (const o of w.wonders || []) { const c = o.owner === null ? '#fff4d0' : w.teams[o.owner].nation.color; x.save(); x.translate(o.x * k, o.y * k); x.rotate(Math.PI / 4); x.fillStyle = '#1a1206'; x.fillRect(-4, -4, 8, 8); x.fillStyle = c; x.fillRect(-3, -3, 6, 6); x.restore(); }
     // Wild creatures: dark paw marks, so students can see where not to wander.
     for (const e of w.ents.values()) if (e.cat === 'wild') { const s2 = e.kind === 'troll' || e.kind === 'bear' ? 3.5 : 2.5; x.fillStyle = '#3a1a0a'; x.beginPath(); x.arc(e.x * k, e.y * k, s2, 0, 7); x.fill(); x.fillStyle = '#ff9a40'; x.beginPath(); x.arc(e.x * k, e.y * k, s2 - 1, 0, 7); x.fill(); }
     for (const p of g.pings) { x.strokeStyle = `rgba(255,60,60,${p.t})`; x.lineWidth = 1.5; x.beginPath(); x.arc(p.x * k, p.y * k, 3 + (1 - p.t) * 8, 0, 7); x.stroke(); }

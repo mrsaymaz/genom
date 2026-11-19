@@ -7,7 +7,14 @@
 //   - a gold mine under the southern mountains, guarded by a cave bear;
 //   - the ruins of an old shrine with a hoard of gold, where a stone troll sleeps;
 //   - a walled garden with a fountain, where wounded units heal;
-//   - a circle of standing stones, an open site with gold, and two mines near the fords.
+//   - a circle of standing stones with a floating sky shard, an open site with gold, and two
+//     mines near the fords.
+// And the old world's leftovers: the river springs from waterfalls in the corner gorges, a
+// waterfall drops off the west wall into a hidden pool, old stone bridges span the outer fords
+// (no slowdown), the Twin Kings stand in the river by the middle ford, a dragon's skeleton lies in
+// the eastern meadow, a broken gate arches over the road, fairy rings (which heal, like the
+// garden) and glowing crystals dot the land. Two kinds of ancient wonder can be captured: the Sun
+// Obelisk (a trickle of gold) and the Moonwell (food, and it heals its owner's units).
 // The map is point-symmetric (the rival's half mirrors the player's), so neither side is ahead.
 import { rng } from './rng.js';
 import { T } from './map.js';
@@ -67,7 +74,7 @@ export function generateArena1(size = 96, seed = 11) {
   for (const [fx, fy] of fords) { mark(taken, fx - 2, fy - 2, 5, 5, 1); markCircle(soft, fx + 0.5, fy + 0.5, 5); }
 
   // ---- resources ----
-  const resources = [], decor = [], lairs = [];
+  const resources = [], decor = [], lairs = [], wonders = [];
   const free = (x0, y0, w, h, ok = [T.GRASS]) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) { if (!inside(x, y) || taken[idx(x, y)] || !ok.includes(terrain[idx(x, y)])) return false; } return true; };
   // A resource on the player's half and its mirror on the rival's.
   const place = (kind, x, y, w, h, amount, ok) => {
@@ -179,6 +186,61 @@ export function generateArena1(size = 96, seed = 11) {
   for (let i = 0; i < 7; i++) { const a = (i / 7) * Math.PI * 2; deco('stone', Math.floor(C[0] + Math.cos(a) * 3) + 0.5, Math.floor(C[1] + Math.sin(a) * 3) + 0.5, { solid: true, s: 0.9 + r() * 0.3, a: a + Math.PI / 2 }); }
   deco('altar', C[0], C[1], { solid: true, a: 0 });
 
+  // ---- the old world ----
+  // The river springs from waterfalls in the two corner gorges: the corner is solid rock.
+  for (let y = 0; y < 10; y++) for (let x = 0; x < 10; x++) if (x + y < 9.5) { set2(x, y, T.MOUNT); mark(taken, x, y, 1, 1); }
+  {
+    const t = 0.052, [fx, fy] = riverAt(t), [ax, ay] = riverAt(t + 0.01);
+    deco('falls', fx, fy, { a: Math.atan2(ay - fy, ax - fx), s: 1.15 });
+  }
+  // The Mistfall: a waterfall off the west wall into a hidden pool.
+  const P = [7.5, 57.5];
+  for (let y = 54; y < 62; y++) for (let x = 4; x < 12; x++) if (at(x, y) === T.GRASS && Math.hypot((x + 0.5 - P[0]) / 1.3, y + 0.5 - P[1]) <= 2) { set2(x, y, T.WATER); mark(taken, x, y, 1, 1); }
+  markCircle(soft, P[0], P[1], 2.6);
+  for (let y = 55; y < 61; y++) for (let x = 0; x < 4; x++) if (at(x, y) === T.GRASS) { set2(x, y, T.MOUNT); mark(taken, x, y, 1, 1); }
+  deco('falls', 4.1, P[1], { a: 0, s: 0.8 });
+  // Old stone bridges across the outer fords: the crossing there is as quick as dry land.
+  for (const ft of [0.15]) {
+    const [cx, cy] = riverAt(ft), [nx, ny] = riverAt(ft + 0.002), len = Math.hypot(nx - cx, ny - cy), ux = (nx - cx) / len, uy = (ny - cy) / len;
+    for (let y = Math.floor(cy) - 6; y <= cy + 6; y++) for (let x = Math.floor(cx) - 6; x <= cx + 6; x++) {
+      if (!inside(x, y) || (at(x, y) !== T.FORD && at(x, y) !== T.WATER)) continue;
+      const along = (x + 0.5 - cx) * ux + (y + 0.5 - cy) * uy, across = Math.abs((x + 0.5 - cx) * -uy + (y + 0.5 - cy) * ux);
+      if (Math.abs(along) <= 1.25 && across <= 3.2) set2(x, y, T.BRIDGE);
+    }
+    deco('bridge', cx, cy, { a: Math.atan2(ux, -uy), s: 1 });
+  }
+  // The Twin Kings: giant statues standing in the river on each side of the middle ford.
+  {
+    const [cx, cy] = riverAt(0.5), [nx, ny] = riverAt(0.502), d = Math.hypot(nx - cx, ny - cy), ux = (nx - cx) / d, uy = (ny - cy) / d;
+    deco('king', cx - ux * 7.2, cy - uy * 7.2, { a: Math.atan2(-uy, -ux), s: 1.3 });
+  }
+  // A dragon's skeleton in the eastern meadow: walk between its ribs, but not through its skull.
+  {
+    const D = [66.5, 79.5], a = -Math.PI / 4;
+    markCircle(soft, D[0], D[1], 5);
+    deco('dragon', D[0], D[1], { a, s: 1.25 });
+    for (const k of [4.0, 4.8]) { const x = D[0] + Math.cos(a) * k, y = D[1] + Math.sin(a) * k; deco('none', Math.floor(x) + 0.5, Math.floor(y) + 0.5, { solid: true }); }
+  }
+  // A broken gate of the old kings on the meadow beside the road to the middle ford, turned to
+  // face the camera so its arch reads from the usual view.
+  {
+    const gx = 22.5, gy = 69.5, dx = Math.SQRT1_2, dy = -Math.SQRT1_2;
+    markCircle(soft, gx, gy, 3.2);
+    deco('gate', gx, gy, { a: Math.atan2(dy, dx), s: 1 });
+    for (const sgn of [-1, 1]) deco('none', Math.floor(gx + dx * 2.4 * sgn) + 0.5, Math.floor(gy + dy * 2.4 * sgn) + 0.5, { solid: true });
+  }
+  // The sky shard floats over the standing stones' altar.
+  deco('shard', C[0], C[1], { a: 0, s: 1 });
+  // The capturable wonders. Each stands on 2x2 solid tiles with open ground around it.
+  const wonder = (kind, x, y) => {
+    markCircle(soft, x, y, 5);
+    for (let yy = y - 1; yy <= y; yy++) for (let xx = x - 1; xx <= x; xx++) { set2(xx, yy, T.DECOR); }
+    mark(taken, x - 1, y - 1, 2, 2, 2);
+    wonders.push({ kind, x, y }, { kind, x: S - x, y: S - y });
+  };
+  wonder('obelisk', 50, 61);
+  wonder('moonwell', 24, 77);
+
   // ---- mountains ----
   const blob = (cx, cy, rx, ry) => {
     for (let y = Math.floor(cy - ry - 2); y <= cy + ry + 2; y++) for (let x = Math.floor(cx - rx - 2); x <= cx + rx + 2; x++) {
@@ -198,6 +260,27 @@ export function generateArena1(size = 96, seed = 11) {
     blob(x, y, 1.8 + r() * 1.6, 1.8 + r() * 1.6); made++;
   }
 
+  // Glowing crystals at the foot of the mountains, and fairy rings on quiet meadows.
+  for (let i = 0, n = 0; i < 400 && n < 7; i++) {
+    const x = 2 + Math.floor(r() * (S - 4)), y = 2 + Math.floor(r() * (S - 4));
+    if (y - x < 6 || at(x, y) !== T.GRASS || taken[idx(x, y)] || soft[idx(x, y)]) continue;
+    if (![[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => at(x + dx, y + dy) === T.MOUNT)) continue;
+    if (deco('crystal', x + 0.5, y + 0.5, { solid: true, s: 0.8 + r() * 0.4 })) n++;
+  }
+  for (let i = 0, n = 0; i < 300 && n < 2; i++) {
+    const x = 3 + Math.floor(r() * (S - 6)), y = 3 + Math.floor(r() * (S - 6));
+    if (y - x < 10) continue;
+    let ok = true;
+    for (let yy = y - 1; yy <= y + 1 && ok; yy++) for (let xx = x - 1; xx <= x + 1; xx++) if (at(xx, yy) !== T.GRASS || taken[idx(xx, yy)] || soft[idx(xx, yy)]) { ok = false; break; }
+    if (!ok) continue;
+    const [mx2, my2] = mirror(x, y);
+    for (let yy = -1; yy <= 1; yy++) for (let xx = -1; xx <= 1; xx++) if (at(mx2 + xx, my2 + yy) !== T.GRASS) ok = false;
+    if (!ok) continue;
+    for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) set2(xx, yy, T.GARDEN);
+    mark(taken, x - 1, y - 1, 3, 3); markCircle(soft, x + 0.5, y + 0.5, 2.5);
+    deco('ring', x + 0.5, y + 0.5, { s: 1 }); n++;
+  }
+
   // ---- forests and rocks ----
   for (const [x, y, rad, n] of [[2, 78, 3.5, 26], [20, 91, 3.4, 24], [29, 59, 3.5, 22], [3, 41, 3, 18], [52, 57, 3, 18], [72, 91, 4, 28], [84, 93, 3, 18], [26, 30, 3, 16], [44, 64, 2.6, 12]]) grove(x, y, rad, n, true);
   for (let g = 0; g < Math.round(12 * k * k); g++) { const cx = 2 + r() * (S - 4), cy = 2 + r() * (S - 4); if (cy - cx > 8) grove(cx, cy, 2.2 + r() * 2.2, 9 + Math.floor(r() * 10), true); }
@@ -210,5 +293,5 @@ export function generateArena1(size = 96, seed = 11) {
   }
   symmetrize();
 
-  return { size: S, terrain, bases, resources, fords, decor, lairs, name: 'Wildmere Valley' };
+  return { size: S, terrain, bases, resources, fords, decor, lairs, wonders, name: 'Wildmere Valley' };
 }

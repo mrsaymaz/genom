@@ -42,12 +42,12 @@ export function buildTerrain(world) {
   for (let i = 0; i < pos.count; i++) {
     const cx = Math.round(pos.getX(i) / TILE + size / 2), cy = Math.round(pos.getZ(i) / TILE + size / 2);
     let water = 0, fords = 0;
-    for (const [dx, dy] of [[-1, -1], [0, -1], [-1, 0], [0, 0]]) { const t = at(cx + dx, cy + dy); if (t === T.WATER) water++; if (t === T.FORD) fords++; }
+    for (const [dx, dy] of [[-1, -1], [0, -1], [-1, 0], [0, 0]]) { const t = at(cx + dx, cy + dy); if (t === T.WATER || t === T.BRIDGE) water++; if (t === T.FORD) fords++; }
     let h = 0, col = grassA.clone();
     if (water + fords >= 1) { h = water >= 2 ? -0.45 : -0.18; col = water ? bed.clone() : ford.clone(); }
     else {
       let near = false, lawn = 0, foot = 0;
-      for (let dy = -2; dy <= 1; dy++) for (let dx = -2; dx <= 1; dx++) { const t = at(cx + dx, cy + dy); if (t === T.WATER || t === T.FORD) near = true; }
+      for (let dy = -2; dy <= 1; dy++) for (let dx = -2; dx <= 1; dx++) { const t = at(cx + dx, cy + dy); if (t === T.WATER || t === T.FORD || t === T.BRIDGE) near = true; }
       for (const [dx, dy] of [[-1, -1], [0, -1], [-1, 0], [0, 0]]) { const t = at(cx + dx, cy + dy); if (t === T.GARDEN) lawn++; if (t === T.MOUNT) foot++; }
       if (near) col.lerp(sand, 0.45);
       if (lawn) col.lerp(lin('#7fd060'), 0.3 * lawn / 4).offsetHSL(0, 0.05, -0.04 * lawn / 4);

@@ -11,6 +11,7 @@ import { HUD } from './ui/hud.js';
 import { ICONS, EMBLEMS } from './ui/icons.js';
 import { Tutorial, ARENA_STEPS } from './tutorial.js';
 import { WILD, WILD_INFO } from './sim/wild.js';
+import { WONDERS } from './sim/wonders.js';
 import { Audio } from './audio.js';
 import { installGate } from './ui/install.js';
 import { Ascension, prepareArts } from './ageup.js';
@@ -267,6 +268,14 @@ class Game {
           this.hud.toast(what, 'good'); audio.sfx('fanfare', 0.5); audio.speak('Well done!', true);
           const [x, z] = v.toWorld(ev.x, ev.y); v.magic.emit(w.teams[0].nation.art, x, z, { n: 40, radius: 1.5, speed: 1.4, life: 1.4, size: 1.1, shape: 'star' });
         } else this.hud.toast('The rival cleared a wild lair.', 'bad');
+      } else if (ev.type === 'wonderTaken' || ev.type === 'wonderLost' || ev.type === 'wonderUnder') {
+        const D = WONDERS[ev.kind], [x, z] = v.toWorld(ev.x, ev.y);
+        if (ev.type === 'wonderTaken') {
+          v.magic.emit(w.teams[ev.team].nation.art, x, z, { n: 50, radius: 1.6, speed: 1.6, life: 1.6, size: 1.2, shape: 'star' });
+          if (ev.team === 0) { this.hud.toast(`You captured the ${D.name}! ${ev.kind === 'obelisk' ? 'It gives you gold.' : 'It gives you food and heals your units.'}`, 'good'); audio.sfx('fanfare', 0.5); audio.speak(`We have the ${D.name}!`, true); }
+          else this.hud.toast(`The rival captured the ${D.name}.`, 'bad');
+        } else if (ev.type === 'wonderLost' && ev.team === 0) this.hud.toast(`You lost the ${D.name}!`, 'bad');
+        else if (ev.type === 'wonderUnder' && ev.team === 0) this.hud.alert(`The rival is taking your ${D.name}!`, [{ label: 'Go there', icon: ICONS.army, act: () => this.view.centerOn(ev.x, ev.y) }], 'bad', 10);
       } else if (ev.type === 'fled' && ev.team === 0) {
         if (this.world.time - (this.fledT || -99) > 15) { this.fledT = this.world.time; this.hud.toast(`Your worker ran from a ${WILD[ev.kind].name.toLowerCase()}! Send soldiers to clear the lair.`, 'bad'); }
       } else if (ev.type === 'smash') {
@@ -478,6 +487,9 @@ class Game {
     }
     const mine = this.sel.map(id => w.get(id)).filter(e => e && e.team === 0 && e.cat === 'unit');
     // A wild creature, with nothing selected: say what it is (it cannot be selected).
+    // A wonder, with nothing selected: say what it is and who holds it.
+    const wonder = !target && tile && (w.wonders || []).find(o => Math.hypot(o.x - tile[0], o.y - tile[1]) < 1.8);
+    if (wonder && !mine.length) { const D = WONDERS[wonder.kind]; this.hud.toast(`${D.name}${wonder.owner === null ? '' : wonder.owner === 0 ? ' (yours)' : ' (the rival holds it)'}: ${D.info}`); audio.sfx('select'); return; }
     if (target?.cat === 'wild' && !mine.length) { this.hud.toast(`${WILD[target.kind].name}: ${WILD_INFO[target.kind]}`, 'bad'); audio.sfx('roar', 0.25); return; }
     if (target && target.team === 0) {
       // Workers tapping their own unfinished building or a farm get to work instead of selecting it.

@@ -112,3 +112,41 @@ test('two rivals play 20 minutes of Arena 1: both reach the Mythic Age and clear
   assert.ok(w.winner !== null || w.teams.every(t => t.age === 'mythic'), 'both reached the Mythic Age');
   assert.ok(ev.length >= 2, `lairs cleared: ${ev.length}`);
 });
+
+test('soldiers capture a wonder, it pays its owner, and enemies can take it back', () => {
+  const w = arena(), tc = [...w.buildings(0)][0], o = w.wonders.find(x => x.kind === 'obelisk' && x.y > x.x);
+  assert.equal(w.wonders.length, 4);
+  // Workers alone do not capture.
+  const wk = w.spawnUnit(0, 'worker', tc); wk.x = wk.px = o.x + 1.5; wk.y = wk.py = o.y + 0.5; w.orderHold([wk.id]);
+  run(w, 5);
+  assert.equal(o.owner, null);
+  const mine = [];
+  for (let i = 0; i < 3; i++) { const s = w.spawnUnit(0, 'spearman', tc); s.x = s.px = o.x + 1.5 + i * 0.4; s.y = s.py = o.y + 1.5; w.orderHold([s.id]); mine.push(s); }
+  w.recount();
+  run(w, 7);
+  assert.equal(o.owner, 0, 'captured');
+  const gold = w.teams[0].res.gold;
+  run(w, 10);
+  assert.ok(w.teams[0].res.gold - gold > 3, 'it pays gold');
+  // The rival's soldiers take it back once ours are gone.
+  for (const s of mine) w.remove(s);
+  const foe = []; const rtc = [...w.buildings(1)][0];
+  for (let i = 0; i < 3; i++) { const s = w.spawnUnit(1, 'spearman', rtc); s.x = s.px = o.x - 1.5 - i * 0.4; s.y = s.py = o.y - 1.5; w.orderHold([s.id]); foe.push(s); }
+  w.recount();
+  const ev = [];
+  for (let i = 0; i < 20 * 16; i++) { w.step(0.05); ev.push(...w.drainEvents()); }
+  assert.ok(ev.some(e => e.type === 'wonderUnder' && e.team === 0), 'the owner was warned');
+  assert.ok(ev.some(e => e.type === 'wonderLost' && e.team === 0));
+  assert.equal(o.owner, 1);
+});
+
+test('the Moonwell heals its owner and the old bridges cross at full speed', () => {
+  const w = arena(), tc = [...w.buildings(0)][0], o = w.wonders.find(x => x.kind === 'moonwell' && x.y > x.x);
+  o.owner = 0; o.p = 1;
+  const s = w.spawnUnit(0, 'archer', tc); s.x = s.px = o.x + 2; s.y = s.py = o.y; s.hp = 5; w.orderHold([s.id]);
+  run(w, 4);
+  assert.ok(s.hp > 10, `healed to ${s.hp}`);
+  const n = w.size; let bridges = 0;
+  for (let i = 0; i < n * n; i++) if (w.map.terrain[i] === T.BRIDGE) { bridges++; assert.ok(!w.blocked(i % n, Math.floor(i / n))); }
+  assert.ok(bridges >= 8, `bridge tiles ${bridges}`);
+});

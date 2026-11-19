@@ -7,6 +7,7 @@ import { UnitMeshes } from './units.js';
 import { Effects } from './effects.js';
 import { buildDecor } from './decor.js';
 import { Wildlife } from './wild.js';
+import { Landmarks } from './landmarks.js';
 
 const DIR = new THREE.Vector3(1, 0.816, 1).normalize();
 const lin = c => new THREE.Color(c).convertSRGBToLinear();
@@ -38,6 +39,7 @@ export class View {
     this.res = new Resources(world, this.scene);
     this.scene.add(buildDecor(world));
     this.wild = new Wildlife(world, this.scene, (x, y) => this.toWorld(x, y));
+    this.landmarks = new Landmarks(world, this.scene);
     this.units = new UnitMeshes(this.scene, world.teams);
     this.magic = new Effects(this.scene);
     this.unitLook = null; // during an age-up: which units still wear their old form
@@ -270,6 +272,7 @@ export class View {
     }
     this.units.update(this.world, alpha, time, (x, y) => this.toWorld(x, y), this.unitLook);
     this.wild.update(alpha, time, dt, this.cam);
+    this.landmarks.update(time);
     this.magic.update(dt);
     this.units.rings(rings);
     this.fx = this.fx.filter(e => {

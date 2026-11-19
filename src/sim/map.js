@@ -5,10 +5,10 @@
 // The map is point-symmetric, so neither base has an advantage.
 import { rng } from './rng.js';
 
-// Terrain. Walkable: grass, fords, sand, garden lawns and old paving. Blocked: water, rocks,
+// Terrain. Walkable: grass, fords, sand, garden lawns, old paving and stone bridges (no slowdown). Blocked: water, rocks,
 // mountains and decor tiles (standing stones, pillars, hedges, fountains, dens). Only grass can be
 // built on.
-export const T = { GRASS: 0, WATER: 1, FORD: 2, ROCK: 3, MOUNT: 4, SAND: 5, GARDEN: 6, DECOR: 7, PAVE: 8 };
+export const T = { GRASS: 0, WATER: 1, FORD: 2, ROCK: 3, MOUNT: 4, SAND: 5, GARDEN: 6, DECOR: 7, PAVE: 8, BRIDGE: 9 };
 export const SOLID = new Set([T.WATER, T.ROCK, T.MOUNT, T.DECOR]);
 
 export function generateMap(size, seed) {
@@ -108,5 +108,5 @@ export function generateMap(size, seed) {
   // Mirror rocks exactly (the loop above can leave a mismatch when the random skip differs).
   for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (terrain[idx(x, y)] === T.ROCK) { const [x2, y2] = mirror(x, y); terrain[idx(x2, y2)] = T.ROCK; }
 
-  return { size, terrain, bases, resources, fords, decor: [], lairs: [], name: 'Sunmeadow Vale' };
+  return { size, terrain, bases, resources, fords, decor: [], lairs: [], wonders: [], name: 'Sunmeadow Vale' };
 }

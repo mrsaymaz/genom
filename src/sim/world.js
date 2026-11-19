@@ -4,6 +4,7 @@ import { CONFIG } from '../config.js';
 import { generateMap, T, SOLID } from './map.js';
 import { generateArena1 } from './arena1.js';
 import { spawnWild, updateWild, hurtWild, dangerZones } from './wild.js';
+import { initWonders, updateWonders } from './wonders.js';
 import { findPath } from './path.js';
 import { unitDefs, roleOf, COUNTER, BLD_DAMAGE, ELEMENT_BEATS } from './units.js';
 import { techsFor, LEVEL_COST, LEVEL_TIME } from '../data/tech.js';
@@ -51,6 +52,7 @@ export class World {
       for (let k = 0; k < CONFIG.start.workers; k++) this.spawnUnit(i, 'worker', tc);
     });
     spawnWild(this);
+    initWonders(this);
     this.recount();
   }
 
@@ -430,7 +432,7 @@ export class World {
       v: 1, mapId: this.mapId, seed: this.seed, size: this.size, pace: this.pace, time: this.time, nextId: this.nextId, winner: this.winner,
       language: this.language,
       teams: this.teams.map(t => ({ key: t.key, res: t.res, stats: t.stats, bell: !!t.bell, age: t.age, tech: t.tech, goldLocked: t.goldLocked, drilled: t.drilled, fed: t.fed, ward: t.ward })),
-      ents: [...this.ents.values()], shots: this.shots, burns: this.burns,
+      ents: [...this.ents.values()], shots: this.shots, burns: this.burns, wonders: this.wonders,
     };
   }
   static load(data) {
@@ -439,6 +441,7 @@ export class World {
     w.ents = new Map(); w.occ.fill(0);
     for (const e of data.ents) { w.ents.set(e.id, e); if (e.cat !== 'unit' && e.cat !== 'wild') w.mark(e, e.id); }
     Object.assign(w, { time: data.time, nextId: data.nextId, winner: data.winner, events: [], shots: data.shots || [], burns: data.burns || [], language: !!data.language });
+    if (data.wonders) w.wonders = data.wonders;
     data.teams.forEach((t, i) => { Object.assign(w.teams[i], { res: t.res, stats: t.stats, bell: t.bell, age: t.age || 'dark' }); w.teams[i].tech = t.tech || {}; Object.assign(w.teams[i], { goldLocked: t.goldLocked, drilled: t.drilled, fed: t.fed, ward: t.ward }); w.teams[i].units = w.withTech(i, unitDefs(w.teams[i].nation.art, w.teams[i].age)); });
     for (const t of w.teams) t.pop = 0;
     for (const u of w.allUnits()) w.teams[u.team].pop += w.def(u.team, u.type).pop;
@@ -606,6 +609,7 @@ export class World {
     for (const u of [...this.units()]) { u.px = u.x; u.py = u.y; this.updateUnit(u, dt, builders); }
     this.separate();
     updateWild(this, dt);
+    updateWonders(this, dt);
     this.zones = dangerZones(this);
     for (const b of [...this.buildings()]) this.updateBuilding(b, dt);
     this.updateShots(dt);

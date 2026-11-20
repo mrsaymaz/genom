@@ -140,6 +140,9 @@ export class Audio {
       ready: () => [880, 1320].forEach((f, i) => this.tone({ f, type: 'sine', t: 0.25, v: 0.08, delay: i * 0.07 })),
       // Siege engines: a deep launch thump, and a boom where the shot lands.
       launch: () => { this.tone({ f: 90, f2: 50, type: 'triangle', t: 0.3, v: 0.3 }); this.noise({ t: 0.25, v: 0.25, f: 400, q: 0.7, type: 'lowpass' }); },
+      // Superweapons: a thunderclap with a rolling tail, and the deep rumble of the ground.
+      thunder: () => { this.noise({ t: 0.12, v: 0.5, f: 2200, q: 0.5, type: 'highpass' }); this.noise({ t: 1.4, v: 0.4, f: 180, q: 0.5, type: 'lowpass', delay: 0.05 }); this.tone({ f: 55, f2: 35, type: 'sine', t: 1.2, v: 0.25, delay: 0.05 }); },
+      rumble: () => { this.noise({ t: 1.8, v: 0.45, f: 90, q: 0.4, type: 'lowpass' }); this.tone({ f: 42, f2: 30, type: 'sawtooth', t: 1.6, v: 0.08, attack: 0.2 }); },
       boom: () => { this.noise({ t: 0.7, v: 0.4, f: 220, q: 0.6, type: 'lowpass' }); this.tone({ f: 70, f2: 40, type: 'sine', t: 0.5, v: 0.35 }); },
       // The last age: a higher, longer crown of bells over the ascension.
       crown: () => { [1047, 1319, 1568, 2093, 2637, 3136].forEach((f, i) => this.tone({ f, type: 'sine', t: 1.6, v: 0.06, delay: i * 0.11 })); [523.3, 659.3, 784, 1047].forEach(f => this.tone({ f, type: 'triangle', t: 3.6, v: 0.08, delay: 0.7 })); },

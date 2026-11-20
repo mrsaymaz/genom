@@ -272,7 +272,7 @@ class Game {
         } else this.hud.toast('The rival cleared a wild lair.', 'bad');
       } else if (ev.type === 'superReady' || ev.type === 'superSoon' || ev.type === 'superFire' || ev.type === 'superBurst' || ev.type === 'superShock') {
         const S = SUPER[w.teams[ev.team].nation.art];
-        if (ev.type === 'superFire') v.supers.fired(ev);
+        if (ev.type === 'superFire') { v.supers.sound = (n, vol) => audio.sfx(n, vol); v.supers.fired(ev); }
         if (ev.type === 'superBurst') { v.supers.burst(ev); audio.sfx('boom', 0.8); }
         if (ev.type === 'superShock') { v.supers.shock(ev); audio.sfx('boom', 0.4); }
         if (ev.type === 'superReady' && ev.team === 0) { this.hud.toast(`Your ${S.wonder} is ready: tap it to unleash the ${S.name}!`, 'good'); audio.sfx('crown', 0.6); audio.speak(`The ${S.name} is ready!`, true); }
@@ -364,7 +364,8 @@ class Game {
     if (this.lang && w.language) {
       const st = incantation(this, W, `${S.name}: the incantation`, strike);
       const close = st.close.bind(st);
-      st.close = done => { close(done); if (!done && this.superAim) { this.cancelSuper(); this.hud.toast('The strike is called off. The Wonder stays charged.'); } };
+      const at = a.at;
+      st.close = done => { close(done); if (done) this.view.centerOn(at[0], at[1]); else if (this.superAim) { this.cancelSuper(); this.hud.toast('The strike is called off. The Wonder stays charged.'); } };
       st.open();
     } else strike();
   }

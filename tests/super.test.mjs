@@ -87,3 +87,38 @@ test('the rival raises its Wonder in the Celestial Age and fires it at an army',
   for (let i = 0; i < 40; i++) { ai.update(0.05); w.step(0.05); ev.push(...w.drainEvents()); }
   assert.ok(ev.some(e => e.type === 'superFire' && e.team === 1), 'it fired');
 });
+
+test('a perfect incantation widens the circle by a tile', () => {
+  const w = celestial(['gryffindor', 'slytherin']), W = wonder(w, 0); W.charge = 1;
+  const [cx, cy] = w.center(W);
+  assert.ok(w.fireSuper(W.id, cx + 12, cy - 10, { perfect: true }));
+  assert.equal(w.supers[0].r, 7);
+  const v = celestial(['gryffindor', 'slytherin']), V = wonder(v, 0); V.charge = 1;
+  assert.ok(v.fireSuper(V.id, cx + 12, cy - 10));
+  assert.equal(v.supers[0].r, 6);
+});
+
+test('feeding a charging Wonder saves 20 s, three times per charge', () => {
+  const w = celestial(['hufflepuff', 'ravenclaw']), W = wonder(w, 0);
+  run(w, 10);
+  const c = W.charge;
+  for (let i = 0; i < 3; i++) assert.ok(w.feedWonder(W.id));
+  assert.equal(w.feedWonder(W.id), false, 'only three per charge');
+  assert.ok(Math.abs(W.charge - c - 60 / CHARGE) < 1e-9);
+  W.charge = 1; assert.ok(w.fireSuper(W.id, 40, 40));
+  assert.ok(w.feedWonder(W.id), 'feeding starts again after a strike');
+});
+
+test('a raised ward halves the strike on the Town Center, then is spent', () => {
+  const hits = shield => {
+    const w = celestial(['hufflepuff', 'gryffindor']), W = wonder(w, 1); W.charge = 1;
+    const tc = [...w.buildings(0)].find(b => b.type === 'towncenter'), [x, y] = w.center(tc);
+    if (shield) assert.ok(w.raiseShield(0));
+    const hp = tc.hp; w.fireSuper(W.id, x, y); run(w, 14);
+    return { lost: hp - tc.hp, max: tc.maxHp, after: w.teams[0].shield };
+  };
+  const bare = hits(false), warded = hits(true);
+  assert.ok(warded.lost < bare.lost * 0.6, `warded ${Math.round(warded.lost)} vs ${Math.round(bare.lost)}`);
+  assert.ok(warded.lost <= warded.max * 0.33);
+  assert.equal(warded.after, false, 'the ward is spent');
+});

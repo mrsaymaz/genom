@@ -160,10 +160,10 @@ export class HUD {
       this.jobKey = key;
       this.rail.innerHTML = ''; this.tickets.innerHTML = '';
       for (const j of list) {
-        const chip = h('button', 'job frame', `<span class="bolt">${ICONS.instant}</span>${j.icon}<b>${j.label}</b>`); chip.dataset.jobChip = j.id;
+        const chip = h('button', `job frame${j.optional ? ' opt' : ''}`, `<span class="bolt">${ICONS.instant}</span>${j.icon}<b>${j.label}</b>`); chip.dataset.jobChip = j.id;
         chip.onclick = () => { const [cx, cy] = g.world.center(j.at); g.view.centerOn(cx, cy); g.openJob(j.id); };
         this.rail.append(chip);
-        const t = h('button', 'ticket', `${ICONS.instant}<span>${j.label}</span>`); t.dataset.job = j.id;
+        const t = h('button', `ticket${j.optional ? ' opt' : ''}`, `${ICONS.instant}<span>${j.label}</span>`); t.dataset.job = j.id;
         t.onclick = e => { e.stopPropagation(); g.openJob(j.id); };
         this.tickets.append(t);
       }
@@ -237,6 +237,7 @@ export class HUD {
       const time = left <= 0 ? 'Ready!' : `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
       rows.push(`<div class="sw ${b.team ? 'foe' : 'mine'}${left <= 0 ? ' ready' : ''}" style="--tc:${w.teams[b.team].nation.color}">${ICONS[`sw-${S.kind}`]}<span>${b.team ? "Rival's " : ''}${S.name}</span><b>${time}</b></div>`);
     }
+    if (w.teams[0].shield) rows.push(`<div class="sw mine ward" style="--tc:#ffd86a">${ICONS.wonder}<span>Ward up</span><b>½</b></div>`);
     const key = rows.join('');
     if (key !== this.superKey) { this.superKey = key; this.supersEl.innerHTML = key; }
   }

@@ -8,6 +8,8 @@
 import * as THREE from 'three';
 import { ICONS } from '../ui/icons.js';
 import { Station, STONES, TILES, SOLDIERS, FOOD, BANNERS, claimPost } from './station.js';
+import { ritual, VERSES } from './rituals.js';
+import { SUPER, canFeed, FEED, FEED_MAX, CHARGE } from '../sim/superweapon.js';
 
 // The jobs waiting for an English task: { id, label, say, icon, at (entity) }.
 export function jobs(g) {
@@ -25,6 +27,12 @@ export function jobs(g) {
   for (const b of w.buildings(0)) if (b.sealed) out.push({ id: 'drill', label: 'Foundation', say: 'Lay the foundation: tap the Barracks!', icon: ICONS.barracks, at: b });
   if (tc?.ageUp?.ceremony) out.push({ id: 'ceremony', label: 'Age Ceremony', say: 'Start the Age Ceremony!', icon: ICONS.age, at: tc });
   for (const b of w.buildings(0)) if (b.queue[0]?.feed) out.push({ id: 'feed', label: 'Feed it', say: 'Your creature is hungry: feed it!', icon: ICONS.creature, at: b });
+  // The Wonder (Celestial Age): while it charges, each answer saves time (optional).
+  const W = [...w.buildings(0)].find(b => b.type === 'wonder');
+  if (W && canFeed(w, W)) out.push({ id: 'charge', optional: true, label: `Charge −${FEED} s`, say: `Answer to charge your Wonder faster (${FEED_MAX - (W.fed || 0)} left)!`, icon: ICONS.wonder, at: W });
+  // The rival's Wonder is nearly ready: raise the ward over the Town Center.
+  const RW = [...w.buildings(1)].find(b => b.type === 'wonder' && b.built);
+  if (RW && (RW.charge || 0) >= 1 - 60 / CHARGE && !w.teams[0].shield && tc) out.push({ id: 'shield', label: 'Raise the ward', say: `The rival's ${SUPER[w.teams[1].nation.art].name} is coming: raise the ward!`, icon: ICONS.wonder, at: tc });
   if (w.teams[1].ward) {
     const rtc = [...w.buildings(1)].find(b => b.type === 'towncenter');
     if (rtc) {
@@ -38,12 +46,18 @@ export function jobs(g) {
 // Word stones for choices and letter tiles for spelling, in one station.
 const MIXED = { prop: (st, it, word, j) => (it.kind === 'spell' ? TILES : STONES).prop(st, it, word, j), correct: (st, p, k) => (st.it.kind === 'spell' ? TILES : STONES).correct(st, p, k), update: STONES.update };
 
-// The Wonder's incantation: before the superweapon strikes, the student speaks the spell (a clue
-// and a spelling, at the Wonder). Fresh items every time; stepping out calls the strike off.
+// The Wonder's incantation: before the superweapon strikes, the student speaks three verses at
+// the Wonder, staged in the nation's own way (src/lang/rituals.js): name the power (a clue), speak
+// the spell (a sentence of four to six blocks) and answer the Wonder (a reply). Fresh items every
+// time; stepping out calls the strike off. All three right first time is a perfect incantation,
+// which makes the strike stronger. onDone(perfect).
 export function incantation(g, wonder, title, onDone) {
-  const L = g.lang, [x, y] = g.world.center(wonder);
-  return new Station(g, { job: 'incant', start: 0, focus: [x, y], title, items: [L.clue(), L.spell()], scene: MIXED, ahead: 3.6,
-    sub: i => `${title} · Word ${i + 1} of 2`, cheer: 'The spell is spoken!', done: onDone });
+  const L = g.lang, [x, y] = g.world.center(wonder), R = ritual(g);
+  const items = [L.clue(), L.sentence(4, 6), L.reply()];
+  items.forEach((it, i) => { it.ask = VERSES[i].ask; });
+  return new Station(g, { job: 'incant', start: 0, focus: [x, y], title, items, scene: R.scene, setup: R.setup, verse: R.verse, ahead: 5, zoom: 16,
+    sub: i => `${title} · Verse ${i + 1} of 3: ${VERSES[i].name}`,
+    cheer: 'The spell is spoken!', done: (game, st) => onDone((st.results || []).length === 3 && st.results.every(Boolean)) });
 }
 
 // The station for a job. Items are chosen once per job, so stepping out and back in keeps them.
@@ -84,6 +98,17 @@ export function stationFor(g, job) {
         st.group.add(pole, flag);
       },
       done: () => w.battleCry(0) });
+  }
+  if (job.id === 'charge') {
+    // One answer at the Wonder: a word, a clue or a spelling, in turn.
+    const R = ritual(g, { verses: 1 }), n = job.at.fed || 0;
+    return new Station(g, { ...base, start: 0, title: 'Feed the Wonder', items: [[L.match, L.clue, L.spell][n % 3].call(L)], scene: R.scene, setup: R.setup, verse: R.verse, ahead: 5, zoom: 16,
+      cheer: `The Wonder charges ${FEED} seconds faster!`, done: () => { delete keep.charge; w.feedWonder(job.at.id); } });
+  }
+  if (job.id === 'shield') {
+    // Two answers at the Town Center: word crystals fly up and weave the ward.
+    return new Station(g, { ...base, title: 'Raise the ward', items: items(() => [L.match(), L.reply()]), scene: STONES, ahead: 3.4,
+      sub: i => `Raise the ward · ${i + 1} of 2`, cheer: 'The ward is up! The next strike on your Town Center does half damage.', done: () => { delete keep.shield; w.raiseShield(0); } });
   }
   return null;
 }

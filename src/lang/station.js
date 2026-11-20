@@ -11,7 +11,7 @@ import { ELEMENTS } from '../render/effects.js';
 
 const lin = c => new THREE.Color(c).convertSRGBToLinear();
 const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
-const RIGHT = new THREE.Vector3(1, 0, -1).normalize(), TOWARD = new THREE.Vector3(1, 0, 1).normalize();
+export const RIGHT = new THREE.Vector3(1, 0, -1).normalize(), TOWARD = new THREE.Vector3(1, 0, 1).normalize();
 const ease = t => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
@@ -34,7 +34,7 @@ export class Station {
     const [fx, fz] = v.toWorld(...this.spec.focus);
     this.focus = new THREE.Vector3(fx, 0, fz);
     // Frame the place a little above the middle of the screen, leaving room for the props below.
-    this.zoom = Math.max(11, Math.min(14, v.zoom));
+    this.zoom = this.spec.zoom || Math.max(11, Math.min(14, v.zoom));
     const up = this.zoom * 0.12;
     this.cam1 = { x: fx + TOWARD.x * up, z: fz + TOWARD.z * up };
     this.group = new THREE.Group(); v.scene.add(this.group);
@@ -146,6 +146,7 @@ export class Station {
     this.g.lang.record(this.it, firstTry);
     (this.results ||= [])[this.i] = firstTry;
     this.paintPips();
+    this.spec.verse?.(this, this.i, firstTry);
     if (firstTry) this.say(['Great!', 'Well done!', 'Perfect!', 'Brilliant!'][Math.floor(Math.random() * 4)], true);
     setTimeout(() => this.g.audio?.speak(this.it.say, true), 250);
     setTimeout(() => {

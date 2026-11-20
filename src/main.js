@@ -174,6 +174,7 @@ class Game {
     }
     this.watchFps(dt);
     this.wardFx(dt);
+    this.shieldFx(dt);
     for (const b of this.world.buildings()) if (!b.built) this.view.syncBuilding(b);
     this.pings = this.pings.filter(p => (p.t -= dt / 3) > 0);
     this.sel = this.sel.filter(id => { const e = this.world.get(id); return e && !e.inside; });
@@ -277,12 +278,18 @@ class Game {
         if (ev.type === 'superShock') { v.supers.shock(ev); audio.sfx('boom', 0.4); }
         if (ev.type === 'superReady' && ev.team === 0) { this.hud.toast(`Your ${S.wonder} is ready: tap it to unleash the ${S.name}!`, 'good'); audio.sfx('crown', 0.6); audio.speak(`The ${S.name} is ready!`, true); }
         const W = w.get(ev.id), go = W ? [{ label: 'See it', icon: ICONS.army, act: () => this.view.centerOn(...w.center(W)) }] : [];
-        if (ev.type === 'superSoon' && ev.team === 1) this.hud.alert(`The rival's ${S.wonder} is ready in one minute! Destroy it, or keep your army spread out.`, go, 'bad', 12);
+        if (ev.type === 'superSoon' && ev.team === 1) this.hud.alert(`The rival's ${S.wonder} is ready in one minute!${this.lang && w.language ? ' Raise the ward over your Town Center,' : ''} destroy it, or spread out your army.`, go, 'bad', 12);
         if (ev.type === 'superReady' && ev.team === 1) this.hud.alert(`The rival's ${S.name} is ready!`, go, 'bad', 10);
         if (ev.type === 'superFire' && ev.team === 1) {
           this.hud.alert(`The rival unleashed the ${S.name}!`, [{ label: 'Go there', icon: ICONS.army, act: () => this.view.centerOn(ev.x, ev.y) }], 'bad', 10);
           audio.sfx('alarm');
         }
+      } else if (ev.type === 'wonderFed' && ev.team === 0) {
+        this.hud.toast(`Your Wonder charges faster: ready in ${Math.ceil(ev.left)} s.`, 'good');
+      } else if (ev.type === 'shieldUp' && ev.team === 0) {
+        audio.sfx('crown', 0.5); audio.speak('The ward is up!', true);
+      } else if (ev.type === 'shieldSpent' && ev.team === 0) {
+        this.hud.toast('Your ward took the blow and is gone.', 'bad');
       } else if (ev.type === 'wonderTaken' || ev.type === 'wonderLost' || ev.type === 'wonderUnder') {
         const D = WONDERS[ev.kind], [x, z] = v.toWorld(ev.x, ev.y);
         if (ev.type === 'wonderTaken') {
@@ -354,10 +361,10 @@ class Game {
     const a = this.superAim, w = this.world, W = a && w.get(a.id);
     this.hud.confirm(null);
     if (!a?.at || !W || !w.canFire(a.id).ok) { this.cancelSuper(); return; }
-    const S = SUPER[w.teams[0].nation.art], strike = () => {
+    const S = SUPER[w.teams[0].nation.art], strike = perfect => {
       this.view.supers.clearPreview(); this.superAim = null;
-      if (!w.fireSuper(a.id, a.at[0], a.at[1])) return;
-      this.hud.toast(`${S.name}!`, 'good'); audio.sfx(S.kind === 'tide' ? 'splash' : S.kind === 'phoenix' ? 'flame' : S.kind === 'quake' ? 'boom' : 'gust', 0.8); audio.sfx('crown', 0.5);
+      if (!w.fireSuper(a.id, a.at[0], a.at[1], { perfect })) return;
+      this.hud.toast(perfect ? `A perfect incantation! The ${S.name} strikes wider!` : `${S.name}!`, 'good'); audio.sfx(S.kind === 'tide' ? 'splash' : S.kind === 'phoenix' ? 'flame' : S.kind === 'quake' ? 'boom' : 'gust', 0.8); audio.sfx('crown', 0.5);
       audio.speak({ tempest: 'Winds, rise!', tide: 'The tide is coming!', phoenix: 'Fly, phoenix!', quake: 'Titan, wake up!' }[S.kind], true);
     };
     // The incantation: two English words at the Wonder. Stepping out calls the strike off.
@@ -367,7 +374,7 @@ class Game {
       const at = a.at;
       st.close = done => { close(done); if (done) this.view.centerOn(at[0], at[1]); else if (this.superAim) { this.cancelSuper(); this.hud.toast('The strike is called off. The Wonder stays charged.'); } };
       st.open();
-    } else strike();
+    } else strike(false);
   }
   castHero(id) {
     const w = this.world, u = w.get(id), c = w.canCast(u);
@@ -731,6 +738,23 @@ class Game {
     if (st) st.open();
   }
   // The ward over the rival's Town Center: a glowing dome, which shatters at the battle cry.
+  // The player's own ward (raised against the rival's superweapon): a golden dome over the Town
+  // Center, with a shimmering rim, until it takes a strike.
+  shieldFx(dt) {
+    const w = this.world, v = this.view, on = !!w.teams[0].shield, tc = this.home();
+    if (on && tc && !this.shield) {
+      const [cx, cy] = w.center(tc), [x, z] = v.toWorld(cx, cy), r = tc.w * TILE * 0.95;
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffd86a').convertSRGBToLinear(), transparent: true, opacity: 0.2, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+      const net = new THREE.Mesh(new THREE.TorusGeometry(r, 0.09, 6, 64), new THREE.MeshBasicMaterial({ color: new THREE.Color('#fff4c0').convertSRGBToLinear(), transparent: true, opacity: 0.8, depthWrite: false })); net.rotation.x = Math.PI / 2; net.position.y = 0.1;
+      const g = new THREE.Group(); g.add(dome, net); g.position.set(x, 0, z); v.scene.add(g);
+      v.magic.emit(w.teams[0].nation.art, x, z, { n: 80, radius: r * 0.8, speed: 1.6, life: 1.4, size: 1.1, shape: 'star' });
+      this.shield = { g, dome, net, t: 0, x, z };
+    }
+    if (!this.shield) return;
+    const s = this.shield; s.t += dt;
+    s.dome.material.opacity = 0.22 + 0.08 * Math.sin(s.t * 2.2); s.net.material.opacity = 0.6 + 0.3 * Math.sin(s.t * 3);
+    if (!on) { v.scene.remove(s.g); v.magic.ring(s.x, s.z, { color: '#ffd86a', from: 2, to: 10, time: 0.9, width: 0.15, solid: true }); this.shield = null; }
+  }
   wardFx(dt) {
     const w = this.world, v = this.view, on = w.language && w.teams[1].ward, rtc = [...w.buildings(1)].find(b => b.type === 'towncenter');
     if (on && rtc && !this.ward) {

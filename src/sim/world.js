@@ -5,7 +5,7 @@ import { generateMap, T, SOLID } from './map.js';
 import { generateArena1 } from './arena1.js';
 import { spawnWild, updateWild, hurtWild, dangerZones } from './wild.js';
 import { initWonders, updateWonders } from './wonders.js';
-import { initSupers, updateSupers, restoreSupers, fire as fireSuper, canFire } from './superweapon.js';
+import { initSupers, updateSupers, restoreSupers, fire as fireSuper, canFire, feed as feedSuper, raiseShield } from './superweapon.js';
 import { findPath } from './path.js';
 import { unitDefs, roleOf, COUNTER, BLD_DAMAGE, ELEMENT_BEATS } from './units.js';
 import { techsFor, LEVEL_COST, LEVEL_TIME } from '../data/tech.js';
@@ -213,7 +213,9 @@ export class World {
 
   // ---------- the Celestial Wonder ----------
   canFire(bid) { return canFire(this, this.get(bid)); }
-  fireSuper(bid, tx, ty) { return fireSuper(this, bid, tx, ty); }
+  fireSuper(bid, tx, ty, o) { return fireSuper(this, bid, tx, ty, o); }
+  feedWonder(bid) { return feedSuper(this, bid); }
+  raiseShield(team) { return raiseShield(this, team); }
 
   // ---------- ages ----------
   nextAge(team) { const a = CONFIG.ages, i = a.indexOf(this.teams[team].age); return i < a.indexOf(this.maxAge) ? a[i + 1] || null : null; }
@@ -438,7 +440,7 @@ export class World {
     return {
       v: 1, mapId: this.mapId, seed: this.seed, size: this.size, pace: this.pace, time: this.time, nextId: this.nextId, winner: this.winner,
       language: this.language,
-      teams: this.teams.map(t => ({ key: t.key, res: t.res, stats: t.stats, bell: !!t.bell, age: t.age, tech: t.tech, goldLocked: t.goldLocked, drilled: t.drilled, fed: t.fed, ward: t.ward })),
+      teams: this.teams.map(t => ({ key: t.key, res: t.res, stats: t.stats, bell: !!t.bell, age: t.age, tech: t.tech, goldLocked: t.goldLocked, drilled: t.drilled, fed: t.fed, ward: t.ward, shield: !!t.shield })),
       ents: [...this.ents.values()], shots: this.shots, burns: this.burns, wonders: this.wonders, supers: this.supers, floods: this.floods, ridges: this.ridges,
     };
   }
@@ -450,7 +452,7 @@ export class World {
     Object.assign(w, { time: data.time, nextId: data.nextId, winner: data.winner, events: [], shots: data.shots || [], burns: data.burns || [], language: !!data.language });
     if (data.wonders) w.wonders = data.wonders;
     restoreSupers(w, data);
-    data.teams.forEach((t, i) => { Object.assign(w.teams[i], { res: t.res, stats: t.stats, bell: t.bell, age: t.age || 'dark' }); w.teams[i].tech = t.tech || {}; Object.assign(w.teams[i], { goldLocked: t.goldLocked, drilled: t.drilled, fed: t.fed, ward: t.ward }); w.teams[i].units = w.withTech(i, unitDefs(w.teams[i].nation.art, w.teams[i].age)); });
+    data.teams.forEach((t, i) => { Object.assign(w.teams[i], { res: t.res, stats: t.stats, bell: t.bell, age: t.age || 'dark' }); w.teams[i].tech = t.tech || {}; Object.assign(w.teams[i], { goldLocked: t.goldLocked, drilled: t.drilled, fed: t.fed, ward: t.ward, shield: !!t.shield }); w.teams[i].units = w.withTech(i, unitDefs(w.teams[i].nation.art, w.teams[i].age)); });
     for (const t of w.teams) t.pop = 0;
     for (const u of w.allUnits()) w.teams[u.team].pop += w.def(u.team, u.type).pop;
     w.recount();

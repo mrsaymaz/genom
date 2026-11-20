@@ -524,6 +524,10 @@ h2 { margin: 0; font: 600 13px var(--display); color: var(--ink2); text-transfor
 #hud .tickets { position: absolute; inset: 0; pointer-events: none; }
 #hud .ticket { position: absolute; left: 0; top: 0; pointer-events: auto; display: flex; align-items: center; gap: 4px; padding: 6px 12px 6px 8px; border-radius: 18px; border: 2px solid #fff2b0; background: linear-gradient(#f7d466, #e0a826); color: #2a1a00; font: 800 13px var(--text); white-space: nowrap; box-shadow: 0 0 0 4px rgba(255, 220, 120, 0.35), 0 4px 10px rgba(0, 0, 0, 0.35); animation: ticket 1.6s ease-in-out infinite; }
 #hud .ticket svg { width: 18px; height: 18px; }
+/* Optional jobs (charging the Wonder faster): a calmer blue, without the bounce. */
+#hud .ticket.opt { background: linear-gradient(#bfe0ff, #7ab8f0); border-color: #e8f4ff; color: #0a2a4a; animation: none; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35); }
+#hud .ticket.opt::after { border-top-color: #7ab8f0; }
+#hud .job.opt .bolt { background: linear-gradient(#e8f4ff, #7ab8f0); color: #0a2a4a; }
 #hud .ticket::after { content: ""; position: absolute; left: 50%; bottom: -8px; border: 7px solid transparent; border-top-color: #e0a826; border-bottom: 0; transform: translateX(-50%); }
 @keyframes ticket { 50% { box-shadow: 0 0 0 8px rgba(255, 220, 120, 0.15), 0 4px 10px rgba(0, 0, 0, 0.35); } }
 #app.station #hud > * { display: none !important; }

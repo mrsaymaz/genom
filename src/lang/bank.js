@@ -72,8 +72,10 @@ export class Language {
     const word = s.word.toLowerCase(), extra = shuffle('aeioustrnl'.split('').filter(ch => !word.includes(ch))).slice(0, 2);
     return { id: s.id, c: s.c, kind: 'spell', word, tr: w?.tr, pic: w?.pic, tiles: shuffle([...word.slice(1).split(''), ...extra]), say: word, fb: s.fb };
   }
-  sentence() {
-    const s = this.pick(this.unit.sentences);
+  // A sentence to build: three blocks by default; the incantation asks for four to six.
+  sentence(min = 3, max = 3) {
+    const fits = s => s.blocks.length >= min && s.blocks.length <= max;
+    const s = this.pick(this.unit.sentences, fits) || this.pick(this.unit.sentences, x => x.blocks.length >= 3 && x.blocks.length <= max) || this.pick(this.unit.sentences);
     if (!s) return this.match();
     return { id: s.id, c: s.c, kind: 'order', blocks: s.blocks, text: s.text, tr: s.tr, say: s.text, fb: s.fb };
   }

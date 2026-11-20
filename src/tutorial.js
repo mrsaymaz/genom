@@ -136,7 +136,7 @@ export class Tutorial {
   guide() {
     // A required English job comes first: it is what holds up the game (the gold, the Barracks,
     // the Mythic Age, the creature, the ward).
-    const g = this.g, job = !g.station && g.jobs?.()[0];
+    const g = this.g, job = !g.station && g.jobs?.().find(j => !j.optional);
     if (job) {
       const t = g.hud.root.querySelector(`[data-job="${job.id}"]`), onMap = t && !t.classList.contains('hidden');
       return { ui: onMap ? `[data-job="${job.id}"]` : `[data-job-chip="${job.id}"]`, say: job.say, hint: job.say };

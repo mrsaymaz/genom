@@ -26,6 +26,8 @@ export const SUPER = {
 };
 export const CHARGE = 240; // seconds to charge
 export const RADIUS = 6; // tiles
+export const PERFECT_BONUS = 1; // a perfect incantation widens the circle by a tile
+export const FEED = 20, FEED_MAX = 3; // each English answer at a charging Wonder saves 20 s, three times per charge
 const TC_CAP = 0.65;
 
 export const superOf = (w, team) => SUPER[w.teams[team].nation.art];
@@ -36,7 +38,10 @@ function hit(w, use, e, amt) {
   if (!w.ents.has(e.id) || e.team === use.team || e.inside) return;
   if (e.cat === 'bld' && e.type === 'towncenter') {
     if (w.teams[e.team].ward) return;
-    const done = use.tc[e.id] || 0, room = e.maxHp * TC_CAP - done;
+    // A raised ward (the defender's English task) halves the strike on the Town Center.
+    const shield = w.teams[e.team].shield ? 0.5 : 1;
+    amt *= shield;
+    const done = use.tc[e.id] || 0, room = e.maxHp * TC_CAP * shield - done;
     amt = Math.max(0, Math.min(amt, room));
     use.tc[e.id] = done + amt;
   }
@@ -63,13 +68,13 @@ export function canFire(w, b) {
   return c >= 1 ? { ok: true } : { ok: false, why: 'charging', left: (1 - c) * CHARGE };
 }
 
-export function fire(w, bid, tx, ty) {
+export function fire(w, bid, tx, ty, o = {}) {
   const b = w.get(bid);
   if (!canFire(w, b).ok) return false;
-  b.charge = 0;
-  const S = superOf(w, b.team), [x0, y0] = w.center(b), R = RADIUS;
+  b.charge = 0; b.fed = 0;
+  const S = superOf(w, b.team), [x0, y0] = w.center(b), R = RADIUS + (o.perfect ? PERFECT_BONUS : 0);
   tx = Math.max(1, Math.min(w.size - 1, tx)); ty = Math.max(1, Math.min(w.size - 1, ty));
-  const use = { kind: S.kind, team: b.team, wonder: b.id, x: tx, y: ty, x0, y0, r: R, t: 0, tick: 0, tc: {}, hits: [] };
+  const use = { kind: S.kind, team: b.team, wonder: b.id, x: tx, y: ty, x0, y0, r: R, perfect: !!o.perfect, t: 0, tick: 0, tc: {}, hits: [] };
   if (S.kind === 'tempest') Object.assign(use, { dur: 12, cx: tx, cy: ty, ang: 0 });
   if (S.kind === 'tide') Object.assign(use, { dur: 3.5 });
   if (S.kind === 'phoenix') Object.assign(use, { dur: Math.max(2.4, Math.hypot(tx - x0, ty - y0) / 6.5) });
@@ -93,9 +98,22 @@ export function fire(w, bid, tx, ty) {
     w.ridges.push({ tiles, t: 30 });
   }
   w.supers.push(use);
-  w.events.push({ type: 'superFire', team: b.team, kind: S.kind, id: b.id, x0, y0, x: tx, y: ty, r: R, dur: use.dur });
+  w.events.push({ type: 'superFire', team: b.team, kind: S.kind, id: b.id, x0, y0, x: tx, y: ty, r: R, perfect: !!o.perfect, dur: use.dur });
   return true;
 }
+
+// Feeding a charging Wonder (an English answer) saves FEED seconds, FEED_MAX times per charge.
+export function canFeed(w, b) { return !!b && b.type === 'wonder' && b.built && (b.charge || 0) < 1 && (b.fed || 0) < FEED_MAX; }
+export function feed(w, bid) {
+  const b = w.get(bid);
+  if (!canFeed(w, b)) return false;
+  b.fed = (b.fed || 0) + 1;
+  b.charge = Math.min(1, (b.charge || 0) + FEED / CHARGE);
+  w.events.push({ type: 'wonderFed', team: b.team, id: b.id, left: (1 - b.charge) * CHARGE });
+  return true;
+}
+// Raising the ward over a team's Town Center: the next superweapon to hit it does half damage.
+export function raiseShield(w, team) { if (w.teams[team].shield) return false; w.teams[team].shield = true; w.events.push({ type: 'shieldUp', team }); return true; }
 
 export function updateSupers(w, dt) {
   // Charging Wonders.
@@ -152,7 +170,10 @@ export function updateSupers(w, dt) {
         w.events.push({ type: 'superShock', team: s.team, x: s.x, y: s.y, r: s.r });
       }
     }
-    return s.t < s.dur;
+    if (s.t < s.dur) return true;
+    // A ward that took a strike on its Town Center is spent.
+    for (const id of Object.keys(s.tc)) { const tc = w.get(+id), t = tc && w.teams[tc.team]; if (t?.shield) { t.shield = false; w.events.push({ type: 'shieldSpent', team: tc.team }); } }
+    return false;
   });
   // The flood: enemies wading through it are slowed.
   if (w.floods.length) w.floods = w.floods.filter(f => {

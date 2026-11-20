@@ -43,8 +43,11 @@ export const CONFIG = {
     sanctum: { name: 'Sanctum', role: 'sanctum', size: 3, hp: 1000, bt: 60, cost: { lumber: 150, gold: 150 }, age: 'mythic', trains: ['hero'] },
     // Arcane Age: the Workshop builds siege engines.
     workshop: { name: 'Workshop', role: 'workshop', size: 3, hp: 1100, bt: 55, cost: { lumber: 200, gold: 100 }, age: 'arcane', trains: ['siege'] },
+    // Celestial Age: each nation's Wonder (one per team), which charges and fires its superweapon.
+    // Its own name comes from src/sim/superweapon.js (Tempest Hive, Moon Lighthouse, ...).
+    wonder: { name: 'Wonder', role: 'wonder', size: 4, hp: 3500, bt: 150, cost: { food: 800, lumber: 1000, gold: 800 }, age: 'celestial', unique: true },
   },
-  buildOrder: ['house', 'farm', 'storehouse', 'barracks', 'watchtower', 'pen', 'sanctum', 'workshop'],
+  buildOrder: ['house', 'farm', 'storehouse', 'barracks', 'watchtower', 'pen', 'sanctum', 'workshop', 'wonder'],
 
   // Ages. Research the next age at the Town Center once its key building stands: a Barracks for
   // the Mythic Age, a Sanctum for the Arcane Age and a Workshop for the Celestial Age. (The Age

@@ -7,6 +7,9 @@ import { T } from '../sim/map.js';
 import { ActionRing } from './ring.js';
 import { TILE } from '../render/art.js';
 import { ROMAN } from '../data/tech.js';
+import { SUPER, CHARGE, canFire } from '../sim/superweapon.js';
+// A building's name for a team: the Wonder takes its nation's own name.
+const bname = (w, team, type) => (type === 'wonder' ? SUPER[w.teams[team].nation.art].wonder : CONFIG.buildings[type]?.name || '');
 
 const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
 const RES = ['food', 'lumber', 'gold'];
@@ -99,7 +102,9 @@ export class HUD {
     this.marker = h('div', 'marker hidden', ICONS.pointer);
     // English jobs: tickets pinned over the place, and the work-order rail down the left edge.
     this.rail = h('div', 'rail'); this.tickets = h('div', 'tickets'); this.jobKey = '';
-    root.append(this.top, this.obj, this.quick, this.mini, this.tray, this.panel, this.boxEl, this.alertEl, this.toasts, this.rail, this.tickets);
+    // The Wonders' countdowns, for both sides.
+    this.supersEl = h('div', 'supers'); this.superKey = '';
+    root.append(this.top, this.obj, this.quick, this.mini, this.tray, this.panel, this.boxEl, this.alertEl, this.toasts, this.rail, this.tickets, this.supersEl);
     this.setLayout(game.hudLayout || 'corner');
     // Rings go last so their buttons sit above toasts and panels.
     this.ring = new ActionRing(root, 'on-map');
@@ -115,6 +120,7 @@ export class HUD {
   update(dt) {
     const g = this.g, w = g.world, t = w.teams[0];
     for (const k of RES) this.res[k].textContent = Math.floor(t.res[k]);
+    this.superTimers();
     this.res.pop.textContent = `${t.pop}/${t.popCap}`;
     this.tok.pop.classList.toggle('warn', t.pop >= t.popCap);
     const ageName = CONFIG.ageUp[t.age]?.name.split(' ')[0] || 'Dark';
@@ -209,6 +215,19 @@ export class HUD {
   popFull() { const t = this.tok.pop; t.classList.remove('short'); void t.offsetWidth; t.classList.add('short'); }
 
   // ---------- the quest scroll ----------
+  // A small pill for each built Wonder: whose it is, and how long until its superweapon is ready.
+  superTimers() {
+    const w = this.g.world, rows = [];
+    for (const b of w.buildings()) {
+      if (b.type !== 'wonder' || !b.built) continue;
+      const S = SUPER[w.teams[b.team].nation.art], left = Math.ceil((1 - (b.charge || 0)) * CHARGE);
+      const time = left <= 0 ? 'Ready!' : `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+      rows.push(`<div class="sw ${b.team ? 'foe' : 'mine'}${left <= 0 ? ' ready' : ''}" style="--tc:${w.teams[b.team].nation.color}">${ICONS[`sw-${S.kind}`]}<span>${b.team ? "Rival's " : ''}${S.name}</span><b>${time}</b></div>`);
+    }
+    const key = rows.join('');
+    if (key !== this.superKey) { this.superKey = key; this.supersEl.innerHTML = key; }
+  }
+
   objectives(dt) {
     const tut = this.g.tutorial, step = tut.step, n = tut.i;
     if (this.objOpenT > 0 && (this.objOpenT -= dt) <= 0) this.obj.classList.add('closed');
@@ -348,13 +367,13 @@ export class HUD {
         this.panelKey = key;
         const iconOf = k => { const e = ents.find(x => x.type === k); return e.cat === 'unit' ? unitIcon(w.def(e.team, k)) : ICONS[k]; };
         const col = w.teams[ents[0].team ?? 0].nation.color;
-        this.panel.innerHTML = `<div class="multi">${Object.entries(counts).map(([k, v]) => `<button class="chip" data-type="${k}" style="--tc:${col}" title="${ents.find(x => x.type === k).cat === 'unit' ? w.def(0, k).name : CONFIG.buildings[k]?.name || ''}">${iconOf(k)}<b>${v}</b></button>`).join('')}</div>`;
+        this.panel.innerHTML = `<div class="multi">${Object.entries(counts).map(([k, v]) => `<button class="chip" data-type="${k}" style="--tc:${col}" title="${ents.find(x => x.type === k).cat === 'unit' ? w.def(0, k).name : bname(w, 0, k)}">${iconOf(k)}<b>${v}</b></button>`).join('')}</div>`;
         this.panel.querySelectorAll('.chip').forEach(b => { b.onclick = () => g.narrowTo(b.dataset.type); });
       }
       return;
     }
     const e = ents[0], own = e.team === 0;
-    const name = e.cat === 'res' ? { tree: 'Tree', gold: 'Gold Mine', berries: 'Berry Bush' }[e.kind] : (e.cat === 'bld' ? CONFIG.buildings[e.type].name : w.def(e.team, e.type).name);
+    const name = e.cat === 'res' ? { tree: 'Tree', gold: 'Gold Mine', berries: 'Berry Bush' }[e.kind] : (e.cat === 'bld' ? bname(w, e.team, e.type) : w.def(e.team, e.type).name);
     const icon = e.cat === 'res' ? ICONS[RES_OF[e.kind]] : e.cat === 'unit' ? unitIcon(w.def(e.team, e.type)) : ICONS[e.type];
     const key = `one${e.id}`;
     if (key !== this.panelKey) {
@@ -465,6 +484,12 @@ export class HUD {
             progress: r ? r.t / r.time : 0, hint: 'Upgrades: make your people stronger', act: () => { this.researchAt = b.id; } });
         }
         if (this.researchAt === b.id && techs.length) items = this.researchItems(b, techs);
+        if (b.type === 'wonder' && b.built && ents.length === 1) {
+          // The superweapon: charging round the ring, then a big button to unleash it.
+          const S = SUPER[w.teams[0].nation.art], c = canFire(w, b), p = b.charge || 0;
+          items.push({ id: 'super', icon: ICONS[`sw-${S.kind}`], label: c.ok ? S.name.split(' ').pop() : `${Math.floor(p * 100)}%`, cls: c.ok ? 'main cast' : 'on', poor: !c.ok, progress: c.ok ? 0 : p,
+            hint: `${S.name}: ${S.text}${c.ok ? '' : ` Ready in ${Math.ceil(c.left)} s.`}`, act: () => g.aimSuper(b.id) });
+        }
         if (b.type === 'towncenter') {
           // The next age: a button with the research progress on its ring.
           const next = w.nextAge(0), ad = next && CONFIG.ageUp[next];
@@ -490,7 +515,8 @@ export class HUD {
         // The build wheel: a full ring of buildings around where the worker stood.
         const items = CONFIG.buildOrder.filter(type => w.hasAge(0, type)).map(type => {
           const d = CONFIG.buildings[type];
-          return { id: 'b' + type, icon: ICONS[type], label: d.name, cost: d.cost, poor: !w.canAfford(0, d.cost), act: () => { this.wheelAt = null; g.startPlacement(type); } };
+          const taken = d.unique && [...w.buildings(0)].some(b => b.type === type);
+          return { id: 'b' + type, icon: ICONS[type], label: bname(w, 0, type), cost: d.cost, poor: !w.canAfford(0, d.cost) || taken, hint: type === 'wonder' ? `${bname(w, 0, type)}: your Wonder. One per team. ${SUPER[w.teams[0].nation.art].name}: ${SUPER[w.teams[0].nation.art].text}` : undefined, act: () => { this.wheelAt = null; if (taken) { this.toast('You can only have one Wonder.', 'bad'); return; } g.startPlacement(type); } };
         });
         items.push({ id: 'back', icon: ICONS.cancel, label: 'Close', cls: 'stop', act: () => { this.wheelAt = null; } });
         ring = { anchor: v.screen(this.wheelAt[0], this.wheelAt[1], 0.5), items, opts: { radius: compact ? 88 : 100, center: -90, full: true } };

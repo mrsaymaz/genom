@@ -16,6 +16,7 @@ HP rises 20% with each rebuild. Nation twists adjust HP and build time (see the 
 | Beast Pen | 3×3 | 1300 | 50 s | 175 Lumber, 50 Gold | Mythic, Arcane, Celestial | — | Trains the nation's signature creature | Trains the signature creature, now in an elder form | Trains the signature creature in its celestial form |
 | Sanctum | 3×3 | 1000 | 60 s | 150 Lumber, 150 Gold | Mythic, Arcane, Celestial | — | Trains heroes and researches magic | Trains heroes and researches arcane magic | Trains heroes and researches celestial magic |
 | Workshop | 3×3 | 1100 | 55 s | 200 Lumber, 100 Gold | Arcane, Celestial | — | — | Builds siege engines | Builds celestial siege engines |
+| Celestial Wonder | 4×4 | 3500 | 150 s | 800 Food, 1000 Lumber, 800 Gold | Celestial | — | — | — | One per team. Charges for 4 minutes, then unleashes the nation's superweapon |
 
 ## Hufflepuff (Air)
 
@@ -87,6 +88,11 @@ HP rises 20% with each rebuild. Nation twists adjust HP and build time (see the 
 | Arcane | Gale Works | An airship yard between two honeycomb pylons, where a striped war balloon is being skinned over its ribs, with a ballista gondola, a winch and amber bolts. |
 | Celestial | Star Lens Forge | A giant amber lens in a honeycomb ring focuses starlight onto a forge, beside a great winged Star Ballista firing glowing bolts. |
 
+### Celestial Wonder
+
+| Age | Name | Description |
+|---|---|---|
+| Celestial | Tempest Hive | An amber-glass hive cathedral on a floating island, chained to a honeycomb plinth and fed by four honey pylons. A crown of sails turns above it, under a storm eye of clouds and lightning. Superweapon, the Great Tempest: a cyclone wanders the target area for 12 seconds, lifting and flinging enemy units, tearing at buildings and speeding up friendly units nearby. |
 
 ## Ravenclaw (Water)
 
@@ -158,6 +164,11 @@ HP rises 20% with each rebuild. Nation twists adjust HP and build time (see the 
 | Arcane | Tide Works | A pearl dry dock where a war barge with a bronze water cannon floats, served by a conch crane tower. |
 | Celestial | Lunar Shipyard | A sleek silver warship with crescent sails floats over its dock on spouts of water, armed with a moonlight cannon, under a crescent crane. |
 
+### Celestial Wonder
+
+| Age | Name | Description |
+|---|---|---|
+| Celestial | Moon Lighthouse | A pearl lighthouse rising from its own lagoon, with waterfalls pouring off every balcony and a water stair winding to the top, where a great lens sweeps its beam under the moon in a turning armillary. Superweapon, the Moonfall Tide: a great wave rolls through the target, away from the lighthouse: enemy units are swept back, hurt and slowed, buildings struck, and the flood slows enemies for 30 seconds. |
 
 ## Gryffindor (Fire)
 
@@ -229,6 +240,11 @@ HP rises 20% with each rebuild. Nation twists adjust HP and build time (see the 
 | Arcane | Siege Foundry | A smoking volcano forge with lava rivers and a halo over its crater, beside a basalt trebuchet loaded with a fireball. |
 | Celestial | Sunforge | A great golden ring holds a burning lens that focuses sunlight onto a forge, beside a golden Sunfire Cannon with a glowing lens. |
 
+### Celestial Wonder
+
+| Age | Name | Description |
+|---|---|---|
+| Celestial | Phoenix Forge | A stepped volcano-temple of black stone with a molten stair and four golden lions. On its caldera stands a giant sun-mirror ring, and inside it the phoenix sleeps, glowing. Superweapon, the Phoenix Strike: the phoenix flies from the forge to the target, leaving a burning trail, and bursts into a blaze that keeps burning for 20 seconds. |
 
 ## Slytherin (Earth)
 
@@ -299,4 +315,10 @@ HP rises 20% with each rebuild. Nation twists adjust HP and build time (see the 
 |---|---|---|
 | Arcane | Root Works | A mossy dolmen forge beside a catapult whose throwing arm is a living bent tree anchored in stone, loaded with an emerald boulder. |
 | Celestial | Seed Engines | A green-fire forge inside an open blossom, beside a catapult whose arm is a starwood stalk ending in a flower that cradles a glowing seed. |
+
+### Celestial Wonder
+
+| Age | Name | Description |
+|---|---|---|
+| Celestial | Titan's Henge | A ring of rune-carved trilithons around a stone titan, asleep and cross-legged, with a star tree growing from its shoulder and rune stones circling its head. Superweapon, the Great Quake: a rift tears open through the target: enemy units on it are held and hurt, buildings cracked, then a ridge of rock rises along it and blocks the way for 30 seconds. |
 

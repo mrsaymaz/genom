@@ -240,6 +240,14 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .ring-caption.on { opacity: 1; }
 @keyframes pop { from { transform: scale(0.2); opacity: 0; } }
 
+.supers { position: absolute; top: calc(58px + var(--st)); right: calc(10px + var(--sr)); display: flex; flex-direction: column; align-items: flex-end; gap: 5px; pointer-events: none; z-index: 2; }
+.supers .sw { display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px 0 6px; border-radius: 14px; background: rgba(20, 16, 10, 0.78); border: 1.5px solid var(--tc); color: #fff; font: 700 12px var(--text); }
+.supers .sw svg { width: 18px; height: 18px; color: var(--tc); }
+.supers .sw b { font: 800 13px var(--text); color: #ffe08a; min-width: 38px; text-align: right; }
+.supers .sw.foe { background: rgba(60, 14, 10, 0.8); }
+.supers .sw.ready b { color: #fff; }
+.supers .sw.ready { animation: swpulse 1s ease-in-out infinite alternate; }
+@keyframes swpulse { to { box-shadow: 0 0 0 4px color-mix(in srgb, var(--tc) 45%, transparent); } }
 .toasts { position: absolute; top: calc(10px + var(--st)); left: 50%; transform: translateX(-50%); width: min(460px, calc(100% - 40px)); display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none !important; }
 .toast { max-width: 100%; padding: 7px 14px; border-radius: 12px; background: var(--panel-solid); border: 1px solid var(--line); font-size: 14px; text-align: center; transition: opacity 0.5s, transform 0.5s; }
 .toast.bad { border-color: var(--bad); color: #ffd4cf; }

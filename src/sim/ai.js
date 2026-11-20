@@ -3,6 +3,7 @@
 import { CONFIG } from '../config.js';
 import { wilds } from './wild.js';
 import { holders } from './wonders.js';
+import { canFire, fire } from './superweapon.js';
 
 // What the rival researches first: its economy, then its army, then its towers and specials.
 const TECH_ORDER = ['farming', 'baskets', 'axes', 'weapons', 'picks', 'armour', 'townguard', 'forgefury', 'swarm', 'springs', 'ironbark', 'herocraft', 'fletching', 'beastcraft', 'walls', 'lionheart', 'tidehealers', 'hivestore', 'roots', 'quickfeet', 'signals', 'siegecraft'];
@@ -74,6 +75,7 @@ export class RivalAI {
     if (!pen.length) return CONFIG.buildings.pen.cost;
     if (pen.some(b => b.built) && !w.hasUnique(team, 'creature')) return w.def(team, 'creature').cost;
     if (this.t.age !== 'mythic' && !this.mine('workshop').length) return CONFIG.buildings.workshop.cost;
+    if (this.t.age === 'celestial' && !this.mine('wonder').length) return CONFIG.buildings.wonder.cost;
     return null;
   }
 
@@ -154,6 +156,7 @@ export class RivalAI {
       if (!this.mine('sanctum').length) this.tryBuild('sanctum', cx - 3, cy + 3);
       else if (!this.mine('pen').length && this.mine('sanctum').some(b => b.built)) this.tryBuild('pen', cx + 3, cy - 3);
       else if (t.age !== 'mythic' && !this.mine('workshop').length && this.mine('pen').some(b => b.built)) this.tryBuild('workshop', cx - 3, cy - 3);
+      else if (t.age === 'celestial' && !this.mine('wonder').length) this.tryBuild('wonder', cx + 4, cy + 4);
     }
   }
 
@@ -177,6 +180,7 @@ export class RivalAI {
     const shop = this.mine('workshop').find(x => x.built);
     if (shop && !this.saving() && !shop.queue.length && this.units('siege').length < 2 && !(this.goal() && !w.canAfford(this.team, this.goal()))) w.train(shop.id, 'siege');
     this.useHero();
+    this.useSuper();
     const soldiers = this.units().filter(u => u.type !== 'worker');
     // Defend: enemies near home draw every idle soldier.
     const [cx, cy] = w.center(this.home);
@@ -231,6 +235,22 @@ export class RivalAI {
     if (!o) return;
     w.orderAttackMove(idle.slice(0, mine(o) ? 3 : 7).map(s => s.id), o.x + 1, o.y);
     this.claimT = w.time + 40;
+  }
+
+  // The Wonder's superweapon, once charged: on the biggest group of the player's units (at least
+  // four together), otherwise on the player's army buildings or Town Center.
+  useSuper() {
+    const w = this.w, b = this.mine('wonder')[0];
+    if (!b || !canFire(w, b).ok) return;
+    const foes = [...w.units()].filter(u => u.team !== this.team && u.type !== 'worker');
+    let best = null, bn = 3;
+    for (const u of foes) { const n = foes.filter(v => Math.hypot(v.x - u.x, v.y - u.y) <= 3.5).length; if (n > bn) { bn = n; best = [u.x, u.y]; } }
+    if (!best) {
+      const order = ['wonder', 'barracks', 'watchtower', 'sanctum', 'workshop', 'towncenter'];
+      const blds = [...w.buildings(1 - this.team)].sort((a, c) => order.indexOf(a.type) - order.indexOf(c.type)).filter(x => order.includes(x.type));
+      if (blds[0]) best = w.center(blds[0]);
+    }
+    if (best) fire(w, b.id, best[0], best[1]);
   }
 
   // The hero uses its ability when it counts: when enemies crowd around it, or (High Tide) when

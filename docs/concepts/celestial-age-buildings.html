@@ -134,7 +134,8 @@ h2 { margin: -4px 0 0; font: 700 26px/1 var(--display); text-transform: uppercas
     { id: "tower", role: "Watchtower", fp: "2×2", hp: 800, bt: 40, cost: "100 Lumber, 50 Gold", does: ["Defense and vision", "Defense and vision", "Fortified: a second attack and longer sight", "Celestial: a third attack and true sight"], ages: ALL },
     { id: "pen", role: "Beast Pen", fp: "3×3", hp: 1300, bt: 50, cost: "175 Lumber, 50 Gold", does: [null, "Trains the nation's signature creature", "Trains the signature creature, now in an elder form", "Trains the signature creature in its celestial form"], ages: ["mythic", "arcane", "celestial"] },
     { id: "sanctum", role: "Sanctum", fp: "3×3", hp: 1000, bt: 60, cost: "150 Lumber, 150 Gold", does: [null, "Trains heroes and researches magic", "Trains heroes and researches arcane magic", "Trains heroes and researches celestial magic"], ages: ["mythic", "arcane", "celestial"] },
-    { id: "workshop", role: "Workshop", fp: "3×3", hp: 1100, bt: 55, cost: "200 Lumber, 100 Gold", does: [null, null, "Builds siege engines", "Builds celestial siege engines"], ages: ["arcane", "celestial"] }
+    { id: "workshop", role: "Workshop", fp: "3×3", hp: 1100, bt: 55, cost: "200 Lumber, 100 Gold", does: [null, null, "Builds siege engines", "Builds celestial siege engines"], ages: ["arcane", "celestial"] },
+    { id: "wonder", role: "Celestial Wonder", fp: "4×4", hp: 3500, bt: 150, cost: "800 Food, 1000 Lumber, 800 Gold", does: [null, null, null, "One per nation. Charges, then unleashes the nation's superweapon"], ages: ["celestial"] }
   ];
   var INFO = {
     air: {
@@ -179,6 +180,10 @@ h2 { margin: -4px 0 0; font: 700 26px/1 var(--display); text-transform: uppercas
     }
   };
   var INFO_NEW = {"air": {"house": ["Hive Cottage", "A small woven straw hive on a low hexagonal deck, with an amber hex window, a striped awning and a wind rose on top.", "Comb House", "A cluster of honeycomb cells on a terrace: a tall cell with a timber gallery and a woven cupola, beside two smaller cells under striped tents.", "Sky Manor", "The comb house lifted onto its own floating island, with an amber-glass upper storey, sails on short masts, hanging lanterns and a mooring rope to the ground.", "Cloudhive Manor", "A two-storey amber-glass hive manor on a floating island resting on a bank of clouds, with sails, a constellation ring and a blazing amber star above."], "farm": ["Sky Garden", "Wheat inside a woven wattle fence, with a timber wind-pump turning a striped wind rose and three beehives on stands.", "Honey Fields", "Wheat behind honeycomb walls, with a honeycomb tower-hive turning a great wind rose, hives on stands, a kite and a floating amber crystal.", "Cloud Apiary", "Wheat around a tall honeycomb pylon whose amber crystal holds three crop islands floating at rising heights, with a wind rose on the highest.", "Sky Fields", "The whole wheat field floats on a great honeycomb island above the clouds, held by honey pylons, with glowing bees swarming, a tall hive windmill and an amber star overhead."], "store": ["Gale Depot", "An open hexagonal pavilion under a striped canvas tent, with a mast crane swinging a net bag.", "Comb Depot", "A flower of honeycomb cells with glowing cargo bays and goods piled on the low roofs, around a tall central cell carrying a timber crane.", "Sky Vault", "A floating amber-glass vault brimming with glowing honey, held over a cargo deck by three pylons, with a light-lift carrying crates up to it.", "Sky Port", "A striped cargo airship moored to a tall honeycomb mast with a star beacon, unloading its nets onto the deck by a lift of light, over a bank of clouds."], "barracks": ["Gale Barracks", "A long woven straw vault on a timber deck, with a striped awning, a training yard and a sail on a mast.", "Gale Hall", "A row of three honeycomb halls under striped tents, with a timber gallery along the front, a sailed mast and a training yard.", "Gale Academy", "Honeycomb halls on a great floating island where glider troops train, with gliders circling overhead and a training yard below.", "Sky Legion Hall", "Three honeycomb halls on floating islands joined by rope bridges, with glider riders circling and a ground yard of golden flight hoops."], "tower": ["Lookout Mast", "A tall mast held by rope rigging, with a woven hexagonal crow's nest, a striped canopy and a rope ladder.", "Comb Tower", "A tapering stack of honeycomb cells with timber ledges, topped by a woven crow's nest under a striped canopy.", "Storm Spire", "Three honeycomb drums levitating one above another on a beam of light, chained to the ground, with a ring of turning sails and a great amber crystal on top.", "Star Spire", "Five honeycomb rings levitating on a beam of light, wound by a spiral constellation, with a great amber star blazing at the top."], "pen": [null, null, "Gale Den", "A honeycomb arena with glowing corner posts, where the Galehide Bear roams in front of a great domed den cell.", "Gale Sanctuary", "The Galehide Bear's den on a floating island, reached by drifting steps, with a glowing honeyfall pouring into a pool below.", "Cloud Den", "The Galehide Bear rests on a honeycomb throne atop a cloud-borne island before a golden halo, under its own bear constellation."], "sanctum": [null, null, "Temple of Winds", "Six banded timber pillars on a three-step honeycomb terrace hold a striped tent over a great floating amber crystal.", "Temple of Four Winds", "The pillared tent temple raised on a floating island under a giant amber crystal, with four wind shrines floating at the compass points.", "Temple of the Heavens", "Three pillared tent temples stacked on floating islands above clouds, crowned by a great amber star, with four sail shrines and a constellation turning around them."], "workshop": [null, null, null, null, "Gale Works", "An airship yard between two honeycomb pylons, where a striped war balloon is being skinned over its ribs, with a ballista gondola, a winch and amber bolts.", "Star Lens Forge", "A giant amber lens in a honeycomb ring focuses starlight onto a forge, beside a great winged Star Ballista firing glowing bolts."]}, "water": {"house": ["Shell Cottage", "A driftwood hut under a conch-shell roof, with a shell-mouth door, bronze-ringed portholes and a pearl-rimmed well.", "Conch House", "A pearl conch on blue and pearl terraces, with a shell-mouth door, glass bubbles, a bronze balcony, a glowing crown and a water arc into its pool.", "Bubble Manor", "A glass dome around a glowing conch home, raised on three living columns of water above its own pool, crowned by an armillary sphere.", "Crescent Manor", "A glass bubble home with a glowing conch inside, cradled by a great silver crescent above its pool, under a small moon in an armillary."], "farm": ["Tide Fields", "Kelp and greens in pearl-edged beds split by channels, watered by a conch spout.", "Tide Terraces", "Three pearl-walled terraces of kelp and greens with water cascading down, fed by a glowing conch spire that arcs water across.", "Glass Gardens", "Kelp and greens under three bronze-ribbed glass domes, watered by arcs of water leaping from a fountain column under an armillary sphere.", "Moon Gardens", "Three glass tiers of kelp and glowing buds around a silver column, with water spilling from tier to tier under a moon held in a silver crescent."], "store": ["Boathouse", "A driftwood store roofed with an upturned hull, with a pier, a moored boat and nets drying.", "Nautilus Warehouse", "A great coiled nautilus shell on a pearl quay, with a glowing shell-mouth door, glass bubble windows, a bronze crane and a moored boat.", "Harbor Treasury", "A bronze-hooped glass tank of seawater where gold and pearls swirl, capped by a conch and armillary, with a bronze crane on the quay.", "Pearl Clam Vault", "A giant silver-rimmed clam opened on the quay, holding a great glowing pearl moon, with a silver crane and a crescent armillary above."], "barracks": ["Harbor Barracks", "A driftwood hall under an upturned-hull roof between two spiral shell towers, behind curling glass waves.", "Tide Hall", "A pearl hall fronted by a giant scallop-shell facade around a shell-mouth gate, between two domed towers, with a training pool.", "Tide Academy", "A long bronze-ribbed glass arcade over a training channel, between two glass-domed towers, with water orbs bouncing over the drill pool.", "Moonguard Hall", "A long glass hall under a colonnade of silver crescent arches, circled by two small moons, with water orbs bouncing over the drill pool."], "tower": ["Mist Spire", "A tall spiral conch tower on a sea rock, with a blue lantern in a bronze cage on top.", "Star Observatory", "A tall pearl drum on blue terraces with portholes and a bronze gallery, under a ribbed shell dome with a turning bronze telescope.", "Tide Spire", "A living column of water rising from a pearl drum, wrapped in turning water rings, holding a glass globe with an armillary sphere at its top.", "Crescent Minaret", "A slender pearl minaret wrapped in water rings, crowned by a turning silver crescent that cradles a tiny moon."], "pen": [null, null, "Tide Roost", "Three conch perch-spires with bronze nests over a pool, where Tide Ravens perch and circle.", "Tide Aerie", "A great orb of water floating over a round pool inside turning bronze perch rings, fed by a water column, where Tide Ravens circle and roost.", "Moon Roost", "A towering pearl-and-silver crescent rises from the lagoon as a perch for Tide Ravens around a floating moon, under a raven constellation."], "sanctum": [null, null, "Shell Crown", "Eight curving pearl spines rise from a ring of terraces and meet in a bronze ring with a glowing orb, over a pool where an orb of water floats inside a ring of water.", "Hall of Tides", "A colonnaded rotunda under a vast bronze-ribbed glass dome with a floating orb of water inside, fed by four leaping fountains and crowned by an armillary sphere.", "Orrery of Tides", "A colonnaded rotunda beneath a great orrery: planets of water, pearl and silver circle a central moon on silver arms, with a crescent spire and fountains."], "workshop": [null, null, null, null, "Tide Works", "A pearl dry dock where a war barge with a bronze water cannon floats, served by a conch crane tower.", "Lunar Shipyard", "A sleek silver warship with crescent sails floats over its dock on spouts of water, armed with a moonlight cannon, under a crescent crane."]}, "fire": {"house": ["Hearth", "A two-tier basalt hut with spike rings, a gold lion over the gate and a burning chimney.", "Basalt Hall", "A three-tier stepped basalt hall with magma seams and spikes, a fire crown, a lion gate and a burning obelisk.", "Ember Manor", "An obsidian keep with lava running down its edges and from a lion spout, crowned with fire under a turning golden sun disc, inside a magma moat.", "Sunburst Manor", "An obsidian keep with lava edges under a golden dome ringed by turning sunburst fins, with a small sun hovering above it, inside a magma moat."], "farm": ["Ember Fields", "Golden wheat behind basalt walls and stakes, with a stepped basalt granary and fire bowls.", "Sun Fields", "Wheat behind gold-banded basalt walls, with a stepped granary under a fire crown and burning obelisks at the corners.", "Sun Dial Fields", "Eight wedges of wheat in a round basalt dial split by lava channels, around a golden gnomon with a small sun floating above it.", "Solar Fields", "Twelve wedges of glowing wheat split by lava channels, under a small sun held aloft by four golden arcs, with mirrors catching its light."], "store": ["Forge Store", "A basalt store under an iron-plate roof, beside an angular furnace that always burns.", "Smelter", "A long, low basalt hall with three glowing bay doors and spiked roofs, beside a tall burning chimney stack and an iron gantry whose crucible pours molten gold into a mould.", "Gold Vault", "An obsidian treasury under a great golden dome and haloed lantern, guarded by lions, where molten gold runs in from a fire bowl.", "Sun Treasury", "A gold-plated pyramid on an obsidian base, crowned by a floating capstone of sunfire inside a turning golden ring, guarded by two lions."], "barracks": ["War Forge", "A stepped basalt hall with spiked edges and a lion gate, beside a burning forge chimney.", "War Hall", "A three-tier basalt hall with spike rows, a lion gate, a fire crown, two lion statues and burning obelisks.", "War Citadel", "A towering obsidian gatehouse whose face is a giant golden lion head with a mane of fire, flanked by spiked wings and obelisks, inside a magma moat.", "Sun Gate Legion", "An obsidian fortress whose gate is crowned by a great sun disc, flanked by giant lion statues and twin pylons spreading phoenix wings of fire."], "tower": ["Flame Tower", "A tapered basalt tower with gold bands, crowned by spikes and a fire bowl.", "Lion Bastion", "A stepped basalt bastion crowned by a great golden lion head with a mane of fire, beside a brazier that never goes out.", "Inferno Spire", "An obsidian needle with lava seams, circled by three turning golden halos, with a floating fireball blazing above its point.", "Solar Beacon", "A tall obsidian tower with lava edges, topped by a sun orb inside a spinning fan of golden blades, sweeping a beam of light across the field."], "pen": [null, null, "Ember Den", "Spiked basalt walls around a stepped pride rock ringed with magma, where the Ember Lion stands.", "Ember Pride", "A round arena ringed by flaming obsidian pillars and a lava moat, where the Ember Lion stands on a gold-veined crag under a halo.", "Pride of the Sun", "The Ember Lion stands on a stepped obsidian altar before a giant sun disc, in a golden arena ringed by arcs of solar flame, under its own constellation."], "sanctum": [null, null, "Flame Temple", "A three-step basalt ziggurat with lion statues on its stairs and a pillared, iron-roofed shrine over a great fire.", "Phoenix Temple", "A three-step round dais in a ring of lava, where a burning phoenix spreads golden wings on top of an obsidian spire under a gold halo.", "Temple of the Sun", "A four-step golden ziggurat with a molten stair and a pillared shrine, beneath a great hovering sun and gold halo, with phoenixes perched on the obelisks."], "workshop": [null, null, null, null, "Siege Foundry", "A smoking volcano forge with lava rivers and a halo over its crater, beside a basalt trebuchet loaded with a fireball.", "Sunforge", "A great golden ring holds a burning lens that focuses sunlight onto a forge, beside a golden Sunfire Cannon with a glowing lens."]}, "earth": {"house": ["Burrow", "A small grass mound with a round green-lit door.", "Tree Home", "A small living tree with a door and windows in its trunk.", "Rune Dolmen", "A great dolmen of rune-carved standing stones under a mossy capstone, bound by roots, with an emerald crystal cluster growing from the roof and rune stones orbiting above.", "Starbud Lodge", "A home inside a giant closed star-bud of pale petals, with glowing windows and a rune door, ringed by glowing flowers under a small green star."], "farm": ["Root Garden", "Log-edged raised beds and a rune stone.", "Grove Garden", "Raised beds under fruit trees, entered through a small trilithon.", "Crystal Terraces", "Three round stone terraces of crops stepping up to an emerald crystal spire on a rune pedestal, with rune stones circling it and a trilithon gate.", "Starbloom Fields", "Eight petal-shaped beds of glowing star-lilies radiate from a giant open star-lily on a starwood stalk, its pollen drifting like stars."], "store": ["Root Cellar", "A mound with a doorway under arching roots.", "Root Vault", "A giant hollow stump with a glowing door, behind a trilithon gate.", "Geode Vault", "A split stone geode lined with glowing emerald crystals and stocked with goods, bound by roots, with crystals bursting from its crown and a floating rune capstone.", "Seedpod Vault", "A giant split seed pod full of glowing seeds, bound by roots, beside a starwood stalk crowned with a green star."], "barracks": ["Thorn Barracks", "A long earthen hall behind thorns.", "Thorn Hall", "A long vaulted hall of living branches and leaves, crossed by a taller woven transept crowned with a rune lantern, behind a trilithon gate and a thorn hedge.", "Stone Avenue", "A long gallery of rune-lit trilithons roofed with capstones, ending at a tall crystal-topped war menhir, behind a thorn hedge with rune stones orbiting above.", "Leafguard Hall", "A long hall of starwood pillars roofed with overlapping giant leaves, beside a tall flowering stalk, behind a hedge of thorns hung with star-fruit."], "tower": ["Stone Sentinel", "A vine-wrapped rune pillar with a canopy on top.", "Braided Spire", "Three living trunks braided into a slender spire, rising from a ring of roots to a woven lookout under a small canopy, with a hanging rune lantern.", "Rune Obelisk", "A tall carved obelisk banded with glowing runes and gripped by roots, with a floating capstone and emerald crystal above its point and rune stones circling it.", "Star Stalk", "A tall starwood stalk wound by a spiral constellation, opening into a great glowing star-blossom lookout with a star above."], "pen": [null, null, "Serpent Hollow", "A mossy hollow ringed by rune stones and arching roots, where the Rootcoil Serpent coils.", "Serpent Sanctum", "Stepped stone tiers ring a mossy floor where the elder Rootcoil Serpent coils beside a great emerald crystal, entered through a trilithon.", "Serpent Lotus", "The elder Rootcoil Serpent coils in the heart of a giant double lotus on a glowing pool, under a serpent constellation."], "sanctum": [null, null, "Heart Grove", "A ring of trilithons around a glowing heart-tree on a stone altar.", "Heart of the Grove", "A kerbed earthen barrow wrapped by four giant roots spiralling up to a colossal emerald crystal heart, with a beam of green light, orbiting rune stones and carved menhirs.", "Heart Blossom", "Three starwood stems spiral up from a ring of trilithons into an enormous blossom holding an emerald heart crystal, with a beam of light and orbiting rune stones."], "workshop": [null, null, null, null, "Root Works", "A mossy dolmen forge beside a catapult whose throwing arm is a living bent tree anchored in stone, loaded with an emerald boulder.", "Seed Engines", "A green-fire forge inside an open blossom, beside a catapult whose arm is a starwood stalk ending in a flower that cradles a glowing seed."]}};
+  INFO_NEW.air.wonder = [null, null, null, null, null, null, "Tempest Hive", "An amber-glass hive cathedral on a floating island, chained to a honeycomb plinth and fed by four honey pylons. A crown of sails turns above it, under a storm eye of clouds and lightning. Superweapon: the Great Tempest."];
+  INFO_NEW.water.wonder = [null, null, null, null, null, null, "Moon Lighthouse", "A pearl lighthouse rising from its own lagoon, with waterfalls pouring off every balcony and a water stair winding to the top, where a great lens sweeps its beam under the moon in a turning armillary. Superweapon: the Moonfall Tide."];
+  INFO_NEW.fire.wonder = [null, null, null, null, null, null, "Phoenix Forge", "A stepped volcano-temple of black stone with a molten stair and four golden lions. On its caldera stands a giant sun-mirror ring, and inside it the phoenix sleeps, glowing. Superweapon: the Phoenix Strike."];
+  INFO_NEW.earth.wonder = [null, null, null, null, null, null, "Titan's Henge", "A ring of rune-carved trilithons around a stone titan, asleep and cross-legged, with a star tree growing from its shoulder and rune stones circling its head. Superweapon: the Great Quake."];
   var STYLE_NEW = {"air": "Clouds and stars: honeycomb halls ride islands on cloud banks under blazing amber stars, with airships, gliders and turning constellations.", "water": "Moon and silver: glass and pearl beneath silver crescents and glowing moons, with an orrery, a pearl-moon clam and water falling from the sky.", "fire": "Sun and phoenix: obsidian and gold crowned by small suns, sunburst fins and phoenix wings, with a golden pyramid and a solar lens.", "earth": "Star blossoms: giant glowing buds, lilies and seed pods on pale starwood, with drifting pollen, emerald hearts and green constellations."};
   window.__VER = "new";
   function twistFor(n, id) {
@@ -191,7 +196,7 @@ h2 { margin: -4px 0 0; font: 700 26px/1 var(--display); text-transform: uppercas
   var LABEL = { dark: "Dark", mythic: "Mythic", arcane: "Arcane", celestial: "Celestial" };
   ROLES.forEach(function (r, i) {
     var a = document.createElement("article"); a.className = "card"; a.dataset.i = i;
-    var right = r.ages.length === 1 ? '<span class="new">New in Arcane</span>' :
+    var right = r.ages.length === 1 ? '<span class="new">New in ' + LABEL[r.ages[0]] + '</span>' :
       '<div class="seg" role="group" aria-label="Age">' + r.ages.map(function (ag) { return '<button type="button" data-age="' + ag + '" aria-pressed="false">' + LABEL[ag] + '</button>'; }).join("") + '</div>';
     a.innerHTML = '<div class="card-head"><p class="eyebrow">' + r.role + '<span class="fp">' + r.fp + '</span></p>' + right + '</div>' +
       '<h2></h2><div class="art" role="img"><p class="fallback">Loading 3D preview…</p></div>' +
@@ -7631,11 +7636,188 @@ h2 { margin: -4px 0 0; font: 700 26px/1 var(--display); text-transform: uppercas
     starMotes(b, 14, 2.2, 0.8, 3.6, "#c8ffd8", 0.1);
   }
 
+  /* ======================= CELESTIAL WONDERS (4x4, one per nation) ======================= */
+  // Each nation's last and greatest building: a landmark that charges and unleashes the
+  // nation's superweapon. Drawn on the Town Center's 6.0 slab, so the game shows it at 1:1.
+  function spinGroup(b, x, y, z, sp, fn) { var g = new T3.Group(); g.position.set(x, y, z); b.g.add(g); inGroup(b, g, fn); b.fx.push(function (t) { g.rotation.y = t * sp; }); return g; }
+
+  /* ---- Hufflepuff: the Tempest Hive ---- */
+  function chWonder(b) {
+    b.slab(6.0, "grassAir", "sideAir"); b.decal("path", 1.4, 1.4, 1.6, 2.6, -PI / 4);
+    hexStep(b, 2.55, 0.22, 0); hexStep(b, 2.1, 0.2, 0.22); hexStep(b, 1.55, 0.18, 0.42);
+    var IY = 2.25;
+    // Four honey pylons beam power up to the island; golden chains hold it down.
+    [[2.05, 0], [-2.05, 0], [0, 2.05], [0, -2.05]].forEach(function (q) { honeyPylon(b, q[0], q[1], 1.5, q[0] * 0.35, IY - 0.6, q[1] * 0.35); });
+    var chain = WGOLD();
+    [[1.3, 1.3], [-1.3, 1.3], [1.3, -1.3], [-1.3, -1.3]].forEach(function (q) { b.beam([q[0] * 0.95, 0.62, q[1] * 0.95], [q[0] * 0.6, IY - 0.3, q[1] * 0.6], 0.035, chain); for (var k = 1; k < 6; k++) { var t = k / 6; b.add(new T3.TorusGeometry(0.07, 0.022, 5, 10), chain, q[0] * (0.95 - 0.35 * t), 0.62 + (IY - 0.92) * t, q[1] * (0.95 - 0.35 * t), { ry: PI / 4 + k, noCast: true }); } });
+    for (var c = 0; c < 9; c++) { var p = onRing(1.55, c / 9 * 2 * PI); cloud(b, p[0], IY - 1.05 + (c % 2) * 0.12, p[1], 0.85); }
+    var I = hexIsland(b, 0, IY, 0, 1.75, 1.3, 91);
+    inGroup(b, I, function () {
+      // The amber-glass hive cathedral: a great honeycomb drum under an amber dome, with six chapels.
+      for (var k = 0; k < 6; k++) { var f = nb(0, 0, 0.95, 0.38, k); hexCell(b, f[0], f[1], 0.38, 0.62, 0, { lamps: [[k, 0.55]], cap: k % 2 ? "tent" : null, capH: 0.32 }); }
+      hexCell(b, 0, 0, 0.95, 1.25, 0, { band: 0.55, lamps: [[0, 0.5], [1, 0.5], [5, 0.5]], door: [0, 0.32, 0.5] });
+      b.add(new T3.SphereGeometry(0.88, 24, 12, 0, 2 * PI, 0, PI / 2), AMBERG(0.9), 0, 1.25, 0);
+      for (var r = 0; r < 6; r++) b.add(new T3.TorusGeometry(0.89, 0.025, 5, 24, PI), C(BY.black), 0, 1.25, 0, { ry: r * PI / 6 });
+      b.add(new T3.CylinderGeometry(0.12, 0.18, 0.5, 6), WGOLD(), 0, 2.3, 0);
+    });
+    // The crown of sails turns in the wind, and the storm eye turns above it.
+    var crown = new T3.Group(); crown.position.set(0, IY + 2.6, 0); b.g.add(crown);
+    b.add(new T3.TorusGeometry(0.95, 0.04, 6, 40), WGOLD(), 0, 0, 0, { parent: crown, rx: PI / 2 });
+    for (var s = 0; s < 6; s++) { var a = s / 6 * 2 * PI, sg = new T3.Group(); sg.rotation.y = -a; crown.add(sg); b.add(new T3.BoxGeometry(0.75, 0.02, 0.32), M("canvasBY", 1, 0.5, { side: T3.DoubleSide }), 0.62, 0.05, 0, { parent: sg, rx: 0.5 }); b.beam([0, 0, 0], [0.98, 0, 0], 0.02, C(BY.black), sg); }
+    b.fx.push(function (t) { crown.rotation.y = t * 0.9; crown.position.y = IY + 2.6 + Math.sin(t * 0.8) * 0.06; });
+    var storm = new T3.Group(); storm.position.set(0, IY + 3.3, 0); b.g.add(storm);
+    var sm = C("#cfd6e8", { roughness: 1, emissive: lin("#8a96c0"), emissiveIntensity: 0.25, transparent: true, opacity: 0.92 });
+    for (var k2 = 0; k2 < 14; k2++) { var a2 = k2 / 14 * 2 * PI, rr = 1.25 + (k2 % 3) * 0.12; b.add(new T3.SphereGeometry(0.32 + (k2 % 2) * 0.1, 12, 8), sm, Math.cos(a2) * rr, (k2 % 3) * 0.06, Math.sin(a2) * rr, { parent: storm, s: [1.3, 0.6, 1], noCast: true }); }
+    var bolt = glowMat("#fff8d0", "#ffd040", 2.4), bolts = [];
+    for (var k3 = 0; k3 < 3; k3++) { var bg = new T3.Group(); storm.add(bg); var q2 = onRing(1.2, k3 * 2.1); [[0, 0], [0.12, -0.25], [-0.05, -0.5], [0.1, -0.78]].reduce(function (pr, cu) { b.beam([q2[0] + pr[0], pr[1] - 0.1, q2[1]], [q2[0] + cu[0], cu[1] - 0.1, q2[1]], 0.03, bolt, bg); return cu; }); bolts.push(bg); }
+    b.fx.push(function (t) { storm.rotation.y = -t * 0.35; bolts.forEach(function (bg, i) { bg.visible = Math.sin(t * 3.1 + i * 2.3) > 0.82; }); });
+    starBurst(b, 0, IY + 3.8, 0, 1.0, "#fff6d0", "#ffb020");
+    constellation(b, IY + 3.0, 2.3, 10, "#ffd060", 0.12, 0.1);
+    starMotes(b, 24, 2.6, 0.6, 5.8, "#ffe8a0", 0.13);
+  }
+
+  /* ---- Ravenclaw: the Moon Lighthouse ---- */
+  function cwWonder(b) {
+    b.slab(6.0, "grassWater", "sideWater");
+    roundPool(b, 0, 0, 2.55, 0);
+    var pearl = PEARLM(2, 1), silver = SILVER();
+    b.add(new T3.CylinderGeometry(1.35, 1.5, 0.35, 32), PEARLM(4, 0.4), 0, 0.17, 0);
+    // A bridge of stepping stones from the bank to the island.
+    for (var s = 0; s < 4; s++) b.add(new T3.CylinderGeometry(0.22, 0.24, 0.12, 12), PEARLM(1, 1), 1.55 + s * 0.3, 0.08, 1.55 + s * 0.3);
+    var tiers = [[1.05, 1.0], [0.88, 0.9], [0.72, 0.85], [0.56, 0.75]], y = 0.35;
+    tiers.forEach(function (q, i) {
+      b.add(new T3.CylinderGeometry(q[0] * 0.92, q[0], q[1], 24), pearl, 0, y + q[1] / 2, 0);
+      b.cylWindows(0, 0, q[0] * 0.96, y + q[1] * 0.45, [0.3, 1.1, 1.9, 2.7, 3.5, 4.3, 5.1, 5.9], 0.12, 0.26, GLASSM(0.9));
+      b.add(new T3.TorusGeometry(q[0] + 0.05, 0.05, 8, 40), silver, 0, y + q[1], 0, { rx: PI / 2 });
+      // Waterfalls pour off every balcony.
+      [0.4, 2.5, 4.6].forEach(function (a, k) {
+        var a2 = a + i * 0.9, h = q[1] + 0.06, m = WATERM(0.4, h, 0.8);
+        b.add(new T3.PlaneGeometry(0.28, h), m, Math.cos(a2) * (q[0] + 0.08), y + h / 2, Math.sin(a2) * (q[0] + 0.08), { ry: -a2 + PI / 2, noCast: true }).material.side = T3.DoubleSide;
+        b.fx.push(function (t) { m.map.offset.y = t * 1.2 + k; });
+      });
+      y += q[1];
+    });
+    // The water stair winding up the tower.
+    var pts = []; for (var k = 0; k <= 40; k++) { var t = k / 40, a = t * PI * 4.2; pts.push(new T3.Vector3(Math.cos(a) * (1.18 - t * 0.5), 0.4 + t * (y - 0.5), Math.sin(a) * (1.18 - t * 0.5))); }
+    var wm = WATERM(6, 0.3, 0.85);
+    b.add(new T3.TubeGeometry(new T3.CatmullRomCurve3(pts), 120, 0.06, 6, false), wm, 0, 0, 0, { noCast: true });
+    b.fx.push(function (t) { wm.map.offset.x = -t * 0.6; });
+    // The lantern room: a glass dome, the great lens, and the beam sweeping the sea.
+    b.add(new T3.CylinderGeometry(0.5, 0.5, 0.08, 24), silver, 0, y + 0.04, 0);
+    for (var c = 0; c < 8; c++) { var p = onRing(0.44, c / 8 * 2 * PI); b.add(new T3.CylinderGeometry(0.025, 0.025, 0.6, 6), silver, p[0], y + 0.38, p[1]); }
+    b.add(new T3.SphereGeometry(0.5, 24, 12, 0, 2 * PI, 0, PI / 2), GLASSM(0.35), 0, y + 0.68, 0, { noCast: true });
+    var lens = b.add(new T3.OctahedronGeometry(0.26, 0), glowMat("#f4fbff", "#8ac8ff", 2.6), 0, y + 0.4, 0, { noCast: true }); lens.scale.set(1, 1.4, 1);
+    var beamG = new T3.Group(); beamG.position.set(0, y + 0.4, 0); b.g.add(beamG);
+    var bm = new T3.MeshBasicMaterial({ color: lin("#d8ecff"), transparent: true, opacity: 0.22, depthWrite: false, side: T3.DoubleSide });
+    [0, PI].forEach(function (a) { var cn = b.add(new T3.ConeGeometry(0.42, 2.6, 16, 1, true), bm, Math.cos(a) * 1.35, 0, Math.sin(a) * 1.35, { parent: beamG, rz: a === 0 ? PI / 2 : -PI / 2, noCast: true }); cn.renderOrder = 3; });
+    b.fx.push(function (t) { beamG.rotation.y = t * 0.5; lens.rotation.y = -t; });
+    // The moon above, caught in a turning armillary and a silver crescent.
+    moonOrb(b, 0, y + 1.75, 0, 0.42);
+    armSphere(b, 0, y + 1.75, 0, 1.35);
+    crescent(b, 0, y + 1.75, 0, 0.95, 0.06, PI / 4, silver);
+    // Pearl obelisks with small armillaries at the pool's edge.
+    [[2.2, -2.2], [-2.2, 2.2], [-2.3, -2.3]].forEach(function (q) { b.add(new T3.CylinderGeometry(0.12, 0.2, 1.4, 4), PEARLM(1, 2), q[0], 0.7, q[1], { ry: PI / 4 }); armSphere(b, q[0], 1.75, q[1], 0.45); });
+    waterRing2(b, 0, y * 0.55, 0, 1.6, 0.3, 0.4);
+    starMotes(b, 22, 2.6, 0.5, 6.4, "#cfe4ff", 0.13);
+  }
+
+  /* ---- Gryffindor: the Phoenix Forge ---- */
+  function cgWonder(b) {
+    b.slab(6.0, "grassFire", "sideFire");
+    var obs = OBS(), lava = lavaM(1.6);
+    var tiers = [[4.6, 0.55], [3.7, 0.55], [2.8, 0.55], [2.0, 0.5]], y = 0;
+    tiers.forEach(function (q, i) {
+      b.box(q[0], q[1], q[0], obs, 0, y, 0);
+      b.box(q[0] + 0.04, 0.05, q[0] + 0.04, lava, 0, y + q[1] - 0.06, 0, { noCast: true });
+      edgeLava(b, 0, 0, y, q[0] * 0.7, q[0] * 0.66, q[1], lava);
+      y += q[1];
+    });
+    // The molten stair down the front, with lava falling beside it.
+    for (var s = 0; s < 8; s++) { var z = 2.25 - s * 0.26; b.box(0.9, 0.08, 0.26, s % 2 ? obs : lavaM(1.2), 0, s * 0.27, z + 0.06); }
+    [-0.6, 0.6].forEach(function (x) { var m = lavaM(1.8); b.add(new T3.PlaneGeometry(0.18, 2.1), m, x, 1.05, 1.45, { rx: -0.62, noCast: true }).material.side = T3.DoubleSide; b.fx.push(function (t) { m.emissiveIntensity = 1.5 + Math.sin(t * 3 + x) * 0.4; }); });
+    // Four golden lions guard the corners.
+    [[1.85, 1.85, PI / 4], [-1.85, 1.85, -PI / 4], [1.85, -1.85, 3 * PI / 4], [-1.85, -1.85, -3 * PI / 4]].forEach(function (q) { lionStatue(b, q[0], q[1], 0.55, q[2], 1.5); });
+    // The caldera on top, ringed by fire.
+    b.add(new T3.CylinderGeometry(0.85, 0.95, 0.25, 8), obs, 0, y + 0.12, 0);
+    b.add(new T3.CylinderGeometry(0.75, 0.75, 0.05, 24), lavaM(2.2), 0, y + 0.24, 0, { noCast: true });
+    haloG(b, 0, y + 0.55, 0, 1.05);
+    dFlame(b, -0.35, y + 0.25, 0.2, 1.2); dFlame(b, 0.35, y + 0.25, -0.2, 1.0);
+    // The great sun-mirror ring, standing to face the valley, with the sleeping phoenix inside.
+    var ring = new T3.Group(); ring.position.set(0, y + 2.0, 0); ring.rotation.y = PI / 4; b.g.add(ring);
+    var gold = REDGOLD();
+    b.add(new T3.TorusGeometry(1.45, 0.12, 10, 56), gold, 0, 0, 0, { parent: ring });
+    b.add(new T3.TorusGeometry(1.25, 0.04, 6, 56), glowMat("#fff2b0", "#ffb020", 1.6), 0, 0, 0, { parent: ring, noCast: true });
+    var rays = new T3.Group(); ring.add(rays);
+    for (var i = 0; i < 16; i++) { var a = i / 16 * 2 * PI; b.add(new T3.ConeGeometry(0.08, i % 2 ? 0.35 : 0.6, 4), gold, Math.cos(a) * (i % 2 ? 1.7 : 1.82), Math.sin(a) * (i % 2 ? 1.7 : 1.82), 0, { parent: rays, rz: a - PI / 2 }); }
+    b.beam([-1.0, -1.45, 0], [-0.6, -1.05, 0], 0.08, gold, ring); b.beam([1.0, -1.45, 0], [0.6, -1.05, 0], 0.08, gold, ring);
+    var bird = new T3.Group(); ring.add(bird);
+    var body = lavaM(1.4);
+    b.add(new T3.SphereGeometry(0.32, 16, 12), body, 0, -0.15, 0, { parent: bird, s: [0.8, 1.15, 0.8] });
+    b.add(new T3.SphereGeometry(0.17, 12, 10), REDGOLD(), 0, 0.28, 0.08, { parent: bird });
+    b.add(new T3.ConeGeometry(0.06, 0.22, 4), C("#3a1a08"), 0, 0.25, 0.28, { parent: bird, rx: PI / 2 });
+    for (var c = 0; c < 3; c++) b.add(new T3.ConeGeometry(0.03, 0.22, 4), REDGOLD(), (c - 1) * 0.07, 0.48, 0, { parent: bird, rz: (c - 1) * 0.4 });
+    var wings = new T3.Group(); wings.position.set(0, 0.0, -0.05); bird.add(wings);
+    var L = featherWing(b, wings, 1, 6, 0.55, 0.12), R = featherWing(b, wings, -1, 6, 0.55, 0.12);
+    for (var tf = 0; tf < 5; tf++) b.add(new T3.ConeGeometry(0.05, 0.9, 4), tf % 2 ? REDGOLD() : lavaM(1.6), (tf - 2) * 0.09, -0.75, -0.04, { parent: bird, rz: (tf - 2) * 0.18, noCast: true });
+    b.fx.push(function (t) { rays.rotation.z = t * 0.25; bird.position.y = Math.sin(t * 0.9) * 0.06; wings.scale.set(0.85 + Math.sin(t * 0.9) * 0.08, 1, 1); body.emissiveIntensity = 1.2 + Math.sin(t * 0.9) * 0.4; });
+    // Fire obelisks with floating fireballs at the back corners of the top tier.
+    [[0.75, -0.75], [-0.75, -0.75]].forEach(function (q) { b.add(new T3.CylinderGeometry(0.07, 0.14, 0.9, 4), obs, q[0], y + 0.45, q[1], { ry: PI / 4 }); sunOrb(b, q[0], y + 1.15, q[1], 0.13); });
+    starMotes(b, 18, 2.6, 0.8, 5.6, "#ffd080", 0.12);
+  }
+
+  /* ---- Slytherin: the Titan's Henge ---- */
+  function csWonder(b) {
+    b.slab(6.0, "grassEarth", "sideEarth");
+    megaRing(b, 0, 0, 2.15, 0.16, 0, 16);
+    megaRing(b, 0, 0, 1.55, 0.14, 0.16, 12);
+    // Eight rune-carved trilithons ring the grove.
+    for (var i = 0; i < 8; i++) {
+      var a = i / 8 * 2 * PI + PI / 8, p = onRing(2.45, a), ry = -a + PI / 2;
+      if (i === 1) continue; // the open way in, towards the valley
+      var g = new T3.Group(); g.position.set(p[0], 0, p[1]); g.rotation.y = ry; b.g.add(g);
+      inGroup(b, g, function () {
+        slab4(b, -0.32, 0, 0, 0.26, 1.35, 0.26, 0, RSTONE()); slab4(b, 0.32, 0, 0, 0.26, 1.35, 0.26, 0, RSTONE());
+        slab4(b, 0, 1.35, 0, 0.98, 0.24, 0.3, 0, RSTONE());
+        b.box(0.04, 0.6, 0.12, runeG(1.2), -0.32, 0.4, 0.14, { noCast: true }); b.box(0.04, 0.6, 0.12, runeG(1.2), 0.32, 0.4, 0.14, { noCast: true });
+      });
+    }
+    // The titan, asleep, sitting cross-legged in the middle; its runes glow while it gathers power.
+    var T = new T3.Group(); T.rotation.y = PI / 4; b.g.add(T);
+    var st = RSTONE(2, 2), dark = M("stoneGrey", 1, 1, { color: lin("#7d8a7a"), flatShading: true }), rune = runeG(1.6);
+    inGroup(b, T, function () {
+      [[-1, 1], [1, -1]].forEach(function (q) { var leg = b.add(rough(new T3.CylinderGeometry(0.42, 0.48, 1.9, 8, 2), 0.18, q[0] * 3), st, 0, 0.6, q[0] * 0.12, { rz: PI / 2, ry: q[0] * 0.45 }); });
+      b.add(rough(new T3.DodecahedronGeometry(0.8, 1), 0.2, 4), dark, 0, 1.0, -0.15, { s: [1.3, 0.75, 1.1] });
+      b.add(rough(new T3.DodecahedronGeometry(1.0, 1), 0.2, 7), st, 0, 2.05, -0.2, { s: [1.15, 1.35, 0.85] });
+      b.add(rough(new T3.DodecahedronGeometry(0.55, 1), 0.2, 9), st, -0.95, 2.75, -0.2);
+      b.add(rough(new T3.DodecahedronGeometry(0.55, 1), 0.2, 11), st, 0.95, 2.75, -0.2);
+      [-1, 1].forEach(function (sd) {
+        b.add(rough(new T3.CylinderGeometry(0.26, 0.32, 1.5, 7), 0.2, sd * 5), dark, sd * 1.15, 2.0, 0.05, { rz: sd * 0.25, rx: 0.35 });
+        b.add(rough(new T3.DodecahedronGeometry(0.34, 0), 0.2, sd * 13), st, sd * 0.85, 1.2, 0.55);
+      });
+      var head = new T3.Group(); head.position.set(0, 3.45, -0.05); head.rotation.x = 0.35; T.add(head);
+      b.add(rough(new T3.DodecahedronGeometry(0.55, 1), 0.15, 17), st, 0, 0, 0, { parent: head, s: [1, 1.15, 0.95] });
+      b.add(new T3.BoxGeometry(0.5, 0.18, 0.2), dark, 0, -0.35, 0.38, { parent: head });
+      [-0.18, 0.18].forEach(function (ex) { b.add(new T3.BoxGeometry(0.16, 0.035, 0.05), rune, ex, 0.05, 0.5, { parent: head, noCast: true }); });
+      b.add(new T3.BoxGeometry(0.08, 0.55, 0.06), rune, 0, 2.2, 0.66, { noCast: true });
+      b.add(new T3.BoxGeometry(0.4, 0.08, 0.06), rune, 0, 2.3, 0.66, { noCast: true });
+      // A young star tree grows from its shoulder.
+      b.add(new T3.CylinderGeometry(0.06, 0.1, 0.9, 6), STARWOOD(0.4, 1), 1.0, 3.4, -0.25, { rz: -0.2 });
+      bloom(b, 1.12, 3.9, -0.25, 0.55, 7, 1.0, "#e8f6e0", "#cfe8c4", true);
+      [[-1.3, 1.3, -0.4], [0.2, 1.1, 0.9], [1.3, 1.6, 0.3], [-0.5, 2.6, 0.75]].forEach(function (q, k) { b.add(new T3.DodecahedronGeometry(0.2 + (k % 2) * 0.08, 0), C("#5f8a3a", { flatShading: true }), q[0], q[1], q[2]); });
+    });
+    rootsAround(b, 0, 0, 0.9, 2.0, 0.7, 9, PI / 4);
+    crystals(b, -1.1, 0.3, 1.25, 0.8, 5, 0.9); crystals(b, 1.3, 0.3, -1.0, 0.7, 4, 0.8);
+    orbitStones(b, 0, 3.6, 0, 1.6, 6, 1.0);
+    b.fx.push(function (t) { rune.emissiveIntensity = 1.2 + Math.sin(t * 1.2) * 0.5; });
+    constellation(b, 4.9, 2.2, 9, "#7cffa8", 0.15, -0.08);
+    starMotes(b, 22, 2.6, 0.6, 5.8, "#c8ffd8", 0.12);
+  }
+
   var CELB = {
-    air: [chHouse, chFarm, chStore, chBarracks, chTower, chPen, chSanctum, chWorkshop],
-    water: [cwHouse, cwFarm, cwStore, cwBarracks, cwTower, cwPen, cwSanctum, cwWorkshop],
-    fire: [cgHouse, cgFarm, cgStore, cgBarracks, cgTower, cgPen, cgSanctum, cgWorkshop],
-    earth: [csHouse, csFarm, csStore, csBarracks, csTower, csPen, csSanctum, csWorkshop]
+    air: [chHouse, chFarm, chStore, chBarracks, chTower, chPen, chSanctum, chWorkshop, chWonder],
+    water: [cwHouse, cwFarm, cwStore, cwBarracks, cwTower, cwPen, cwSanctum, cwWorkshop, cwWonder],
+    fire: [cgHouse, cgFarm, cgStore, cgBarracks, cgTower, cgPen, cgSanctum, cgWorkshop, cgWonder],
+    earth: [csHouse, csFarm, csStore, csBarracks, csTower, csPen, csSanctum, csWorkshop, csWonder]
   };
 
   /* ---------- shared renderer, one canvas per card ---------- */

@@ -12,6 +12,7 @@ import { ICONS, EMBLEMS } from './ui/icons.js';
 import { Tutorial, ARENA_STEPS } from './tutorial.js';
 import { WILD, WILD_INFO } from './sim/wild.js';
 import { WONDERS } from './sim/wonders.js';
+import { SUPER } from './sim/superweapon.js';
 import { Audio } from './audio.js';
 import { installGate } from './ui/install.js';
 import { Ascension, prepareArts } from './ageup.js';
@@ -191,7 +192,7 @@ class Game {
       if (ev.type === 'placed') v.addBuilding(w.get(ev.id));
       else if (ev.type === 'built') {
         const b = w.get(ev.id);
-        if (b) { v.syncBuilding(b); if (b.team === 0) { this.hud.toast(`${CONFIG.buildings[b.type].name} complete.`); audio.sfx('built'); audio.say('built', b.type, true); } }
+        if (b) { v.syncBuilding(b); if (b.team === 0) { this.hud.toast(`${b.type === 'wonder' ? SUPER[w.teams[0].nation.art].wonder : CONFIG.buildings[b.type].name} complete.${b.type === 'wonder' ? ` The ${SUPER[w.teams[0].nation.art].name} is charging.` : ''}`); audio.sfx('built'); audio.say('built', b.type, true); } }
       } else if (ev.type === 'trained' && ev.team === 0) {
         const u = w.get(ev.id);
         if (!u) continue;
@@ -233,7 +234,8 @@ class Game {
       } else if (ev.type === 'removed') {
         v.removeEntity(ev);
         if (ev.cat === 'bld') audio.sfx('crumble', 0.3);
-        if (ev.cat === 'bld' && ev.team === 0) this.hud.toast(`Your ${CONFIG.buildings[ev.kind].name} was destroyed.`, 'bad');
+        if (ev.cat === 'bld' && ev.team === 0) this.hud.toast(`Your ${ev.kind === 'wonder' ? SUPER[w.teams[0].nation.art].wonder : CONFIG.buildings[ev.kind].name} was destroyed.`, 'bad');
+        if (ev.cat === 'bld' && ev.team === 1 && ev.kind === 'wonder') { this.hud.toast(`You destroyed the rival's ${SUPER[w.teams[1].nation.art].wonder}!`, 'good'); audio.sfx('fanfare', 0.5); }
         if (ev.cat === 'unit' && ev.team === 0 && (ev.kind === 'hero' || ev.kind === 'creature')) this.hud.toast(ev.kind === 'hero' ? 'Your hero has fallen. Train them again at the Sanctum.' : 'Your creature has fallen. Train it again at the Beast Pen.', 'bad');
         if (ev.cat === 'unit' && ev.team !== 0 && ev.kind === 'hero') this.hud.toast('You defeated the rival hero!', 'good');
       } else if (ev.type === 'hit') {
@@ -268,6 +270,18 @@ class Game {
           this.hud.toast(what, 'good'); audio.sfx('fanfare', 0.5); audio.speak('Well done!', true);
           const [x, z] = v.toWorld(ev.x, ev.y); v.magic.emit(w.teams[0].nation.art, x, z, { n: 40, radius: 1.5, speed: 1.4, life: 1.4, size: 1.1, shape: 'star' });
         } else this.hud.toast('The rival cleared a wild lair.', 'bad');
+      } else if (ev.type === 'superReady' || ev.type === 'superSoon' || ev.type === 'superFire' || ev.type === 'superBurst') {
+        const S = SUPER[w.teams[ev.team].nation.art];
+        if (ev.type === 'superFire') v.supers.fired(ev);
+        if (ev.type === 'superBurst') { v.supers.burst(ev); audio.sfx('boom', 0.8); }
+        if (ev.type === 'superReady' && ev.team === 0) { this.hud.toast(`Your ${S.wonder} is ready: tap it to unleash the ${S.name}!`, 'good'); audio.sfx('crown', 0.6); audio.speak(`The ${S.name} is ready!`, true); }
+        const W = w.get(ev.id), go = W ? [{ label: 'See it', icon: ICONS.army, act: () => this.view.centerOn(...w.center(W)) }] : [];
+        if (ev.type === 'superSoon' && ev.team === 1) this.hud.alert(`The rival's ${S.wonder} is ready in one minute! Destroy it, or keep your army spread out.`, go, 'bad', 12);
+        if (ev.type === 'superReady' && ev.team === 1) this.hud.alert(`The rival's ${S.name} is ready!`, go, 'bad', 10);
+        if (ev.type === 'superFire' && ev.team === 1) {
+          this.hud.alert(`The rival unleashed the ${S.name}!`, [{ label: 'Go there', icon: ICONS.army, act: () => this.view.centerOn(ev.x, ev.y) }], 'bad', 10);
+          audio.sfx('alarm');
+        }
       } else if (ev.type === 'wonderTaken' || ev.type === 'wonderLost' || ev.type === 'wonderUnder') {
         const D = WONDERS[ev.kind], [x, z] = v.toWorld(ev.x, ev.y);
         if (ev.type === 'wonderTaken') {
@@ -318,6 +332,14 @@ class Game {
 
   // ---------- heroes and creatures ----------
   // Use the selected hero's ability.
+  // The Wonder's button: aim, then tap the map.
+  aimSuper(id) {
+    const c = this.world.canFire(id);
+    if (!c.ok) { this.hud.toast(`Still charging: ready in ${Math.ceil(c.left || 0)} seconds.`, 'bad'); return; }
+    this.superMode = id; this.sel = [];
+    this.hud.toast('Tap where to strike!');
+    audio.sfx('select');
+  }
   castHero(id) {
     const w = this.world, u = w.get(id), c = w.canCast(u);
     if (!c.ok) { if (c.why === 'cooldown') this.hud.toast(`${w.def(0, 'hero').cast.name} is ready in ${Math.ceil(c.wait)} s.`); return; }
@@ -473,6 +495,16 @@ class Game {
       const rally = tile && { x: Math.floor(tile[0]), y: Math.floor(tile[1]), target: target && target.cat === 'res' ? target.id : (target?.cat === 'bld' && CONFIG.buildings[target.type].farm ? target.id : null) };
       if (rally) for (const id of this.sel) { const b = w.get(id); if (b?.cat === 'bld') b.rally = rally; }
       this.rallyMode = false;
+      return;
+    }
+    if (this.superMode) {
+      // Aiming the Wonder's superweapon: the tap is the target.
+      const id = this.superMode; this.superMode = null;
+      if (tile && this.world.fireSuper(id, tile[0], tile[1])) {
+        const S = SUPER[w.teams[0].nation.art];
+        this.hud.toast(`${S.name}!`, 'good'); audio.sfx(S.kind === 'tide' ? 'splash' : S.kind === 'phoenix' ? 'flame' : S.kind === 'quake' ? 'boom' : 'gust', 0.8); audio.sfx('crown', 0.5);
+        audio.speak({ tempest: 'Winds, rise!', tide: 'The tide is coming!', phoenix: 'Fly, phoenix!', quake: 'Titan, wake up!' }[S.kind], true);
+      }
       return;
     }
     if (this.amoveMode) {

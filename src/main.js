@@ -12,14 +12,14 @@ import { ICONS, EMBLEMS } from './ui/icons.js';
 import { Tutorial, ARENA_STEPS } from './tutorial.js';
 import { WILD, WILD_INFO } from './sim/wild.js';
 import { WONDERS } from './sim/wonders.js';
-import { SUPER } from './sim/superweapon.js';
+import { SUPER, RADIUS } from './sim/superweapon.js';
 import { Audio } from './audio.js';
 import { installGate } from './ui/install.js';
 import { Ascension, prepareArts } from './ageup.js';
 import { ELEMENTS } from './render/effects.js';
 import { techsFor, ROMAN } from './data/tech.js';
 import { Language, loadIndex, loadUnit } from './lang/bank.js';
-import { jobs, stationFor } from './lang/jobs.js';
+import { jobs, stationFor, incantation } from './lang/jobs.js';
 
 const STEP = 1 / 20;
 const plural = (name, n) => (n === 1 || name.endsWith('s') ? name : name.endsWith('man') ? `${name.slice(0, -3)}men` : `${name}s`);
@@ -270,10 +270,11 @@ class Game {
           this.hud.toast(what, 'good'); audio.sfx('fanfare', 0.5); audio.speak('Well done!', true);
           const [x, z] = v.toWorld(ev.x, ev.y); v.magic.emit(w.teams[0].nation.art, x, z, { n: 40, radius: 1.5, speed: 1.4, life: 1.4, size: 1.1, shape: 'star' });
         } else this.hud.toast('The rival cleared a wild lair.', 'bad');
-      } else if (ev.type === 'superReady' || ev.type === 'superSoon' || ev.type === 'superFire' || ev.type === 'superBurst') {
+      } else if (ev.type === 'superReady' || ev.type === 'superSoon' || ev.type === 'superFire' || ev.type === 'superBurst' || ev.type === 'superShock') {
         const S = SUPER[w.teams[ev.team].nation.art];
         if (ev.type === 'superFire') v.supers.fired(ev);
         if (ev.type === 'superBurst') { v.supers.burst(ev); audio.sfx('boom', 0.8); }
+        if (ev.type === 'superShock') { v.supers.shock(ev); audio.sfx('boom', 0.4); }
         if (ev.type === 'superReady' && ev.team === 0) { this.hud.toast(`Your ${S.wonder} is ready: tap it to unleash the ${S.name}!`, 'good'); audio.sfx('crown', 0.6); audio.speak(`The ${S.name} is ready!`, true); }
         const W = w.get(ev.id), go = W ? [{ label: 'See it', icon: ICONS.army, act: () => this.view.centerOn(...w.center(W)) }] : [];
         if (ev.type === 'superSoon' && ev.team === 1) this.hud.alert(`The rival's ${S.wonder} is ready in one minute! Destroy it, or keep your army spread out.`, go, 'bad', 12);
@@ -332,13 +333,40 @@ class Game {
 
   // ---------- heroes and creatures ----------
   // Use the selected hero's ability.
-  // The Wonder's button: aim, then tap the map.
+  // The Wonder's button: tap the map to place the circle (tap again to move it), confirm, speak
+  // the incantation (when English is on), and the superweapon strikes.
   aimSuper(id) {
     const c = this.world.canFire(id);
     if (!c.ok) { this.hud.toast(`Still charging: ready in ${Math.ceil(c.left || 0)} seconds.`, 'bad'); return; }
-    this.superMode = id; this.sel = [];
-    this.hud.toast('Tap where to strike!');
+    this.superAim = { id, at: null }; this.sel = [];
+    this.hud.toast('Tap the map to place the circle.');
     audio.sfx('select');
+  }
+  placeSuper(tile) {
+    const a = this.superAim, w = this.world, S = SUPER[w.teams[0].nation.art];
+    a.at = [Math.max(1, Math.min(w.size - 1, tile[0])), Math.max(1, Math.min(w.size - 1, tile[1]))];
+    this.view.supers.preview(a.at[0], a.at[1], RADIUS, w.teams[0].nation.color);
+    audio.sfx('order');
+    this.hud.confirm(`Unleash the ${S.name} here?`, `sw-${S.kind}`, () => this.confirmSuper(), () => this.cancelSuper());
+  }
+  cancelSuper() { this.superAim = null; this.view.supers.clearPreview(); this.hud.confirm(null); }
+  confirmSuper() {
+    const a = this.superAim, w = this.world, W = a && w.get(a.id);
+    this.hud.confirm(null);
+    if (!a?.at || !W || !w.canFire(a.id).ok) { this.cancelSuper(); return; }
+    const S = SUPER[w.teams[0].nation.art], strike = () => {
+      this.view.supers.clearPreview(); this.superAim = null;
+      if (!w.fireSuper(a.id, a.at[0], a.at[1])) return;
+      this.hud.toast(`${S.name}!`, 'good'); audio.sfx(S.kind === 'tide' ? 'splash' : S.kind === 'phoenix' ? 'flame' : S.kind === 'quake' ? 'boom' : 'gust', 0.8); audio.sfx('crown', 0.5);
+      audio.speak({ tempest: 'Winds, rise!', tide: 'The tide is coming!', phoenix: 'Fly, phoenix!', quake: 'Titan, wake up!' }[S.kind], true);
+    };
+    // The incantation: two English words at the Wonder. Stepping out calls the strike off.
+    if (this.lang && w.language) {
+      const st = incantation(this, W, `${S.name}: the incantation`, strike);
+      const close = st.close.bind(st);
+      st.close = done => { close(done); if (!done && this.superAim) { this.cancelSuper(); this.hud.toast('The strike is called off. The Wonder stays charged.'); } };
+      st.open();
+    } else strike();
   }
   castHero(id) {
     const w = this.world, u = w.get(id), c = w.canCast(u);
@@ -497,14 +525,9 @@ class Game {
       this.rallyMode = false;
       return;
     }
-    if (this.superMode) {
-      // Aiming the Wonder's superweapon: the tap is the target.
-      const id = this.superMode; this.superMode = null;
-      if (tile && this.world.fireSuper(id, tile[0], tile[1])) {
-        const S = SUPER[w.teams[0].nation.art];
-        this.hud.toast(`${S.name}!`, 'good'); audio.sfx(S.kind === 'tide' ? 'splash' : S.kind === 'phoenix' ? 'flame' : S.kind === 'quake' ? 'boom' : 'gust', 0.8); audio.sfx('crown', 0.5);
-        audio.speak({ tempest: 'Winds, rise!', tide: 'The tide is coming!', phoenix: 'Fly, phoenix!', quake: 'Titan, wake up!' }[S.kind], true);
-      }
+    if (this.superAim) {
+      // Aiming the Wonder's superweapon: each tap places (or moves) the circle.
+      if (tile) this.placeSuper(tile);
       return;
     }
     if (this.amoveMode) {

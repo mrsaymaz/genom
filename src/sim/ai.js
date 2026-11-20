@@ -3,7 +3,7 @@
 import { CONFIG } from '../config.js';
 import { wilds } from './wild.js';
 import { holders } from './wonders.js';
-import { canFire, fire } from './superweapon.js';
+import { canFire, fire, inCircle, RADIUS } from './superweapon.js';
 
 // What the rival researches first: its economy, then its army, then its towers and specials.
 const TECH_ORDER = ['farming', 'baskets', 'axes', 'weapons', 'picks', 'armour', 'townguard', 'forgefury', 'swarm', 'springs', 'ironbark', 'herocraft', 'fletching', 'beastcraft', 'walls', 'lionheart', 'tidehealers', 'hivestore', 'roots', 'quickfeet', 'signals', 'siegecraft'];
@@ -242,13 +242,14 @@ export class RivalAI {
   useSuper() {
     const w = this.w, b = this.mine('wonder')[0];
     if (!b || !canFire(w, b).ok) return;
-    const foes = [...w.units()].filter(u => u.team !== this.team && u.type !== 'worker');
-    let best = null, bn = 3;
-    for (const u of foes) { const n = foes.filter(v => Math.hypot(v.x - u.x, v.y - u.y) <= 3.5).length; if (n > bn) { bn = n; best = [u.x, u.y]; } }
-    if (!best) {
-      const order = ['wonder', 'barracks', 'watchtower', 'sanctum', 'workshop', 'towncenter'];
-      const blds = [...w.buildings(1 - this.team)].sort((a, c) => order.indexOf(a.type) - order.indexOf(c.type)).filter(x => order.includes(x.type));
-      if (blds[0]) best = w.center(blds[0]);
+    // Try a circle round each of the player's units and buildings; keep the one that catches the
+    // most (a building counts as three soldiers, the Town Center as five).
+    const foes = [...w.ents.values()].filter(e => (e.cat === 'unit' || e.cat === 'bld') && e.team !== undefined && e.team !== this.team && !e.inside);
+    const worth = e => (e.cat === 'unit' ? (e.type === 'worker' ? 0.5 : 1) : e.type === 'towncenter' ? 5 : 3);
+    let best = null, bs = 5;
+    for (const c of foes) {
+      const [x, y] = w.center(c), sc = inCircle(w, this.team, x, y, RADIUS - 0.5).reduce((s2, e) => s2 + worth(e), 0);
+      if (sc > bs) { bs = sc; best = [x, y]; }
     }
     if (best) fire(w, b.id, best[0], best[1]);
   }

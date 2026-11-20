@@ -104,7 +104,9 @@ export class HUD {
     this.rail = h('div', 'rail'); this.tickets = h('div', 'tickets'); this.jobKey = '';
     // The Wonders' countdowns, for both sides.
     this.supersEl = h('div', 'supers'); this.superKey = '';
-    root.append(this.top, this.obj, this.quick, this.mini, this.tray, this.panel, this.boxEl, this.alertEl, this.toasts, this.rail, this.tickets, this.supersEl);
+    // A short yes-or-no bar (confirming a superweapon's target).
+    this.confirmEl = h('div', 'confirm frame hidden');
+    root.append(this.top, this.obj, this.quick, this.mini, this.tray, this.panel, this.boxEl, this.alertEl, this.toasts, this.rail, this.tickets, this.supersEl, this.confirmEl);
     this.setLayout(game.hudLayout || 'corner');
     // Rings go last so their buttons sit above toasts and panels.
     this.ring = new ActionRing(root, 'on-map');
@@ -215,6 +217,17 @@ export class HUD {
   popFull() { const t = this.tok.pop; t.classList.remove('short'); void t.offsetWidth; t.classList.add('short'); }
 
   // ---------- the quest scroll ----------
+  // Shows the confirm bar (text, icon, yes, no), or hides it with null.
+  confirm(text, icon, yes, no) {
+    const el = this.confirmEl;
+    if (!text) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+    el.innerHTML = `<span class="ci">${ICONS[icon] || ''}</span><span class="ct">${text}</span><button type="button" class="cy">${ICONS.check}<span>Unleash</span></button><button type="button" class="cn">${ICONS.cancel}<span>Cancel</span></button>`;
+    el.querySelector('.cy').onclick = e => { e.stopPropagation(); yes(); };
+    el.querySelector('.cn').onclick = e => { e.stopPropagation(); no(); };
+    el.addEventListener('pointerdown', e => e.stopPropagation());
+    el.classList.remove('hidden');
+  }
+
   // A small pill for each built Wonder: whose it is, and how long until its superweapon is ready.
   superTimers() {
     const w = this.g.world, rows = [];

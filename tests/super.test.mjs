@@ -37,26 +37,33 @@ test('a Wonder charges for four minutes, fires once, then charges again', () => 
 });
 
 for (const [me, foe] of [['hufflepuff', 'gryffindor'], ['ravenclaw', 'gryffindor'], ['gryffindor', 'slytherin'], ['slytherin', 'hufflepuff']]) {
-  test(`the ${me} superweapon hurts the enemy group, spares friends, and spares most of a Town Center`, () => {
+  test(`the ${me} superweapon devastates enemies in its circle, spares friends and everything outside, and caps the Town Center at 65%`, () => {
     const w = celestial([me, foe]), W = wonder(w, 0); W.charge = 1;
     const rtc = [...w.buildings(1)].find(b => b.type === 'towncenter'), [rx, ry] = w.center(rtc);
     // Fire on the rival Town Center with a squad of each side beside it.
-    const them = squad(w, 1, rx - 3, ry + 3), us = squad(w, 0, rx + 9, ry + 9, 4);
-    const theirs = hpOf(them), ours = hpOf(us), tc = rtc.hp;
-    assert.ok(w.fireSuper(W.id, rx - 2, ry + 3));
-    run(w, 14);
-    assert.ok(hpOf(them) < theirs * 0.75, `${me}: enemy squad ${hpOf(them)} of ${theirs}`);
-    assert.equal(hpOf(us), ours, 'friends untouched');
-    assert.ok(rtc.hp >= tc - rtc.maxHp * 0.15 - 60, `Town Center kept most of its health (${rtc.hp} of ${tc})`);
+    const them = squad(w, 1, rx - 3, ry + 3), us = squad(w, 0, rx - 5.5, ry + 4.5, 4), far = squad(w, 1, rx + 12, ry + 12, 4);
+    const theirs = hpOf(them), ours = hpOf(us), outside = hpOf(far), tc = rtc.hp;
+    rtc.cd = 1e9; // its arrows would hit our squad: this test is about the superweapon
+    assert.ok(w.fireSuper(W.id, rx - 1, ry + 2));
+    const hits = [];
+    for (let i = 0; i < 20 * 14; i++) { w.step(0.05); hits.push(...w.drainEvents().filter(e => e.type === 'hit' && e.super)); }
+    assert.ok(hpOf(them) < theirs * 0.35, `${me}: enemy squad ${hpOf(them)} of ${theirs}`);
+    assert.ok(hits.length && hits.every(e => w.get(e.to)?.team !== 0), 'the weapon never hits friends');
+    assert.ok(!us.some(u => hits.some(e => e.to === u.id)), 'friends inside the circle untouched by it');
+    void ours;
+    assert.equal(hpOf(far), outside, 'enemies outside the circle untouched');
+    assert.ok(rtc.hp < tc - rtc.maxHp * 0.3, `the Town Center is badly hurt (${Math.round(rtc.hp)} of ${tc})`);
+    assert.ok(rtc.hp >= tc - rtc.maxHp * 0.65 - 80, `but keeps over a third of its health (${Math.round(rtc.hp)} of ${tc})`);
   });
 }
 
-test('the Great Quake raises a ridge that blocks the way for 30 seconds, also after loading', () => {
+test('the Great Quake raises a ring of rock with gaps for 30 seconds, also after loading', () => {
   const w = celestial(['slytherin', 'hufflepuff']), W = wonder(w, 0); W.charge = 1;
-  const [cx, cy] = w.center(W);
-  assert.ok(w.fireSuper(W.id, cx + 10, cy - 8));
+  const [cx, cy] = w.center(W), tx = cx + 12, ty = cy - 10;
+  assert.ok(w.fireSuper(W.id, tx, ty));
   const tiles = w.ridges[0].tiles;
-  assert.ok(tiles.length >= 6, `ridge tiles ${tiles.length}`);
+  assert.ok(tiles.length >= 20, `ring tiles ${tiles.length}`);
+  for (const i of tiles) assert.ok(Math.abs(Math.hypot(i % w.size + 0.5 - tx, Math.floor(i / w.size) + 0.5 - ty) - 6) < 0.6, 'on the circle');
   for (const i of tiles) assert.equal(w.map.terrain[i], T.ROCK);
   const back = World.load(JSON.parse(JSON.stringify(w.save())));
   for (const i of tiles) assert.ok(back.blocked(i % back.size, Math.floor(i / back.size)), 'still blocked after loading');

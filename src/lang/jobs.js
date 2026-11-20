@@ -35,6 +35,17 @@ export function jobs(g) {
   return out;
 }
 
+// Word stones for choices and letter tiles for spelling, in one station.
+const MIXED = { prop: (st, it, word, j) => (it.kind === 'spell' ? TILES : STONES).prop(st, it, word, j), correct: (st, p, k) => (st.it.kind === 'spell' ? TILES : STONES).correct(st, p, k), update: STONES.update };
+
+// The Wonder's incantation: before the superweapon strikes, the student speaks the spell (a clue
+// and a spelling, at the Wonder). Fresh items every time; stepping out calls the strike off.
+export function incantation(g, wonder, title, onDone) {
+  const L = g.lang, [x, y] = g.world.center(wonder);
+  return new Station(g, { job: 'incant', start: 0, focus: [x, y], title, items: [L.clue(), L.spell()], scene: MIXED, ahead: 3.6,
+    sub: i => `${title} · Word ${i + 1} of 2`, cheer: 'The spell is spoken!', done: onDone });
+}
+
 // The station for a job. Items are chosen once per job, so stepping out and back in keeps them.
 export function stationFor(g, job) {
   const w = g.world, L = g.lang, keep = L.jobItems || (L.jobItems = {});
@@ -47,7 +58,6 @@ export function stationFor(g, job) {
   if (job.id === 'drill') return new Station(g, { ...base, title: 'Lay the foundation', items: items(() => [L.sentence(), L.sentence(), L.sentence()]), scene: SOLDIERS, ahead: 3,
     ask: () => 'Tap the soldiers in sentence order!', cheer: 'The foundation is ready. Build it!', done: () => w.layFoundation(job.at.id) });
   if (job.id === 'ceremony') {
-    const MIXED = { prop: (st, it, word, j) => (it.kind === 'spell' ? TILES : STONES).prop(st, it, word, j), correct: (st, p, k) => (st.it.kind === 'spell' ? TILES : STONES).correct(st, p, k), update: STONES.update };
     return new Station(g, { ...base, title: 'Age Ceremony', items: items(() => [L.match(), L.match(), L.clue(), L.clue(), L.spell(), L.spell()]), scene: MIXED, ahead: 3.4,
       sub: i => `Age Ceremony · Round ${Math.floor(i / 2) + 1} of 3`, cheer: 'The Mythic Age is coming!', done: () => w.finishCeremony(job.at.id) });
   }

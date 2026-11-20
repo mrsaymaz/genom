@@ -151,3 +151,7 @@ The five required moments of Arena 1 (Dark → Mythic) are built as 3D stations 
 - **Protected time:** while a station is open the game pauses on Relaxed and runs at quarter speed on Challenge. Step out at any time; progress is kept.
 - **End screen:** English tasks, items and first-try accuracy, and up to 3 stars (a win, 60% and 80% first-try).
 - **Not yet built:** the optional jobs with "wait or Instant!", and the stations of Arenas 2 and 3. Matches saved before this change continue without English tasks.
+
+## Built: the Wonder's incantation
+
+Before a Celestial Wonder's superweapon strikes, the student speaks the incantation at the Wonder: a station with two items from their theme (a clue, then a spelling), with the usual two-step feedback. Fresh items each time. Stepping out calls the strike off; the Wonder stays charged and can be aimed again. This is the most powerful moment of a match, so it is a strong reason to get the English right; it appears wherever the Celestial Age is reached (Arena 3, and the tutorial skirmish for testing).

@@ -240,6 +240,14 @@ body.installing #rotate { display: none !important; } /* the install guide is re
 .ring-caption.on { opacity: 1; }
 @keyframes pop { from { transform: scale(0.2); opacity: 0; } }
 
+.confirm { position: absolute; left: 50%; bottom: calc(14px + var(--sb)); transform: translateX(-50%); z-index: 6; display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 12px; border-radius: 22px; color: #fff; max-width: calc(100% - 24px); animation: drop 0.25s ease; }
+.confirm .ci svg { width: 26px; height: 26px; display: block; color: #ffd453; }
+.confirm .ct { font: 700 15px/1.2 var(--text); }
+.confirm button { display: flex; align-items: center; gap: 5px; height: 40px; padding: 0 14px; border-radius: 20px; font: 800 14px var(--text); }
+.confirm button svg { width: 18px; height: 18px; }
+.confirm .cy { background: linear-gradient(#f9d86a, var(--gold2)); color: #2a1a00; }
+.confirm .cn { background: rgba(255, 255, 255, 0.14); color: #fff; }
+@media (max-height: 430px) { .confirm .ct { font-size: 13px; } .confirm button span { display: none; } }
 .supers { position: absolute; top: calc(58px + var(--st)); right: calc(10px + var(--sr)); display: flex; flex-direction: column; align-items: flex-end; gap: 5px; pointer-events: none; z-index: 2; }
 .supers .sw { display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px 0 6px; border-radius: 14px; background: rgba(20, 16, 10, 0.78); border: 1.5px solid var(--tc); color: #fff; font: 700 12px var(--text); }
 .supers .sw svg { width: 18px; height: 18px; color: var(--tc); }
